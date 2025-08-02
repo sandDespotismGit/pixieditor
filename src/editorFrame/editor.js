@@ -24,6 +24,12 @@ export default class EditorFrame {
         this.minScale = 0.1;
         this.maxScale = 5;
 
+        // Добавляем флаг для перетаскивания
+        this.dragEnabled = true;
+
+        // Инициализируем обработчик клавиатуры
+        this.setupKeyboardControls();
+
         // Инициализируем обработчик колеса
         this.setupZoom();
 
@@ -35,6 +41,43 @@ export default class EditorFrame {
         this.createBackground();
         this.createGrid()
     }
+    /**
+     * Настраивает обработку клавиатуры
+     */
+    setupKeyboardControls() {
+        // Обработчик нажатия клавиш
+        document.addEventListener('keydown', (e) => {
+            // Переключаем перетаскивание по нажатию H
+            if (e.key.toLowerCase() === 'h') {
+                this.toggleDrag();
+            }
+        });
+    }
+
+    /**
+    * Переключает возможность перетаскивания рабочей области
+    */
+    toggleDrag() {
+        this.dragEnabled = !this.dragEnabled;
+
+        if (this.dragEnabled) {
+            // Включаем перетаскивание
+            this.container.interactive = true;
+            this.container.cursor = 'grab';
+            console.log('Drag enabled');
+        } else {
+            // Отключаем перетаскивание
+            this.container.interactive = false;
+            this.container.cursor = 'default';
+
+            // Если было начато перетаскивание - завершаем его
+            if (this.dragData) {
+                this.onDragEnd();
+            }
+            console.log('Drag disabled');
+        }
+    }
+
     /**
      * Настраивает масштабирование колесом мыши
      */
@@ -121,6 +164,7 @@ export default class EditorFrame {
      * @param {PIXI.InteractionEvent} event 
      */
     onDragStart(event) {
+        if (!this.dragEnabled) return;
         // Запоминаем начальную позицию
         this.dragData = event.data;
         this.dragStart = {
@@ -138,7 +182,7 @@ export default class EditorFrame {
      * @param {PIXI.InteractionEvent} event 
      */
     onDragMove(event) {
-        if (!this.dragData) return;
+        if (!this.dragEnabled || !this.dragData) return;
 
         const newPosition = this.dragData.getLocalPosition(this.container.parent);
 

@@ -7,14 +7,16 @@ export default class DraggableWidget extends Container {
 
         // Сохраняем параметры
         this.bounds = bounds;
-        this._width = width;  // Используем внутренние свойства
+        this._width = width;
         this._height = height;
         this.color = color;
         this.isSelected = false;
 
-        // Важно: устанавливаем размеры контейнера
+        // Устанавливаем размеры и делаем виджет интерактивным
         this.width = width;
         this.height = height;
+        this.eventMode = 'static';
+        this.cursor = 'pointer';
 
         // Создаем графику виджета
         this.createWidget();
@@ -22,46 +24,36 @@ export default class DraggableWidget extends Container {
         // Настраиваем перетаскивание
         this.setupDrag();
 
-        // Для отладки: покажем границы виджета
-        this.debugBounds();
+        // Для отладки
+        console.log('Widget created with bounds:', bounds);
     }
 
     createWidget() {
-        // Очищаем предыдущие элементы
         this.removeChildren();
 
-        // Основной прямоугольник
+        // Основной прямоугольник (сделаем его ярче для видимости)
         this.background = new Graphics()
-            .beginFill(this.color)
+            .beginFill(this.color, 0.8) // Добавим прозрачность для отладки
             .drawRoundedRect(0, 0, this._width, this._height, 5)
             .endFill();
 
-        // Выделение (изначально скрыто)
+        // Выделение
         this.selection = new Graphics()
             .lineStyle(2, 0xf1c40f, 1)
-            .drawRoundedRect(-3, -3, this._width + 6, this._height + 6, 8)
-            .endFill();
+            .drawRoundedRect(-3, -3, this._width + 6, this._height + 6, 8);
         this.selection.visible = false;
 
-        // Добавляем в правильном порядке
         this.addChild(this.background);
         this.addChild(this.selection);
 
-        // Включаем взаимодействие
-        this.interactive = true;
+        // Устанавливаем область взаимодействия
         this.hitArea = new PIXI.Rectangle(0, 0, this._width, this._height);
     }
 
-    /**
-     * Настраивает перетаскивание виджета
-     */
     setupDrag() {
-        this.eventMode = 'static';
-        this.cursor = 'pointer';
-
-        // Для хранения данных перетаскивания
         this.dragData = null;
         this.dragOffset = new PIXI.Point();
+        this.dragStartPos = new PIXI.Point();
 
         this.on('pointerdown', this.onDragStart.bind(this))
             .on('pointerup', this.onDragEnd.bind(this))
@@ -69,36 +61,44 @@ export default class DraggableWidget extends Container {
             .on('pointermove', this.onDragMove.bind(this));
     }
 
-    /**
-     * Обработчик начала перетаскивания
-     * @param {PIXI.FederatedPointerEvent} event 
-     */
     onDragStart(event) {
-        this.dragData = event;
-        this.dragOffset.set(event.global.x - this.x, event.global.y - this.y);
-        this.select();
+        // Получаем позицию относительно родительского контейнера
+        const localPos = event.data.getLocalPosition(this.parent);
 
-        // Поднимаем виджет на верхний уровень
-        this.parent.addChild(this);
+        this.dragData = event.data;
+        this.dragOffset.set(localPos.x - this.x, localPos.y - this.y);
+        this.dragStartPos.set(this.x, this.y);
+
+        this.select();
+        this.parent.addChild(this); // Поднимаем на верхний уровень
+
+        console.log('Drag started at:', localPos);
     }
 
-    /**
-     * Обработчик перемещения мыши при перетаскивании
-     */
     onDragMove() {
         if (!this.dragData) return;
 
-        const newPosition = this.dragData.getLocalPosition(this.parent);
+        // Получаем текущую позицию курсора
+        const newPos = this.dragData.getLocalPosition(this.parent);
 
-        // Рассчитываем новые координаты с учетом ограничений
-        let newX = newPosition.x - this.dragOffset.x;
-        let newY = newPosition.y - this.dragOffset.y;
+        // Вычисляем новые координаты с учетом смещения
+        let newX = newPos.x - this.dragOffset.x;
+        let newY = newPos.y - this.dragOffset.y;
 
-        // Ограничиваем перемещение границами рабочей области
-        newX = Math.max(this.bounds.x, Math.min(this.bounds.width - this.width, newX));
-        newY = Math.max(this.bounds.y, Math.min(this.bounds.height - this.height, newY));
+        // Ограничиваем границами
+        newX = Math.max(this.bounds.x, Math.min(this.bounds.x + this.bounds.width - this._width, newX));
+        newY = Math.max(this.bounds.y, Math.min(this.bounds.y + this.bounds.height - this._height, newY));
 
         this.position.set(newX, newY);
+
+        console.log('Dragging to:', newX, newY);
+    }
+
+    onDragEnd() {
+        if (!this.dragData) return;
+
+        console.log('Drag ended at:', this.position);
+        this.dragData = null;
     }
 
     /**
