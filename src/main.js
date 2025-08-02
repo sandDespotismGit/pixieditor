@@ -3,6 +3,7 @@ import * as PIXI from 'pixi.js'; // Для модульной системы
 
 import EditorFrame from "./editorFrame/editor";
 import WidgetsGrid from "./widgetsGrid/widgets";
+import DraggableWidget from "./widgetsGrid/draggable_widget";
 
 (async () => {
   // Create a new application
@@ -43,6 +44,7 @@ import WidgetsGrid from "./widgetsGrid/widgets";
   app.view.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
 
   const editor = new EditorFrame(app)
+  editor.addWidget()
   console.log(editor.grid)
   console.log(editor.grid.visible)
   const widgets = new WidgetsGrid(app)

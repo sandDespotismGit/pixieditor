@@ -1,6 +1,8 @@
 import { Container, Sprite, Texture, TilingSprite, Graphics } from "pixi.js";
 import * as PIXI from 'pixi.js';
 
+import DraggableWidget from "../widgetsGrid/draggable_widget";
+
 export default class EditorFrame {
 
     constructor(app) {
@@ -225,6 +227,26 @@ export default class EditorFrame {
 
         // Для отладки
         this.debugGrid();
+    }
+
+    // В классе EditorFrame
+    addWidget() {
+        // Создаем границы для виджета (например, размеры рабочей области)
+        const bounds = new PIXI.Rectangle(
+            0,
+            0,
+            this._width,
+            this._height
+        );
+
+        // Создаем перетаскиваемый виджет
+        const widget = new DraggableWidget(bounds, 100, 100, 0x3498db);
+        widget.position.set(50, 50);
+
+        // Добавляем виджет в контейнер
+        this.container.addChild(widget);
+
+        return widget;
     }
 
     /**
