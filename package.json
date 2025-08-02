@@ -9,6 +9,7 @@
     "dev": "webpack serve --mode=development"
   },
   "dependencies": {
+    "@pixi/devtools": "^2.0.1",
     "pixi.js": "^8.8.1"
   },
   "devDependencies": {
