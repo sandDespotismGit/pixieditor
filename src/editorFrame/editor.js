@@ -274,8 +274,8 @@ export default class EditorFrame {
     }
 
     // В классе EditorFrame
-    addWidget() {
-        // Создаем границы для виджета (например, размеры рабочей области)
+    addWidget(widgetContent) {
+        // Создаем границы для виджета
         const bounds = new PIXI.Rectangle(
             0,
             0,
@@ -283,11 +283,16 @@ export default class EditorFrame {
             this._height
         );
 
-        // Создаем перетаскиваемый виджет
-        const widget = new DraggableWidget(bounds, 100, 100, 0x3498db);
-        widget.position.set(50, 50);
+        // Если передали уже готовый DraggableWidget
+        if (widgetContent instanceof DraggableWidget) {
+            widgetContent.position.set(50, 50);
+            this.container.addChild(widgetContent);
+            return widgetContent;
+        }
 
-        // Добавляем виджет в контейнер
+        // Если передали обычный контейнер или графику - оборачиваем в DraggableWidget
+        const widget = new DraggableWidget(bounds, widgetContent);
+        widget.position.set(50, 50);
         this.container.addChild(widget);
 
         return widget;
@@ -430,6 +435,7 @@ export default class EditorFrame {
         if (options.texture) {
             PIXI.Assets.load(options.texture).then(texture => {
                 this.background.texture = texture;
+                console.log("cock", texture)
 
                 if (options.tiling) {
                     const oldBg = this.background;

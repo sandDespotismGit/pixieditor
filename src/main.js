@@ -1,4 +1,4 @@
-import { Application, Assets, Sprite } from "pixi.js";
+import { Application, Assets, Sprite, Container } from "pixi.js";
 import * as PIXI from 'pixi.js'; // Для модульной системы
 
 import EditorFrame from "./editorFrame/editor";
@@ -44,9 +44,21 @@ import DraggableWidget from "./widgetsGrid/draggable_widget";
   app.view.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
 
   const editor = new EditorFrame(app)
-  editor.addWidget()
+  editor.changeBackground({ texture: "assets/oboi.jpg" })
   console.log(editor.grid)
   console.log(editor.grid.visible)
+
+
+  // Пример использования:
+  const test_container = new PIXI.Container();
+  const test_graphics = new PIXI.Graphics()
+    .beginFill(0xFF0000)
+    .drawRect(0, 0, 200, 150)
+    .endFill();
+  test_container.addChild(test_graphics);
+
+
+  editor.addWidget(test_container); // Добавит draggable виджет
   const widgets = new WidgetsGrid(app)
 
 })();

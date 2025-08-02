@@ -2,29 +2,37 @@ import { Container, Graphics, Point } from "pixi.js";
 import * as PIXI from 'pixi.js';
 
 export default class DraggableWidget extends Container {
-    constructor(bounds, width, height, color = 0x3498db) {
+    constructor(bounds, content, options = {}) {
         super();
 
-        // Параметры виджета
+        // Параметры
         this.bounds = bounds;
-        this._width = width;
-        this._height = height;
-        this.color = color;
+        this._width = content.width;
+        this._height = content.height;
+        this.color = options.color || 0x3498db;
         this.isSelected = false;
 
         // Настройки контейнера
-        this.width = width;
-        this.height = height;
         this.eventMode = 'static';
         this.cursor = 'pointer';
         this.interactive = true;
 
-        // Для перетаскивания
+        // Контент
+        this.content = content;
+        this.addChild(content);
+
+        // Drag логика
         this.dragData = null;
         this.isDragging = false;
         this.dragStartPos = new Point();
 
-        this.createWidget();
+        // Выделение
+        this.selection = new Graphics()
+            .lineStyle(2, 0xf1c40f, 1)
+            .drawRoundedRect(-3, -3, this._width + 6, this._height + 6, 8);
+        this.selection.visible = false;
+        this.addChild(this.selection);
+
         this.setupDrag();
     }
 
