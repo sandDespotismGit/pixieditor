@@ -1,39 +1,39 @@
-import { Container, Graphics } from "pixi.js";
+import { Container, Graphics, Point } from "pixi.js";
 import * as PIXI from 'pixi.js';
 
 export default class DraggableWidget extends Container {
     constructor(bounds, width, height, color = 0x3498db) {
         super();
 
-        // Сохраняем параметры
+        // Параметры виджета
         this.bounds = bounds;
         this._width = width;
         this._height = height;
         this.color = color;
         this.isSelected = false;
 
-        // Устанавливаем размеры и делаем виджет интерактивным
+        // Настройки контейнера
         this.width = width;
         this.height = height;
         this.eventMode = 'static';
         this.cursor = 'pointer';
+        this.interactive = true;
 
-        // Создаем графику виджета
+        // Для перетаскивания
+        this.dragData = null;
+        this.isDragging = false;
+        this.dragStartPos = new Point();
+
         this.createWidget();
-
-        // Настраиваем перетаскивание
         this.setupDrag();
-
-        // Для отладки
-        console.log('Widget created with bounds:', bounds);
     }
 
     createWidget() {
         this.removeChildren();
 
-        // Основной прямоугольник (сделаем его ярче для видимости)
+        // Основной прямоугольник
         this.background = new Graphics()
-            .beginFill(this.color, 0.8) // Добавим прозрачность для отладки
+            .beginFill(this.color)
             .drawRoundedRect(0, 0, this._width, this._height, 5)
             .endFill();
 
@@ -46,118 +46,79 @@ export default class DraggableWidget extends Container {
         this.addChild(this.background);
         this.addChild(this.selection);
 
-        // Устанавливаем область взаимодействия
+        // Область взаимодействия
         this.hitArea = new PIXI.Rectangle(0, 0, this._width, this._height);
     }
 
     setupDrag() {
-        this.dragData = null;
-        this.dragOffset = new PIXI.Point();
-        this.dragStartPos = new PIXI.Point();
-
         this.on('pointerdown', this.onDragStart.bind(this))
             .on('pointerup', this.onDragEnd.bind(this))
             .on('pointerupoutside', this.onDragEnd.bind(this))
-            .on('pointermove', this.onDragMove.bind(this));
+            .on('globalpointermove', this.onDragMove.bind(this));
     }
 
     onDragStart(event) {
-        // Получаем позицию относительно родительского контейнера
-        const localPos = event.data.getLocalPosition(this.parent);
-
         this.dragData = event.data;
-        this.dragOffset.set(localPos.x - this.x, localPos.y - this.y);
-        this.dragStartPos.set(this.x, this.y);
+        this.isDragging = true;
+
+        // Получаем локальную позицию клика внутри виджета
+        const localPos = event.data.getLocalPosition(this);
+        this.dragStartPos.set(localPos.x, localPos.y);
 
         this.select();
-        this.parent.addChild(this); // Поднимаем на верхний уровень
-
-        console.log('Drag started at:', localPos);
+        this.zIndex = 9999;
+        if (this.parent) {
+            this.parent.sortChildren();
+        }
     }
 
     onDragMove() {
-        if (!this.dragData) return;
+        if (!this.isDragging || !this.dragData) return;
 
-        // Получаем текущую позицию курсора
-        const newPos = this.dragData.getLocalPosition(this.parent);
+        // Получаем глобальные координаты мыши
+        const globalPos = this.dragData.global;
 
-        // Вычисляем новые координаты с учетом смещения
-        let newX = newPos.x - this.dragOffset.x;
-        let newY = newPos.y - this.dragOffset.y;
+        // Конвертируем в локальные координаты родителя
+        const parentPos = this.parent.toLocal(globalPos);
 
-        // Ограничиваем границами
+        // Вычисляем новую позицию с учетом точки захвата
+        let newX = parentPos.x - this.dragStartPos.x;
+        let newY = parentPos.y - this.dragStartPos.y;
+
+        // Ограничение границами
         newX = Math.max(this.bounds.x, Math.min(this.bounds.x + this.bounds.width - this._width, newX));
         newY = Math.max(this.bounds.y, Math.min(this.bounds.y + this.bounds.height - this._height, newY));
 
+        // Мгновенное перемещение
         this.position.set(newX, newY);
-
-        console.log('Dragging to:', newX, newY);
     }
 
     onDragEnd() {
-        if (!this.dragData) return;
-
-        console.log('Drag ended at:', this.position);
+        this.isDragging = false;
         this.dragData = null;
     }
 
-    /**
-     * Обработчик окончания перетаскивания
-     */
-    onDragEnd() {
-        this.dragData = null;
-    }
-
-    /**
-     * Выделяет виджет
-     */
     select() {
         this.isSelected = true;
         this.selection.visible = true;
     }
 
-    /**
-     * Снимает выделение с виджета
-     */
     deselect() {
         this.isSelected = false;
         this.selection.visible = false;
     }
 
-    /**
-     * Возвращает текущие координаты виджета
-     * @returns {PIXI.Point}
-     */
     getPosition() {
-        return new PIXI.Point(this.x, this.y);
+        return new Point(this.x, this.y);
     }
 
-    /**
-     * Устанавливает новые координаты виджета
-     * @param {number} x 
-     * @param {number} y 
-     */
     setPosition(x, y) {
-        // Проверяем границы
-        x = Math.max(this.bounds.x, Math.min(this.bounds.width - this.width, x));
-        y = Math.max(this.bounds.y, Math.min(this.bounds.height - this.height, y));
-
+        x = Math.max(this.bounds.x, Math.min(this.bounds.x + this.bounds.width - this._width, x));
+        y = Math.max(this.bounds.y, Math.min(this.bounds.y + this.bounds.height - this._height, y));
         this.position.set(x, y);
     }
 
-    /**
-     * Возвращает размеры виджета
-     * @returns {Object} {width, height}
-     */
     getSize() {
-        return { width: this.width, height: this.height };
-    }
-
-    // Метод для отладки
-    debugBounds() {
-        const debug = new Graphics()
-            .lineStyle(1, 0xFF0000)
-            .drawRect(0, 0, this._width, this._height);
-        this.addChild(debug);
+        return { width: this._width, height: this._height };
     }
 }

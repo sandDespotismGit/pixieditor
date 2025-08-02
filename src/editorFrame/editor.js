@@ -235,7 +235,7 @@ export default class EditorFrame {
         this.grid.fill("rgb(83, 83, 83)", this.gridAlpha);
 
         // Толщина линий сетки (в пикселях)
-        const lineThickness = 1;
+        const lineThickness = 0.5;
 
         // Вертикальные линии (рисуем как тонкие прямоугольники)
         for (let x = 0; x <= this._width; x += this.gridSize) {
