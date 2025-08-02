@@ -17,6 +17,14 @@ export default class EditorFrame {
         this.gridColor = "rgb(83, 83, 83)";
         this.gridAlpha = 1;
 
+        // Добавляем параметры масштабирования
+        this.scale = 1;
+        this.minScale = 0.1;
+        this.maxScale = 5;
+
+        // Инициализируем обработчик колеса
+        this.setupZoom();
+
         // Добавляем обработчики для перетаскивания
         this.dragData = null;
         this.dragStart = null;
@@ -24,6 +32,71 @@ export default class EditorFrame {
 
         this.createBackground();
         this.createGrid()
+    }
+    /**
+     * Настраивает масштабирование колесом мыши
+     */
+    setupZoom() {
+        this.container.interactive = true;
+        this.container.hitArea = new PIXI.Rectangle(0, 0, this._width, this._height);
+
+        this.container.on('wheel', (event) => {
+            event.preventDefault();
+            this.handleZoom(event);
+        });
+    }
+
+    /**
+     * Обрабатывает масштабирование
+     * @param {WheelEvent} event - Событие колеса мыши
+     */
+    handleZoom(event) {
+        // Определяем направление прокрутки
+        const delta = event.deltaY > 0 ? 0.9 : 1.1;
+
+        // Получаем позицию мыши относительно контейнера
+        const mousePos = {
+            x: event.global.x - this.container.x,
+            y: event.global.y - this.container.y
+        };
+
+        // Сохраняем старый масштаб
+        const oldScale = this.scale;
+
+        // Вычисляем новый масштаб с ограничениями
+        this.scale = Math.max(this.minScale, Math.min(this.maxScale, this.scale * delta));
+
+        // Применяем масштаб
+        this.container.scale.set(this.scale);
+
+        // Корректируем позицию для сохранения точки под курсором
+        const newMousePos = {
+            x: mousePos.x * this.scale / oldScale,
+            y: mousePos.y * this.scale / oldScale
+        };
+
+        this.container.x += mousePos.x - newMousePos.x;
+        this.container.y += mousePos.y - newMousePos.y;
+
+        // Обновляем сетку при масштабировании
+        this.updateGridAfterZoom();
+    }
+
+    /**
+     * Обновляет сетку после масштабирования
+     */
+    updateGridAfterZoom() {
+        if (this.grid) {
+            // Рассчитываем эффективный размер сетки с учетом масштаба
+            const effectiveGridSize = this.gridSize; // Базовый размер без изменений
+
+            // Пересоздаем сетку с новыми параметрами
+            this.createGrid({
+                size: effectiveGridSize,
+                // Учитываем масштаб в толщине линий
+                thickness: 1 / this.scale
+            });
+        }
     }
     /**
      * Настраивает перетаскивание рабочей области

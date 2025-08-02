@@ -2,15 +2,15 @@ import { Container, Sprite, Texture, Graphics } from "pixi.js";
 import * as PIXI from 'pixi.js';
 
 export default class WidgetsGrid {
-    constructor(container) {
+    constructor(app) {
         this.container = new Container();
         this.container.position.set(100, 100)
-        container.addChild(this.container);
+        app.stage.addChild(this.container);
 
         // Параметры стиля
         const width = 300;
-        const height = container.height - 200;
-        const borderRadius = 40; // Радиус закругления
+        const height = app.screen.height - 200;
+        const borderRadius = 20; // Радиус закругления
         const bgColor = 0x2C2C2C; // HEX эквивалент rgb(44, 44, 44)
 
         // Создаем фон с закругленными углами

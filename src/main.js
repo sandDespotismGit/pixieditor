@@ -10,7 +10,13 @@ import WidgetsGrid from "./widgetsGrid/widgets";
 
 
   // Initialize the application
-  await app.init({ resizeTo: window, antialias: true });
+  await app.init({
+    resizeTo: window, antialias: true, // Важно для работы wheel-событий
+    eventFeatures: {
+      wheel: true,
+      globalMove: true
+    }
+  });
 
   // Append the application canvas to the document body
   document.getElementById("pixi-container").appendChild(app.canvas);
@@ -32,10 +38,13 @@ import WidgetsGrid from "./widgetsGrid/widgets";
     e.preventDefault();
     return false;
   });
+  // Дополнительная настройка для предотвращения прокрутки страницы
+  app.view.style.touchAction = 'none';
+  app.view.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
 
   const editor = new EditorFrame(app)
   console.log(editor.grid)
   console.log(editor.grid.visible)
-  const widgets = new WidgetsGrid(editor.container)
+  const widgets = new WidgetsGrid(app)
 
 })();
