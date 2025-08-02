@@ -13,7 +13,7 @@ export default class EditorFrame {
         // Параметры сетки
         this.grid = null;
         this.gridVisible = true;
-        this.gridSize = 30;
+        this.gridSize = 20;
         this.gridColor = "rgb(83, 83, 83)";
         this.gridAlpha = 1;
 
@@ -160,7 +160,7 @@ export default class EditorFrame {
     /**
      * Создает или обновляет сетку
      * @param {object} [options] - Параметры сетки
-     * @param {number} [options.size=50] - Размер ячейки
+     * @param {number} [options.size=20] - Размер ячейки
      * @param {number} [options.color="rgb(83, 83, 83)"] - Цвет
      * @param {number} [options.alpha=0.2] - Прозрачность
      */
