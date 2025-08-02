@@ -274,7 +274,7 @@ export default class EditorFrame {
     }
 
     // В классе EditorFrame
-    addWidget(widgetContent) {
+    addWidget(widgetContent, x, y) {
         // Создаем границы для виджета
         const bounds = new PIXI.Rectangle(
             0,
@@ -285,14 +285,14 @@ export default class EditorFrame {
 
         // Если передали уже готовый DraggableWidget
         if (widgetContent instanceof DraggableWidget) {
-            widgetContent.position.set(50, 50);
+            widgetContent.position.set(x, y);
             this.container.addChild(widgetContent);
             return widgetContent;
         }
 
         // Если передали обычный контейнер или графику - оборачиваем в DraggableWidget
         const widget = new DraggableWidget(bounds, widgetContent);
-        widget.position.set(50, 50);
+        widget.position.set(x, y);
         this.container.addChild(widget);
 
         return widget;
