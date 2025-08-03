@@ -4,6 +4,7 @@ import * as PIXI from 'pixi.js'; // Для модульной системы
 import EditorFrame from "./editorFrame/editor";
 import WidgetsGrid from "./widgetsGrid/widgets";
 import DraggableWidget from "./widgetsGrid/draggable_widget";
+import DigitalClockWidget from "./widgets/digitalClockWidget";
 
 (async () => {
   // Create a new application
@@ -56,6 +57,25 @@ import DraggableWidget from "./widgetsGrid/draggable_widget";
     .drawRect(0, 0, 200, 150)
     .endFill();
   test_container.addChild(test_graphics);
+
+  const digitalClockWidget1 = new DigitalClockWidget({
+    showSeconds: true,
+    fontSize: 36,
+    fontColor: "white",
+    backgroundColor: "rgba(40,40,40,1)"
+  });
+  const digitalClockWidget2 = new DigitalClockWidget({
+    showSeconds: false,
+    fontSize: 36,
+    fontColor: "white",
+    backgroundColor: "rgba(40,40,40,1)"
+  });
+
+  // Добавляем виджет в редактор
+  editor.addWidget(digitalClockWidget1, 0, 0);
+  editor.addWidget(digitalClockWidget2, 0, 0);
+
+
 
 
   editor.addWidget(test_container); // Добавит draggable виджет

@@ -294,7 +294,6 @@ export default class EditorFrame {
         const widget = new DraggableWidget(bounds, widgetContent);
         widget.position.set(x, y);
         this.container.addChild(widget);
-
         return widget;
     }
 
