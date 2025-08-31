@@ -1,9 +1,13 @@
 import { Application, Assets, Sprite, Container } from "pixi.js";
 import * as PIXI from 'pixi.js'; // Для модульной системы
+import { string2hex } from "pixi.js";
+
 
 import EditorFrame from "./editorFrame/editor";
 import WidgetsGrid from "./widgetsGrid/widgets";
 import DraggableWidget from "./widgetsGrid/draggable_widget";
+import ClockWidget from "./widgetsGrid/widgets/clock_widget";
+import TrafficWidget from "./widgetsGrid/widgets/traffic";
 
 (async () => {
   // Create a new application
@@ -44,7 +48,30 @@ import DraggableWidget from "./widgetsGrid/draggable_widget";
   app.view.addEventListener('wheel', (e) => e.preventDefault(), { passive: false });
 
   const editor = new EditorFrame(app)
-  editor.changeBackground({ texture: "assets/oboi.jpg" })
+  // === Панель управления фоном ===
+  const colorInput = document.getElementById("bg-color");
+  const alphaInput = document.getElementById("bg-alpha");
+  const textureInput = document.getElementById("bg-texture");
+  const tilingInput = document.getElementById("bg-tiling");
+  const exportButton = document.getElementById("export");
+
+  // Цвет
+  colorInput.addEventListener("input", (e) => {
+    editor.changeBackground({ color: e.target.value });
+  });
+
+
+  // Прозрачность
+  alphaInput.addEventListener("input", (e) => {
+    editor.changeBackground({ alpha: parseFloat(e.target.value) });
+  });
+
+  // Экспорт
+  exportButton.addEventListener("click", (e) => {
+    console.log(editor.exportScene())
+  })
+
+
   console.log(editor.grid)
   console.log(editor.grid.visible)
 
@@ -56,9 +83,13 @@ import DraggableWidget from "./widgetsGrid/draggable_widget";
     .drawRect(0, 0, 200, 150)
     .endFill();
   test_container.addChild(test_graphics);
-
-
+  const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+  const clock = new ClockWidget(bounds)
+  const bounds1 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+  const traffic = new TrafficWidget(bounds1)
+  editor.addWidget(traffic)
   editor.addWidget(test_container); // Добавит draggable виджет
-  const widgets = new WidgetsGrid(app)
+  editor.addWidget(clock)
+  console.log(editor.exportScene())
 
 })();

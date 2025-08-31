@@ -1,16 +1,67 @@
 <!doctype html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css" />
     <title>PixiJS - Template</title>
-</head>
+  </head>
 
-<body>
-    <div id="app">
-        <div id="pixi-container"></div>
+  <body>
+    <div
+      id="background-controls"
+      style="
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 10px;
+        background: #222;
+        border-radius: 8px;
+        color: #fff;
+        font-family: sans-serif;
+        font-size: 14px;
+        z-index: 10;
+      "
+    >
+      <label>Цвет: <input type="color" id="bg-color" value="#1e1e1e" /></label
+      ><br />
+      <label
+        >Прозрачность:
+        <input
+          type="range"
+          id="bg-alpha"
+          min="0"
+          max="1"
+          step="0.05"
+          value="1" /></label
+      ><br />
+      <button id="export">Экспорт</button>
+      <br />
     </div>
-</body>
+    <div
+      id="widget-controls"
+      style="
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 10px;
+        background: #222;
+        border-radius: 8px;
+        color: #fff;
+        font-family: sans-serif;
+        font-size: 14px;
+        z-index: 10;
+      "
+    >
+      <label
+        >Выбранный виджет
+        <p id="choosed-widget"></p>
+      </label>
+    </div>
+
+    <div id="app">
+      <div id="pixi-container"></div>
+    </div>
+  </body>
 </html>
