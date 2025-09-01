@@ -8,6 +8,7 @@ import WidgetsGrid from "./widgetsGrid/widgets";
 import DraggableWidget from "./widgetsGrid/draggable_widget";
 import ClockWidget from "./widgetsGrid/widgets/clock_widget";
 import TrafficWidget from "./widgetsGrid/widgets/traffic";
+import DigitalClockXLWidget from "./widgetsGrid/widgets/digital_clock";
 
 (async () => {
   // Create a new application
@@ -75,6 +76,15 @@ import TrafficWidget from "./widgetsGrid/widgets/traffic";
   console.log(editor.grid)
   console.log(editor.grid.visible)
 
+  // Кнопки для добавления виджетов
+
+  // Цифровые часы
+  const digitalClockButton1 = document.getElementById("digital-clock-1")
+  const digitalClockButton2 = document.getElementById("digital-clock-2")
+  const digitalClockButton3 = document.getElementById("digital-clock-3")
+  const digitalClockButton4 = document.getElementById("digital-clock-4")
+
+
 
   // Пример использования:
   const test_container = new PIXI.Container();
@@ -83,13 +93,46 @@ import TrafficWidget from "./widgetsGrid/widgets/traffic";
     .drawRect(0, 0, 200, 150)
     .endFill();
   test_container.addChild(test_graphics);
-  const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
-  const clock = new ClockWidget(bounds)
-  const bounds1 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
-  const traffic = new TrafficWidget(bounds1)
-  editor.addWidget(traffic)
-  editor.addWidget(test_container); // Добавит draggable виджет
-  editor.addWidget(clock)
+  // const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+  // const clock = new ClockWidget(bounds)
+  // const bounds1 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+  // const traffic = new TrafficWidget(bounds1)
+
+  const digitalBounds1 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+  const digitalBounds2 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+  const digitalBounds3 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+  const digitalBounds4 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+
+  const digitalClock1 = new DigitalClockXLWidget(digitalBounds1, 508, 246, {
+    showSeconds: true
+  });
+  const digitalClock2 = new DigitalClockXLWidget(digitalBounds2, 508, 246, {
+    showSeconds: false
+  });
+  const digitalClock3 = new DigitalClockXLWidget(digitalBounds3, 377, 115, {
+    showSeconds: true,
+    fontSizeMain: 70
+  });
+  const digitalClock4 = new DigitalClockXLWidget(digitalBounds4, 246, 115, {
+    showSeconds: false,
+    fontSizeMain: 70
+  });
+
+  // Добавление виджетов при нажатии на кнопку
+
+  digitalClockButton1.addEventListener('click', () => {
+    editor.addWidget(digitalClock1)
+  })
+  digitalClockButton2.addEventListener('click', () => {
+    editor.addWidget(digitalClock2)
+  })
+  digitalClockButton3.addEventListener('click', () => {
+    editor.addWidget(digitalClock3)
+  })
+  digitalClockButton4.addEventListener('click', () => {
+    editor.addWidget(digitalClock4)
+  })
+
   console.log(editor.exportScene())
 
 })();

@@ -37,6 +37,7 @@ export default class TrafficWidget extends DraggableWidget {
         valueText.y = valueCircle.y + 27;
         content.addChild(valueText);
 
+
         super(bounds, content, options);
 
         this._width = width;
