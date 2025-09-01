@@ -8,7 +8,7 @@ import WidgetsGrid from "./widgetsGrid/widgets";
 import DraggableWidget from "./widgetsGrid/draggable_widget";
 import ClockWidget from "./widgetsGrid/widgets/clock_widget";
 import TrafficWidget from "./widgetsGrid/widgets/traffic";
-import DigitalClockXLWidget from "./widgetsGrid/widgets/digital_clock";
+import DigitalClockWidget from "./widgetsGrid/widgets/digital_clock";
 
 (async () => {
   // Create a new application
@@ -103,19 +103,24 @@ import DigitalClockXLWidget from "./widgetsGrid/widgets/digital_clock";
   const digitalBounds3 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
   const digitalBounds4 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
 
-  const digitalClock1 = new DigitalClockXLWidget(digitalBounds1, 508, 246, {
+  // Виджет 1: XL с секундами
+  const digitalClock1 = new DigitalClockWidget(digitalBounds1, 508, 246, {
     showSeconds: true
   });
-  const digitalClock2 = new DigitalClockXLWidget(digitalBounds2, 508, 246, {
+
+  // Виджет 2: XL без секунд
+  const digitalClock2 = new DigitalClockWidget(digitalBounds2, 508, 246, {
     showSeconds: false
   });
-  const digitalClock3 = new DigitalClockXLWidget(digitalBounds3, 377, 115, {
-    showSeconds: true,
-    fontSizeMain: 70
+
+  // Виджет 3: L с секундами и разделителями
+  const digitalClock3 = new DigitalClockWidget(digitalBounds3, 377, 115, {
+    showSeconds: true
   });
-  const digitalClock4 = new DigitalClockXLWidget(digitalBounds4, 246, 115, {
-    showSeconds: false,
-    fontSizeMain: 70
+
+  // Виджет 4: S без секунд
+  const digitalClock4 = new DigitalClockWidget(digitalBounds4, 246, 115, {
+    showSeconds: false
   });
 
   // Добавление виджетов при нажатии на кнопку
