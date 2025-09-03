@@ -3,7 +3,7 @@ import { Container, Graphics, Text, TextStyle } from "pixi.js";
 import DraggableWidget from "../draggable_widget";
 
 export default class TrafficWidget extends DraggableWidget {
-    constructor(bounds, width = 377, height = 115, options = {}) {
+    constructor(bounds, width, height, options = {}) {
         const content = new Container();
 
         // Фон виджета
@@ -13,72 +13,72 @@ export default class TrafficWidget extends DraggableWidget {
             .endFill();
         content.addChild(bg);
 
-        // Текстовые элементы
-        const styleLabel = new TextStyle({
-            fontFamily: "Rubik",
-            fontSize: 32,
-            fill: options.textColor ?? 0xffffff,
-            resolution: 2
-        });
+        // Определяем тип виджета по размерам
+        const isTrafficL = width === 377 && height === 115;
+        const isTrafficM = width === 246 && height === 115;
+        const isTrafficS = width === 115 && height === 115;
 
-        const label = new Text("Пробки", styleLabel);
-        label.x = 16;
-        label.y = height / 2 - label.height / 2;
-        content.addChild(label);
-
-        const valueCircle = new Graphics();
-        valueCircle.x = width / 2 - 27; // центрируем кружок по ширине
-        valueCircle.y = height / 2 - 27; // центрируем по высоте
-        content.addChild(valueCircle);
-
-        const valueText = new Text("0", styleLabel);
-        valueText.anchor.set(0.5);
-        valueText.x = valueCircle.x + 27;
-        valueText.y = valueCircle.y + 27;
-        content.addChild(valueText);
-
+        // Создаем соответствующий тип виджета
+        if (isTrafficL) {
+            createTrafficLContent(content, width, height);
+        } else if (isTrafficM) {
+            createTrafficMContent(content, width, height);
+        } else if (isTrafficS) {
+            createTrafficSContent(content, width, height);
+        }
 
         super(bounds, content, options);
 
         this._width = width;
         this._height = height;
         this.bg = bg;
-        this.valueCircle = valueCircle;
-        this.valueText = valueText;
 
-        this.minValue = options.minValue ?? 1;
-        this.maxValue = options.maxValue ?? 8;
+        // Цвета для разных уровней трафика
+        this.trafficColors = {
+            10: 0xFA2E23,
+            9: 0xF95020,
+            8: 0xF86F1C,
+            7: 0xF78A19,
+            6: 0xF7A516,
+            5: 0xF5BF13,
+            4: 0xEFDE15,
+            3: 0xD2FA0B,
+            2: 0xA4F312,
+            1: 0x90F30D,
+            0: 0x4DF30C
+        };
 
-        this.updateTraffic(); // установить начальное значение
+        // Обновляем трафик сразу и устанавливаем интервал
+        this.updateTraffic();
         this._timer = setInterval(() => this.updateTraffic(), options.updateInterval ?? 1800000);
     }
 
-    getRandomTraffic() {
-        return Math.floor(Math.random() * (this.maxValue - this.minValue + 1)) + this.minValue;
+    updateTraffic() {
+        const trafficValue = this.getRandomTraffic();
+
+        if (this.content.trafficValueText) {
+            this.content.trafficValueText.text = trafficValue.toString();
+        }
+
+        // Для виджетов с бордером (L и M)
+        if (this.content.trafficBorder) {
+            const color = this.trafficColors[trafficValue] || this.trafficColors[0];
+            this.content.trafficBorder.clear();
+            this.content.trafficBorder.circle(0, 0, 27);
+            this.content.trafficBorder.stroke({ width: 6, color: color });
+        }
+
+        // Для виджета с заливкой (S)
+        if (this.content.trafficCircle) {
+            const color = this.trafficColors[trafficValue] || this.trafficColors[0];
+            this.content.trafficCircle.clear();
+            this.content.trafficCircle.circle(0, 0, 45);
+            this.content.trafficCircle.fill({ color: color });
+        }
     }
 
-    updateTraffic() {
-        const value = this.getRandomTraffic();
-        this.valueText.text = value.toString();
-
-        let color;
-        if (value >= 9) color = 0xfa2e23;
-        else if (value === 8) color = 0xf86f1c;
-        else if (value === 7) color = 0xf78a19;
-        else if (value === 6) color = 0xf7a516;
-        else if (value === 5) color = 0xf5bf13;
-        else if (value === 4) color = 0xefde15;
-        else if (value === 3) color = 0xd2fa0b;
-        else if (value === 2) color = 0xa4f312;
-        else color = 0x90f30d;
-
-        // Обновляем цвет кружка и рамки
-        this.valueCircle.clear();
-        this.valueCircle.beginFill(color);
-        this.valueCircle.drawCircle(27, 27, 27);
-        this.valueCircle.endFill();
-
-        this.setColor(color);
+    getRandomTraffic() {
+        return Math.floor(Math.random() * 10) + 1;
     }
 
     destroy(options) {
@@ -88,4 +88,137 @@ export default class TrafficWidget extends DraggableWidget {
         }
         super.destroy(options);
     }
+}
+
+// Вспомогательные функции для создания контента
+function createTrafficLContent(content, width, height) {
+    const styleText = new TextStyle({
+        fontFamily: "Rubik",
+        fontSize: 32,
+        fill: 0xffffff,
+        fontWeight: 300,
+        resolution: 2
+    });
+
+    // Основной контейнер
+    const mainContainer = new Container();
+    mainContainer.x = width / 2;
+    mainContainer.y = height / 2;
+
+
+    // Текст "Пробки"
+    const labelText = new Text("Пробки", styleText);
+    labelText.anchor.set(0.5);
+    labelText.x = -100;
+    mainContainer.addChild(labelText);
+
+    // Контейнер для круга
+    const circleContainer = new Container();
+    circleContainer.x = 0;
+
+    // Графика для бордера круга (НОВЫЙ API)
+    const trafficBorder = new Graphics();
+    trafficBorder.circle(0, 0, 27);
+    trafficBorder.stroke({ width: 6, color: 0xFFFFFF }); // Начальный цвет
+    circleContainer.addChild(trafficBorder);
+
+    // Текст значения
+    const trafficValueText = new Text("0", styleText);
+    trafficValueText.anchor.set(0.5);
+    trafficValueText.x = 0;
+    trafficValueText.y = 0;
+    circleContainer.addChild(trafficValueText);
+
+    mainContainer.addChild(circleContainer);
+
+    // Текст "баллов"
+    const unitsText = new Text("баллов", styleText);
+    unitsText.anchor.set(0.5);
+    unitsText.x = 100;
+    mainContainer.addChild(unitsText);
+
+    content.addChild(mainContainer);
+
+    // Сохраняем ссылки
+    content.trafficValueText = trafficValueText;
+    content.trafficBorder = trafficBorder;
+}
+
+function createTrafficMContent(content, width, height) {
+    const styleText = new TextStyle({
+        fontFamily: "Rubik",
+        fontSize: 32,
+        fill: 0xffffff,
+        fontWeight: 300,
+        resolution: 2
+    });
+
+    // Основной контейнер
+    const mainContainer = new Container();
+    mainContainer.x = width / 2;
+    mainContainer.y = height / 2;
+
+    // Текст "Пробки"
+    const labelText = new Text("Пробки", styleText);
+    labelText.anchor.set(0.5);
+    labelText.x = -40;
+    mainContainer.addChild(labelText);
+
+    // Контейнер для круга
+    const circleContainer = new Container();
+    circleContainer.x = 60;
+
+    // Графика для бордера круга (НОВЫЙ API)
+    const trafficBorder = new Graphics();
+    trafficBorder.circle(0, 0, 27);
+    trafficBorder.stroke({ width: 6, color: 0xFFFFFF }); // Начальный цвет
+    circleContainer.addChild(trafficBorder);
+
+    // Текст значения
+    const trafficValueText = new Text("0", styleText);
+    trafficValueText.anchor.set(0.5);
+    trafficValueText.x = 0;
+    trafficValueText.y = 0;
+    circleContainer.addChild(trafficValueText);
+
+    mainContainer.addChild(circleContainer);
+
+    content.addChild(mainContainer);
+
+    // Сохраняем ссылки
+    content.trafficValueText = trafficValueText;
+    content.trafficBorder = trafficBorder;
+}
+
+function createTrafficSContent(content, width, height) {
+    const styleText = new TextStyle({
+        fontFamily: "Rubik",
+        fontSize: 70,
+        fill: 0x1e1e1e,
+        fontWeight: 300,
+        resolution: 2
+    });
+
+    const container = new Container();
+    container.x = width / 2;
+    container.y = height / 2;
+
+    // Графика для заполненного круга (НОВЫЙ API)
+    const trafficCircle = new Graphics();
+    trafficCircle.circle(0, 0, 45);
+    trafficCircle.fill({ color: 0xFFFFFF }); // Начальный цвет
+    container.addChild(trafficCircle);
+
+    // Текст значения
+    const trafficValueText = new Text("0", styleText);
+    trafficValueText.anchor.set(0.5);
+    trafficValueText.x = 0;
+    trafficValueText.y = 0;
+    container.addChild(trafficValueText);
+
+    content.addChild(container);
+
+    // Сохраняем ссылки
+    content.trafficValueText = trafficValueText;
+    content.trafficCircle = trafficCircle;
 }
