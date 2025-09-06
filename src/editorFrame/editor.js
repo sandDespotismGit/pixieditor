@@ -42,11 +42,14 @@ export default class EditorFrame {
         const widgets = this.container.children
             .filter(c => c instanceof DraggableWidget)
             .map(w => ({
+                type: w.content.constructor.name, // класс виджета
+                widgetClass: w.content.constructor.name, // альтернативное название для ясности
                 x: w.x,
                 y: w.y,
                 size: w.getSize(),
                 color: w.color,
-                texture: w.content.texture?.textureCacheIds?.[0] || null
+                texture: w.content.texture?.textureCacheIds?.[0] || null,
+                w: w.constructor.name
             }));
 
         return {
