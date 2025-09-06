@@ -82,6 +82,21 @@ import TrafficWidget from "./widgetsGrid/widgets/traffic";
   const trafficButton2 = document.getElementById("traffic-2");
   const trafficButton3 = document.getElementById("traffic-3");
 
+  // Новости
+
+  // Курс доллара / евро
+  const usdEurButton1 = document.getElementById("usdEur-1");
+  const usdEurButton2 = document.getElementById("usdEur-2");
+  const usdEurButton3 = document.getElementById("usdEur-3");
+  const usdEurButton4 = document.getElementById("usdEur-4");
+  const usdEurButton5 = document.getElementById("usdEur-5");
+  const usdEurButton6 = document.getElementById("usdEur-6");
+
+  // О компании
+  const companyButton1 = document.getElementById("company-1")
+  const companyButton2 = document.getElementById("company-2")
+  const companyButton3 = document.getElementById("company-3")
+
   // Обработчики для добавления виджетов
   digitalClockButton1.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());

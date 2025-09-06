@@ -1,0 +1,233 @@
+// CompanyWidget.js
+import { Container, Graphics, Text, TextStyle, Sprite } from "pixi.js";
+import DraggableWidget from "../draggable_widget";
+import * as PIXI from 'pixi.js'; // Для модульной системы
+
+
+export default class CompanyWidget extends DraggableWidget {
+    constructor(bounds, width, height, options = {}) {
+        const content = new Container();
+
+        // Фон виджета
+        const bg = new Graphics();
+        bg.beginFill(options.backgroundColor ?? 0x1e1e1e, options.backgroundAlpha ?? 1)
+            .drawRoundedRect(0, 0, width, height, options.cornerRadius ?? 32)
+            .endFill();
+        content.addChild(bg);
+
+
+        // Определяем тип виджета по опциям
+        const isCompanyInfo = options.type === 'info';
+        const isCompanyLogos = options.type === 'logos';
+        const isCompanySimpleLogos = options.type === 'simple-logos';
+
+        // Создаем соответствующий тип виджета
+        if (isCompanyInfo) {
+            createCompanyInfoContent(content, width, height);
+        } else if (isCompanyLogos) {
+            createCompanyLogosContent(content, width, height);
+        } else if (isCompanySimpleLogos) {
+            createCompanySimpleLogosContent(content, width, height);
+        }
+
+        super(bounds, content, options);
+
+        this._width = width;
+        this._height = height;
+        this.bg = bg;
+
+        // Загружаем изображения если это логотипы
+        if (isCompanyLogos || isCompanySimpleLogos) {
+            this.loadLogos();
+        }
+    }
+
+    async loadLogos() {
+        const logoUrls = {
+            qr: "http://212.41.9.251:8000/static/light_qr.svg",
+            ipanel: "http://212.41.9.251:8000/static/light_ipanel.svg",
+            liftbrand: "http://212.41.9.251:8000/static/light_liftbrand.svg",
+            videovision: "http://212.41.9.251:8000/static/light_videovision.svg"
+        };
+
+        try {
+            // Для виджета с логотипами в колонке
+            if (this.content.ipanelLogo && this.content.liftbrandLogo) {
+                const ipanelTexture = await PIXI.Assets.load(logoUrls.ipanel);
+                const liftbrandTexture = await PIXI.Assets.load(logoUrls.liftbrand);
+
+                this.content.ipanelLogo.texture = ipanelTexture;
+                this.content.liftbrandLogo.texture = liftbrandTexture;
+
+                // Устанавливаем размер для ipanel
+                this.content.ipanelLogo.width = 116;
+                this.content.ipanelLogo.height = 12;
+            }
+
+            // Для всех виджетов загружаем QR и другие логотипы
+            if (this.content.qrLogo) {
+                const qrTexture = await PIXI.Assets.load(logoUrls.qr);
+                this.content.qrLogo.texture = qrTexture;
+            }
+
+            if (this.content.videovisionLogo) {
+                const videovisionTexture = await PIXI.Assets.load(logoUrls.videovision);
+                this.content.videovisionLogo.texture = videovisionTexture;
+            }
+
+            // Для простого виджета с логотипами
+            if (this.content.simpleIpanelLogo) {
+                const ipanelTexture = await PIXI.Assets.load(logoUrls.ipanel);
+                this.content.simpleIpanelLogo.texture = ipanelTexture;
+            }
+
+            if (this.content.simpleLiftbrandLogo) {
+                const liftbrandTexture = await PIXI.Assets.load(logoUrls.liftbrand);
+                this.content.simpleLiftbrandLogo.texture = liftbrandTexture;
+            }
+
+        } catch (error) {
+            console.error("Error loading logos:", error);
+        }
+    }
+
+    destroy(options) {
+        super.destroy(options);
+    }
+}
+
+// Вспомогательные функции для создания контента
+function createCompanyInfoContent(content, width, height) {
+    const styleLabel = new TextStyle({
+        fontFamily: "Rubik",
+        fontSize: 18,
+        fill: 0x737373,
+        fontWeight: 300,
+        resolution: 2
+    });
+
+    const styleValue = new TextStyle({
+        fontFamily: "Rubik",
+        fontSize: 18,
+        fill: 0xffffff,
+        fontWeight: 300,
+        resolution: 2
+    });
+
+    const container = new Container();
+    container.x = width / 2;
+    container.y = height / 2;
+
+    // Первая строка: информация о компании
+    const companyContainer = new Container();
+    companyContainer.y = -20;
+
+    const companyLabel = new Text("Лифт обслуживает компания  ", styleLabel);
+    companyLabel.anchor.set(0.5);
+    companyLabel.x = -100;
+    companyContainer.addChild(companyLabel);
+
+    const companyValue = new Text("Meteor", styleValue);
+    companyValue.anchor.set(0.5);
+    companyValue.x = 200;
+    companyContainer.addChild(companyValue);
+
+    // Вторая строка: телефон поддержки
+    const phoneContainer = new Container();
+    phoneContainer.y = 20;
+
+    const phoneLabel = new Text("Телефон поддержки  ", styleLabel);
+    phoneLabel.anchor.set(0.5);
+    phoneLabel.x = -140;
+    phoneContainer.addChild(phoneLabel);
+
+    const phoneValue = new Text("+7(800)555-35-35", styleValue);
+    phoneValue.anchor.set(0.5);
+    phoneValue.x = 160;
+    phoneContainer.addChild(phoneValue);
+
+    container.addChild(companyContainer);
+    container.addChild(phoneContainer);
+    content.addChild(container);
+}
+
+function createCompanyLogosContent(content, width, height) {
+    const container = new Container();
+    container.x = width / 2;
+    container.y = height / 2;
+
+    // QR код слева
+    const qrLogo = Sprite.from(PIXI.Texture.EMPTY);
+    qrLogo.anchor.set(0.5);
+    qrLogo.x = -150;
+    container.addChild(qrLogo);
+
+    // Центральная колонка с логотипами
+    const logosColumn = new Container();
+    logosColumn.x = 0;
+
+    const ipanelLogo = Sprite.from(PIXI.Texture.EMPTY);
+    ipanelLogo.anchor.set(0.5);
+    ipanelLogo.y = -15;
+    logosColumn.addChild(ipanelLogo);
+
+    // Пространство между логотипами
+    const space = new Container();
+    space.y = 0;
+    logosColumn.addChild(space);
+
+    const liftbrandLogo = Sprite.from(PIXI.Texture.EMPTY);
+    liftbrandLogo.anchor.set(0.5);
+    liftbrandLogo.y = 15;
+    logosColumn.addChild(liftbrandLogo);
+
+    container.addChild(logosColumn);
+
+    // Видеовидение справа
+    const videovisionLogo = Sprite.from(PIXI.Texture.EMPTY);
+    videovisionLogo.anchor.set(0.5);
+    videovisionLogo.x = 150;
+    container.addChild(videovisionLogo);
+
+    content.addChild(container);
+
+    // Сохраняем ссылки для загрузки текстур
+    content.qrLogo = qrLogo;
+    content.ipanelLogo = ipanelLogo;
+    content.liftbrandLogo = liftbrandLogo;
+    content.videovisionLogo = videovisionLogo;
+}
+
+function createCompanySimpleLogosContent(content, width, height) {
+    const container = new Container();
+    container.x = width / 2;
+    container.y = height / 2;
+
+    // Равномерно распределяем логотипы по ширине
+    const spacing = width / 4;
+
+    // QR код
+    const qrLogo = Sprite.from(PIXI.Texture.EMPTY);
+    qrLogo.anchor.set(0.5);
+    qrLogo.x = -spacing;
+    container.addChild(qrLogo);
+
+    // iPanel логотип
+    const ipanelLogo = Sprite.from(PIXI.Texture.EMPTY);
+    ipanelLogo.anchor.set(0.5);
+    ipanelLogo.x = 0;
+    container.addChild(ipanelLogo);
+
+    // LiftBrand логотип
+    const liftbrandLogo = Sprite.from(PIXI.Texture.EMPTY);
+    liftbrandLogo.anchor.set(0.5);
+    liftbrandLogo.x = spacing;
+    container.addChild(liftbrandLogo);
+
+    content.addChild(container);
+
+    // Сохраняем ссылки для загрузки текстур
+    content.qrLogo = qrLogo;
+    content.simpleIpanelLogo = ipanelLogo;
+    content.simpleLiftbrandLogo = liftbrandLogo;
+}
