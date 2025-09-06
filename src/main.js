@@ -6,6 +6,8 @@ import DigitalClockWidget from "./widgetsGrid/widgets/digital_clock";
 import CalendarWidget from "./widgetsGrid/widgets/calendar";
 import WeatherWidget from "./widgetsGrid/widgets/weather";
 import TrafficWidget from "./widgetsGrid/widgets/traffic";
+import CompanyWidget from "./widgetsGrid/widgets/about_company";
+import RatesWidget from "./widgetsGrid/widgets/rates";
 
 
 (async () => {
@@ -101,6 +103,21 @@ import TrafficWidget from "./widgetsGrid/widgets/traffic";
   const trafficButton2 = document.getElementById("traffic-2");
   const trafficButton3 = document.getElementById("traffic-3");
 
+  // Новости
+
+  // Курс доллара / евро
+  const usdEurButton1 = document.getElementById("usdEur-1");
+  const usdEurButton2 = document.getElementById("usdEur-2");
+  const usdEurButton3 = document.getElementById("usdEur-3");
+  const usdEurButton4 = document.getElementById("usdEur-4");
+  const usdEurButton5 = document.getElementById("usdEur-5");
+  const usdEurButton6 = document.getElementById("usdEur-6");
+
+  // О компании
+  const companyButton1 = document.getElementById("company-1")
+  const companyButton2 = document.getElementById("company-2")
+  const companyButton3 = document.getElementById("company-3")
+
   // Цифровые часы
   const digitalBounds1 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
   const digitalBounds2 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
@@ -156,6 +173,50 @@ import TrafficWidget from "./widgetsGrid/widgets/traffic";
   const traffic1 = new TrafficWidget(trafficBounds1, 377, 115);
   const traffic2 = new TrafficWidget(trafficBounds2, 246, 115);
   const traffic3 = new TrafficWidget(trafficBounds3, 115, 115);
+
+  // Новости
+
+  // Курс доллара/евро
+  const ratesBounds1 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+  const ratesBounds2 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+  const ratesBounds3 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+  const ratesBounds4 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+  const ratesBounds5 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+  const ratesBounds6 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+
+  const rates1 = new RatesWidget(ratesBounds1, 377, 115, {
+    currency: 'USD'
+  });
+  const rates2 = new RatesWidget(ratesBounds2, 377, 115, {
+    currency: 'EUR'
+  });
+  const rates3 = new RatesWidget(ratesBounds3, 246, 115, {
+    showBoth: true
+  });
+  const rates4 = new RatesWidget(ratesBounds4, 246, 115, {
+    currency: 'USD'
+  });
+  const rates5 = new RatesWidget(ratesBounds5, 246, 115, {
+    currency: 'EUR'
+  });
+  const rates6 = new RatesWidget(ratesBounds6, 115, 115, {
+    showBoth: true
+  });
+
+  // О компании
+  const companyBounds1 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+  const companyBounds2 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+  const companyBounds3 = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+
+  const company1 = new CompanyWidget(companyBounds1, 508, 115, {
+    type: 'info'
+  });
+  const company2 = new CompanyWidget(companyBounds2, 508, 115, {
+    type: 'logos'
+  });
+  const company3 = new CompanyWidget(companyBounds3, 508, 115, {
+    type: 'simple-logos'
+  });
 
   // Добавление виджетов в рабочее пространство при нажатии на кнопку
 
@@ -216,6 +277,39 @@ import TrafficWidget from "./widgetsGrid/widgets/traffic";
   })
   trafficButton3.addEventListener('click', () => {
     editor.addWidget(traffic3)
+  })
+
+  // Новости
+
+  // Курс доллара/евро
+  usdEurButton1.addEventListener('click', () => {
+    editor.addWidget(rates1)
+  })
+  usdEurButton2.addEventListener('click', () => {
+    editor.addWidget(rates2)
+  })
+  usdEurButton3.addEventListener('click', () => {
+    editor.addWidget(rates3)
+  })
+  usdEurButton4.addEventListener('click', () => {
+    editor.addWidget(rates4)
+  })
+  usdEurButton5.addEventListener('click', () => {
+    editor.addWidget(rates5)
+  })
+  usdEurButton6.addEventListener('click', () => {
+    editor.addWidget(rates6)
+  })
+
+  // О компании
+  companyButton1.addEventListener('click', () => {
+    editor.addWidget(company1)
+  })
+  companyButton2.addEventListener('click', () => {
+    editor.addWidget(company2)
+  })
+  companyButton3.addEventListener('click', () => {
+    editor.addWidget(company3)
   })
 
   console.log(editor.exportScene())
