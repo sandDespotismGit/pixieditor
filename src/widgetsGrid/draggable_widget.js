@@ -1,6 +1,7 @@
 import { Container, Graphics, Point, Rectangle } from "pixi.js";
 
 export default class DraggableWidget extends Container {
+
     constructor(bounds, content, options = {}) {
         super();
 
@@ -34,6 +35,11 @@ export default class DraggableWidget extends Container {
         this.dragStartPos = new Point();
         this.resizeData = null;
         this.resizeHandleSize = 10;
+
+        // Линии-привязки
+        this.guideLines = new Graphics();
+        this.guideLines.visible = false;
+        this.showGuides = false;
 
         // Выделение
         this.createSelection();
@@ -93,6 +99,9 @@ export default class DraggableWidget extends Container {
         this.select();
         this.zIndex = 9999;
         if (this.parent) this.parent.sortChildren();
+
+        // Показываем линии-привязки
+        this.showGuideLines();
     }
 
     onDragMove(event) {
@@ -113,14 +122,67 @@ export default class DraggableWidget extends Container {
         newY = Math.max(this.bounds.y, Math.min(this.bounds.y + this.bounds.height - this._height, newY));
 
         this.position.set(newX, newY);
+
+        // Обновляем линии-привязки
+        this.updateGuideLines();
     }
 
     onDragEnd() {
         this.isDragging = false;
         this.dragData = null;
         this.resizeData = null;
+
+        // Скрываем линии-привязки
+        this.hideGuideLines();
     }
 
+    // === Методы для линий-привязок ===
+    showGuideLines() {
+        // Добавляем линии в родительский контейнер, если еще не добавлены
+        if (this.parent && !this.guideLines.parent) {
+            this.parent.addChild(this.guideLines);
+        }
+
+        this.showGuides = true;
+        this.guideLines.visible = true;
+        this.updateGuideLines();
+    }
+
+    hideGuideLines() {
+        this.showGuides = false;
+        this.guideLines.visible = false;
+    }
+
+    updateGuideLines() {
+        if (!this.showGuides) return;
+
+        this.guideLines.clear();
+
+        // Стиль линий - используем заливку вместо lineStyle
+        this.guideLines.beginFill(0x00FF00, 0.7);
+
+        // Вертикальные линии (левая и правая границы виджета)
+        const leftX = this.x;
+        const rightX = this.x + this._width;
+
+        // Левая вертикальная линия - тонкий прямоугольник шириной 1px
+        this.guideLines.drawRect(leftX - 0.5, this.bounds.y, 1, this.bounds.height);
+
+        // Правая вертикальная линия - тонкий прямоугольник шириной 1px
+        this.guideLines.drawRect(rightX - 0.5, this.bounds.y, 1, this.bounds.height);
+
+        // Горизонтальные линии (верхняя и нижняя границы виджета)
+        const topY = this.y;
+        const bottomY = this.y + this._height;
+
+        // Верхняя горизонтальная линия - тонкий прямоугольник высотой 1px
+        this.guideLines.drawRect(this.bounds.x, topY - 0.5, this.bounds.width, 1);
+
+        // Нижняя горизонтальная линия - тонкий прямоугольник высотой 1px
+        this.guideLines.drawRect(this.bounds.x, bottomY - 0.5, this.bounds.width, 1);
+
+        this.guideLines.endFill();
+    }
     // === Resize ===
     createResizeHandles() {
         this.resizeHandles = [];
@@ -177,6 +239,11 @@ export default class DraggableWidget extends Container {
         this.content.height = this._height;
 
         this.updateSelection();
+
+        // Обновляем линии если они видны
+        if (this.showGuides) {
+            this.updateGuideLines();
+        }
     }
 
     // === API ===
@@ -200,6 +267,11 @@ export default class DraggableWidget extends Container {
         x = Math.max(this.bounds.x, Math.min(this.bounds.x + this.bounds.width - this._width, x));
         y = Math.max(this.bounds.y, Math.min(this.bounds.y + this.bounds.height - this._height, y));
         this.position.set(x, y);
+
+        // Обновляем линии если они видны
+        if (this.showGuides) {
+            this.updateGuideLines();
+        }
     }
 
     getSize() {
@@ -230,5 +302,14 @@ export default class DraggableWidget extends Container {
     setBackgroundAlpha(alpha) {
         this.options.backgroundAlpha = alpha;
         this.updateSelection();
+    }
+
+    // При удалении виджета нужно удалить и линии
+    destroy(options) {
+        if (this.guideLines.parent) {
+            this.guideLines.parent.removeChild(this.guideLines);
+        }
+        this.guideLines.destroy();
+        super.destroy(options);
     }
 }
