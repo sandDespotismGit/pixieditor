@@ -2,6 +2,7 @@
 import { Container, Graphics, Text, TextStyle } from "pixi.js";
 import DraggableWidget from "../draggable_widget";
 
+
 export default class RatesWidget extends DraggableWidget {
     constructor(bounds, width, height, options = {}) {
         const content = new Container();

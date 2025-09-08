@@ -1,0 +1,1501 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div class="container" style="width: 540px; height: 1920px">
+      <script>
+        const panelId = 1;
+      </script>
+      <div
+        class="react-draggable react-draggable-dragged design-3 widget-news-11-1 news-L react-draggable react-draggable-dragged react-draggable react-draggable"
+        style="
+          position: absolute !important;
+          top: 973px !important;
+          left: 16px !important;
+          --background-widgets: rgba(30, 30, 30, 0.14) !important;
+          --text-color: rgba(255, 255, 255, 1) !important;
+        "
+      >
+        <div id="news_block">
+          <div
+            style="display: flex; flex-direction: column; align-items: center"
+          >
+            <p id="header-news-11-1">------</p>
+            <p id="header-news-11-1-2">------</p>
+          </div>
+          <div
+            style="
+              margin-top: 20px;
+              position: relative;
+              border-radius: 20px;
+              max-height: auto;
+              width: 400px;
+            "
+          >
+            <img
+              id="image-new"
+              src=""
+              alt=""
+              style="
+                max-height: 250px;
+                width: 400px;
+                object-fit: fill;
+                align-content: center;
+                border-radius: 20px;
+              "
+            />
+            <img
+              src=""
+              alt=""
+              id="image-qr-news"
+              style="position: absolute; right: 16px; bottom: 16px"
+              width="100px"
+              height="100px"
+            />
+          </div>
+
+          <p id="header-news-11-1-3" style="justify-self: flex-start">------</p>
+        </div>
+
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+          * {
+            margin: 0;
+            padding: 0;
+          }
+          :root {
+            --size-2: 246px;
+            --size-4: 508px;
+            --background-widgets: rgba(30, 30, 30, 0.14) !important;
+            --text-color: rgba(255, 255, 255, 1) !important;
+          }
+          .design-3 {
+            background-color: var(--background-widgets);
+            border-radius: 32px;
+          }
+          .widget-news-11-1 {
+            width: 508px;
+            height: 538px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            overflow-y: hidden;
+            position: absolute !important;
+            top: 973px !important;
+            left: 16px !important;
+          }
+          #header-news-11-1-2 {
+            color: var(--text-color);
+            font-family: Rubik;
+            font-weight: 300;
+            font-size: 18px;
+            text-align: start;
+            margin-left: 32px;
+            padding-left: 16px;
+            margin-right: 32px;
+            margin-top: 15px;
+            transition: opacity 3s ease;
+            opacity: 0;
+          }
+          #header-news-11-1 {
+            color: var(--text-color);
+            font-family: Rubik;
+            font-weight: 400;
+            font-size: 20px;
+            text-align: start;
+            margin-left: 32px;
+            padding-left: 16px;
+            margin-right: 32px;
+            transition: opacity 3s ease;
+            opacity: 0;
+          }
+          #header-news-11-1-3 {
+            color: var(--text-color);
+            font-family: Rubik;
+            font-weight: 300;
+            font-size: 18px;
+            text-align: start;
+            margin-left: 32px;
+            padding-left: 16px;
+            margin-right: 32px;
+            text-decoration: underline;
+            transition: opacity 3s ease;
+            opacity: 0;
+          }
+          #news_block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            height: 100%;
+            justify-content: space-between;
+            padding: 32px 0px;
+          }
+        </style>
+        <script>
+          let current_index = 0;
+          let news = [];
+          const getNews_11_1 = async () => {
+            const response = await fetch(
+              'https://admin.i-panel.pro:8088/rbc_news',
+              {
+                method: 'GET',
+                headers: {
+                  accept: 'application/json',
+                },
+              }
+            );
+            const result = await response.json();
+            news = result;
+            console.log(news);
+            changeNews();
+          };
+
+          const changeNews = () => {
+            if (current_index < news.length - 1) current_index += 1;
+            else current_index = 0;
+            if (news.length != 0) {
+              document.getElementById('header-news-11-1').style.opacity = 0;
+              document.getElementById('header-news-11-1-2').style.opacity = 0;
+              document.getElementById('header-news-11-1-3').style.opacity = 0;
+              document.getElementById('image-new').style.opacity = 0;
+              document.getElementById('image-qr-news').style.opacity = 0;
+
+              // Ждем окончания анимации скрытия (должно быть немного больше времени, чем transition)
+              setTimeout(() => {
+                // Меняем текст
+                document.getElementById('header-news-11-1').innerHTML =
+                  news[current_index].title;
+                document.getElementById('header-news-11-1-2').innerHTML =
+                  news[current_index].summary;
+                document.getElementById('header-news-11-1-3').innerHTML = `${
+                  news[current_index].category == 'politics'
+                    ? 'Политика'
+                    : 'Экономика'
+                }`;
+                document
+                  .getElementById('image-new')
+                  .setAttribute(
+                    'src',
+                    `${
+                      news[current_index].image.includes('jpeg') ||
+                      news[current_index].image.includes('png') ||
+                      news[current_index].image.includes('jpg')
+                        ? news[current_index].image
+                        : 'https://s1.1zoom.me/b5050/336/371426-svetik_3840x2400.jpg'
+                    }`
+                  );
+                document
+                  .getElementById('image-qr-news')
+                  .setAttribute(
+                    'src',
+                    `data:image/png;base64,${news[current_index].qr_code}`
+                  );
+
+                // Показываем новый текст
+                document.getElementById('header-news-11-1').style.opacity = 1;
+                document.getElementById('header-news-11-1-2').style.opacity = 1;
+                document.getElementById('header-news-11-1-3').style.opacity = 1;
+                document.getElementById('image-new').style.opacity = 1;
+                document.getElementById('image-qr-news').style.opacity = 1;
+              }, 2000);
+            }
+          };
+          setTimeout(() => {
+            setInterval(() => {
+              getNews_11_1();
+            }, 300000);
+            setInterval(() => {
+              changeNews();
+            }, 30000);
+            getNews_11_1();
+          }, 5000);
+        </script>
+      </div>
+      <!-- <div
+        class="design-2 widget-about-company-16-3-grid company-L react-draggable react-draggable"
+        style="
+          position: absolute !important;
+          top: 1791px !important;
+          left: 11px !important;
+          --background-widgets: rgba(80, 209, 227, 0.13) !important;
+          --text-color: rgba(61, 136, 97, 1) !important;
+        "
+      >
+        <img src="http://212.41.9.251:8000/static/light_qr.svg" alt="" />
+        <img src="http://212.41.9.251:8000/static/light_ipanel.svg" alt="" />
+        <img src="http://212.41.9.251:8000/static/light_liftbrand.svg" alt="" />
+        <style>
+          * {
+            margin: 0px;
+            padding: 0px;
+          }
+          :root {
+            --background-widgets: rgba(80, 209, 227, 0.13);
+            --text-color: rgba(61, 136, 97, 1);
+            --size-1-2: 120px;
+            --size-4-2: 516px;
+            --actent-color: rgba(57, 182, 251, 1);
+            --color-icon: "";
+          }
+          .design-2 {
+            background-color: var(--background-widgets);
+            border-radius: 26px;
+          }
+          .widget-about-company-16-3-grid {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            width: var(--size-4-2);
+            height: var(--size-1-2);
+            position: absolute;
+            top: 1791px !important;
+            left: 11px !important;
+          }
+          .widget-about-company-16-3-grid img {
+            filter: vars(--color-icon);
+          }
+        </style>
+      </div> -->
+      <div
+        class="design-4 widget-weather-XL-11-1 weather-XL react-draggable react-draggable-dragged react-draggable react-draggable react-draggable-dragged react-draggable react-draggable-dragged react-draggable"
+        style="
+          position: absolute !important;
+          top: 16px !important;
+          left: 16px !important;
+          --background-widgets: rgba(0, 0, 0, 0.08) !important;
+          --text-color: rgba(248, 231, 28, 1) !important;
+        "
+      >
+        <div class="current-weather-11-1">
+          <div>
+            <p id="current-weather-11-1">+6°</p>
+            <p id="status-weather-11-1">Облачно</p>
+          </div>
+          <img
+            id="current-status-img-11-1"
+            src="http://212.41.9.251:8000/static/weather_cloudy.svg"
+            alt=""
+          />
+        </div>
+        <div class="weather-per-day-11-1">
+          <div>
+            <img
+              id="status-img-11-1-1"
+              src="http://212.41.9.251:8000/static/weather_cloudy.svg"
+              alt=""
+            />
+            <p>Утро</p>
+          </div>
+          <div>
+            <img
+              id="status-img-11-1-2"
+              src="http://212.41.9.251:8000/static/weather_clear.svg"
+              alt=""
+            />
+            <p>День</p>
+          </div>
+          <div>
+            <img
+              id="status-img-11-1-3"
+              src="http://212.41.9.251:8000/static/weather_clear.svg"
+              alt=""
+            />
+            <p>Вечер</p>
+          </div>
+          <div>
+            <img
+              id="status-img-11-1-4"
+              src="http://212.41.9.251:8000/static/weather_p_cloudy.svg"
+              alt=""
+            />
+            <p>Ночь</p>
+          </div>
+        </div>
+        <style>
+          * {
+            margin: 0px;
+            padding: 0px;
+          }
+          :root {
+            --background-widgets: rgba(0, 0, 0, 0.08);
+            --text-color: rgba(248, 231, 28, 1);
+            --size-2: 246px;
+            --size-4: 508px;
+            --color-icon: '';
+          }
+          .design-4 {
+            background-color: var(--background-widgets);
+            border-radius: 32px;
+          }
+          .widget-weather-XL-11-1 {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            width: var(--size-4);
+            height: var(--size-2);
+            position: absolute;
+            left: 13px !important;
+            top: 13px !important;
+          }
+          .current-weather-11-1 {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+          }
+          .current-weather-11-1 p {
+            color: var(--text-color);
+            font-family: rubik;
+            font-size: 70px;
+            font-weight: 300;
+            text-align: start;
+          }
+          .current-weather-11-1 p:nth-child(2) {
+            font-size: 26px;
+            font-weight: 300;
+            color: rgb(115, 115, 115);
+          }
+          .current-weather-11-1 img {
+            width: 80px;
+            height: 80px;
+            filter: var(--color-icon);
+          }
+          .weather-per-day-11-1 {
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+          }
+          .weather-per-day-11-1 p {
+            font-family: rubik;
+            font-size: 26px;
+            font-weight: 300;
+            color: rgb(115, 115, 115);
+          }
+          .weather-per-day-11-1 div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+          }
+          .weather-per-day-11-1 img {
+            width: 46px;
+            height: 46px;
+          }
+        </style>
+        <script>
+          const get_weather_11_1 = () => {
+            fetch('http://212.41.9.251:8000/get_weather', {
+              method: 'GET',
+              headers: {
+                accept: 'application/json',
+              },
+            })
+              .then(response => response.json())
+              .then(result => {
+                document.getElementById('current-weather-11-1').innerHTML =
+                  result[0][0];
+                document.getElementById('status-weather-11-1').innerHTML =
+                  result[0][1];
+
+                const weather = {
+                  Ясно: 'http://212.41.9.251:8000/static/weather_clear.svg',
+                  Облачно: 'http://212.41.9.251:8000/static/weather_cloudy.svg',
+                  'Переменная облачность':
+                    'http://212.41.9.251:8000/static/weather_p_cloudy.svg',
+                  'Местами дождь':
+                    'http://212.41.9.251:8000/static/weather_rain.svg',
+                  'Местами грозы': '',
+                  'Местами легкий дождь с грозой':
+                    'http://212.41.9.251:8000/static/weather_rain.svg',
+                  'Моросящий дождь':
+                    'http://212.41.9.251:8000/static/weather_rain.svg',
+                };
+
+                for (key in weather) {
+                  if (key == result[0][1]) {
+                    document
+                      .getElementById('current-status-img-11-1')
+                      .setAttribute('src', weather[key]);
+                  }
+                  if (key == result[1][0][1]) {
+                    document
+                      .getElementById('status-img-11-1-1')
+                      .setAttribute('src', weather[key]);
+                  }
+                  if (key == result[1][1][1]) {
+                    document
+                      .getElementById('status-img-11-1-2')
+                      .setAttribute('src', weather[key]);
+                  }
+                  if (key == result[1][2][1]) {
+                    document
+                      .getElementById('status-img-11-1-3')
+                      .setAttribute('src', weather[key]);
+                  }
+                  if (key == result[1][3][1]) {
+                    document
+                      .getElementById('status-img-11-1-4')
+                      .setAttribute('src', weather[key]);
+                  }
+                }
+              });
+          };
+          setTimeout(() => {
+            setInterval(() => {
+              get_weather_11_1;
+            }, 300000);
+            get_weather_11_1();
+          }, 1000);
+        </script>
+      </div>
+      <div
+        class="design-4 widget-analog-clock-M-11-7 analog-clock-M react-draggable react-draggable react-draggable react-draggable-dragged react-draggable react-draggable"
+        style="
+          position: absolute !important;
+          top: 278px !important;
+          left: 16px !important;
+          --background-widgets: rgba(0, 0, 0, 0.18) !important;
+          --text-color: rgba(255, 255, 255, 1) !important;
+        "
+      >
+        <canvas id="canvas1-7" width="246px" height="246px">
+          <style>
+            * {
+              margin: 0px;
+              padding: 0px;
+            }
+            :root {
+              --background-widgets: rgba(0, 0, 0, 0.18);
+              --text-color: rgba(255, 255, 255, 1);
+              --size-2: 246px;
+            }
+            .design-4 {
+              background-color: var(--background-widgets);
+              border-radius: 32px;
+              backdrop-filter: blur(60px);
+            }
+            .widget-analog-clock-M-11-7 {
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              width: var(--size-2);
+              height: var(--size-2);
+              position: absolute;
+              left: 16px !important;
+              top: 278px !important;
+            }
+          </style>
+          <script>
+            analogClock_11_7();
+            function analogClock_11_7() {
+              let center_x = 123;
+              let center_y = 123;
+              let radius = 117;
+              pi = Math.PI;
+              drawClock_11_7();
+              setInterval(drawClock_11_7, 100);
+              function drawClock_11_7() {
+                clock_11_7();
+                mark_circle_seconds2();
+                mark_circle_hours2(ctx, radius);
+                drawWhiteNumbers(ctx, radius);
+                timing_11_7();
+              }
+              // стрелки
+              function timing_11_7() {
+                const d = new Date();
+                let hours = d.getHours() % 12;
+                let minutes = d.getMinutes();
+                let seconds = d.getSeconds();
+
+                // Углы для стрелок
+                let secAngle = Math.PI * 2 * (seconds / 60) - Math.PI / 2;
+                let minAngle =
+                  Math.PI * 2 * ((minutes + seconds / 60) / 60) - Math.PI / 2;
+                let hourAngle =
+                  Math.PI * 2 * ((hours + minutes / 60) / 12) - Math.PI / 2;
+
+                // Часовая стрелка
+                ctx.beginPath();
+                ctx.lineWidth = 8;
+                ctx.strokeStyle = 'rgba(115, 115, 115, 1)';
+                ctx.moveTo(center_x, center_y);
+                let hourX = center_x + Math.cos(hourAngle) * radius * 0.4;
+                let hourY = center_y + Math.sin(hourAngle) * radius * 0.4;
+                ctx.lineTo(hourX, hourY);
+                ctx.lineCap = 'round';
+                ctx.stroke();
+                ctx.closePath();
+
+                // Минутная стрелка
+                ctx.beginPath();
+                ctx.lineWidth = 6;
+                ctx.strokeStyle = 'rgba(115, 115, 115, 1)';
+                ctx.moveTo(center_x, center_y);
+                let minX = center_x + Math.cos(minAngle) * radius * 0.6;
+                let minY = center_y + Math.sin(minAngle) * radius * 0.6;
+                ctx.lineTo(minX, minY);
+                ctx.lineCap = 'round';
+                ctx.stroke();
+                ctx.closePath();
+
+                // Секундная стрелка
+                ctx.beginPath();
+                ctx.lineWidth = 3;
+                ctx.strokeStyle = 'rgb(255, 255, 255, 1)';
+                ctx.moveTo(center_x, center_y);
+                let secX = center_x + Math.cos(secAngle) * radius * 0.75;
+                let secY = center_y + Math.sin(secAngle) * radius * 0.75;
+                ctx.lineTo(secX, secY);
+                ctx.lineCap = 'round';
+                ctx.stroke();
+                ctx.closePath();
+
+                // Центральная точка
+                ctx.beginPath();
+                ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+                ctx.arc(center_x, center_y, 4, 0, 2 * Math.PI, false);
+                ctx.fill();
+                ctx.closePath();
+              }
+              function mark_circle_hours2(ctx, radius) {
+                for (var i = 0; i <= Math.PI * 2; i += (2 * Math.PI) / 12) {
+                  fill(function () {
+                    ctx.fillStyle = 'rgba(255, 255, 255, 1)';
+                    ctx.arc(
+                      ctx.canvas.width / 2 + ((10 * radius) / 11) * Math.cos(i),
+                      ctx.canvas.height / 2 +
+                        ((10 * radius) / 11) * Math.sin(i),
+                      4,
+                      0,
+                      2 * Math.PI
+                    );
+                  });
+                }
+              }
+
+              //  секундные метки темно-серые точечные
+              function mark_circle_seconds2() {
+                for (var i = 0; i < 60; i++) {
+                  angle = ((i - 3) * (Math.PI * 2)) / 60; // THE ANGLE TO MARK.
+                  ctx.lineWidth = 3; // HAND WIDTH.
+                  ctx.beginPath();
+                  ctx.fillStyle = 'rgba(64, 64, 64, 1)';
+                  var x1 = center_x + (Math.cos(angle) * 60 * 14) / 8;
+                  var y1 = center_y + (Math.sin(angle) * 60 * 14) / 8;
+                  ctx.arc(x1, y1, 4, 0, 2 * pi, false);
+                  ctx.fill();
+                  ctx.closePath();
+                }
+              }
+              function fill(fn, params) {
+                ctx.beginPath();
+                fn(params);
+                ctx.fill();
+                ctx.closePath();
+              }
+              // отрисовка цифр белые
+              function drawWhiteNumbers(ctx, radius) {
+                var ang;
+                var num;
+                ctx.font = radius * 0.18 + 'px rubik';
+                ctx.textBaseline = 'middle';
+                ctx.textAlign = 'center';
+                for (num = 1; num < 13; num++) {
+                  ang = (num * Math.PI) / 6;
+                  ctx.rotate(ang);
+                  ctx.translate(0, -radius * 0.75);
+                  ctx.rotate(-ang);
+                  ctx.fillText(num.toString(), center_x, center_y);
+                  ctx.rotate(ang);
+                  ctx.translate(0, radius * 0.75);
+                  ctx.rotate(-ang);
+                }
+              }
+              function clock_11_7() {
+                canvas = document.getElementById('canvas1-7');
+                ctx = canvas.getContext('2d');
+                ctx.beginPath(); // начало нового пути
+                ctx.lineWidth = 2;
+                ctx.fillStyle = 'rgba(16, 16, 16, 1)';
+                ctx.strokeStyle = 'rgba(16, 16, 16, 1)';
+                // Координаты центра круга, радиус, начальный угол, конечный угол, направление по часовой стрелке
+                ctx.arc(center_x, center_y, radius - 2, 0, 2 * pi, false);
+                ctx.fill();
+                ctx.stroke();
+                ctx.closePath();
+
+                ctx.beginPath(); // начало нового пути
+                ctx.fillStyle = 'rgba(115, 115, 115, 1)';
+                // Координаты центра круга, радиус, начальный угол, конечный угол, направление по часовой стрелке
+                ctx.arc(center_x, center_y, 7, 0, 2 * pi, false);
+                ctx.fill();
+                ctx.closePath();
+              }
+            }
+          </script>
+        </canvas>
+      </div>
+      <div
+        class="design-4 widget-date-11-5 dates-S react-draggable react-draggable-dragged react-draggable react-draggable react-draggable-dragged react-draggable react-draggable"
+        style="
+          position: absolute !important;
+          top: 278px !important;
+          left: 278px !important;
+          --background-widgets: rgba(0, 0, 0, 0.13) !important;
+          --text-color: rgba(255, 255, 255, 1) !important;
+        "
+      >
+        <p id="current-day-11-5">25</p>
+        <p id="current-month-11-5">октября</p>
+        <style>
+          * {
+            margin: 0px;
+            padding: 0px;
+          }
+          :root {
+            --background-widgets: rgba(0, 0, 0, 0.13);
+            --text-color: rgba(255, 255, 255, 1);
+            --size-2: 246px;
+          }
+          .design-4 {
+            background-color: var(--background-widgets);
+            border-radius: 32px;
+            backdrop-filter: blur(60px);
+          }
+          .widget-date-11-5 {
+            display: flex;
+            justify-content: center;
+            flex-direction: column;
+            align-items: center;
+            width: var(--size-2);
+            height: 123px;
+            position: absolute;
+            left: 278px !important;
+            top: 278px !important;
+          }
+          .widget-date-11-5 p {
+            font-family: rubik;
+            color: var(--text-color);
+            font-size: 70px;
+            font-weight: 300;
+          }
+          .widget-date-11-5 p:nth-child(1) {
+            line-height: 70px;
+          }
+          .widget-date-11-5 p:nth-child(2) {
+            font-family: rubik;
+            font-size: 26px;
+            font-weight: 400;
+          }
+        </style>
+        <script>
+          const currentDay_11_5 = () => {
+            let date = new Date();
+            return `${date.getDate()}`;
+          };
+          const currentMonth_11_5 = () => {
+            let date = new Date();
+            let month = [
+              'января',
+              'февраля',
+              'марта',
+              'апреля',
+              'мая',
+              'июня',
+              'июля',
+              'августа',
+              'сентября',
+              'октября',
+              'ноября',
+              'декабря',
+            ];
+            return `${month[date.getMonth()]}`;
+          };
+          setInterval(() => {
+            document.getElementById('current-day-11-5').innerHTML =
+              currentDay_11_5();
+          }, 100);
+          setInterval(() => {
+            document.getElementById('current-month-11-5').innerHTML =
+              currentMonth_11_5();
+          }, 100);
+        </script>
+      </div>
+      <div
+        class="design-4 widget-rates-M-11-5 rates-S react-draggable react-draggable react-draggable react-draggable-dragged react-draggable react-draggable"
+        style="
+          position: absolute !important;
+          top: 540px !important;
+          left: 16px !important;
+          --background-widgets: rgba(132, 161, 188, 0.43) !important;
+          --text-color: rgba(255, 255, 255, 1) !important;
+        "
+      >
+        <div>
+          <p>USD</p>
+          <div class="space-div-7-5"></div>
+          <p id="usd-11-5">0.00</p>
+        </div>
+        <div>
+          <p>EUR</p>
+          <div class="space-div-7-5"></div>
+          <p id="eur-11-5">0.00</p>
+        </div>
+        <style>
+          * {
+            margin: 0px;
+            padding: 0px;
+          }
+          :root {
+            --background-widgets: rgba(132, 161, 188, 0.43);
+            --text-color: rgba(255, 255, 255, 1);
+            --size-1: 115px;
+            --size-2: 246px;
+          }
+          .design-4 {
+            background-color: var(--background-widgets);
+            border-radius: 32px;
+            backdrop-filter: blur(60px);
+          }
+          .widget-rates-M-11-5 {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            width: var(--size-2);
+            height: var(--size-1);
+            position: absolute;
+            left: 16px !important;
+            top: 540px !important;
+          }
+          .widget-rates-M-11-5 div {
+            display: flex;
+            justify-content: center;
+          }
+          .widget-rates-M-11-5 div p:first-child {
+            color: rgb(115, 115, 115);
+          }
+          .widget-rates-M-11-5 p {
+            font-family: rubik;
+            color: var(--text-color);
+            font-size: 26px;
+            font-weight: 300;
+          }
+          .space-div-7-5 {
+            width: 12px;
+          }
+        </style>
+        <script>
+          const getUSD_EUR_11_5 = () => {
+            fetch('https://admin.i-panel.pro:8088/metal', {
+              method: 'GET',
+              headers: {
+                accept: 'application/json',
+              },
+            })
+              .then(response => response.json())
+              .then(result => {
+                // доллары
+                document.getElementById('usd-11-5').innerHTML =
+                  result.data[0].split('\t')[2];
+
+                // евро
+                document.getElementById('eur-11-5').innerHTML =
+                  result.data[1].split('\t')[2];
+              });
+          };
+
+          setTimeout(() => {
+            setInterval(() => {
+              getUSD_EUR_11_5();
+            }, 1000 * 60 * 60 * 12);
+            getUSD_EUR_11_5();
+          }, 1000);
+        </script>
+      </div>
+      <div
+        class="design-4 widget-traffic-M-11-2 traffic-M react-draggable react-draggable react-draggable react-draggable-dragged react-draggable react-draggable"
+        style="
+          position: absolute !important;
+          top: 412px !important;
+          left: 278px !important;
+          --background-widgets: rgba(0, 0, 0, 0.12) !important;
+          --text-color: rgba(255, 255, 255, 1) !important;
+        "
+      >
+        <div>
+          <img src="" id="image-traffic-11-2" />
+          <div class="space-div-5-2"></div>
+          <p id="current-traffic-11-2">0</p>
+        </div>
+
+        <style>
+          * {
+            margin: 0px;
+            padding: 0px;
+          }
+          :root {
+            --background-widgets: rgba(0, 0, 0, 0.12);
+            --text-color: rgba(255, 255, 255, 1);
+            --size-1: 115px;
+            --size-2: 246px;
+            --style2: '';
+          }
+          .design-4 {
+            background-color: var(--background-widgets);
+            border-radius: 32px;
+            backdrop-filter: blur(60px);
+          }
+          .widget-traffic-M-11-2 > div {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-content: center;
+            align-items: center;
+          }
+
+          .widget-traffic-M-11-2 > div > img {
+            width: 100%;
+            height: 100%;
+            border-radius: 32px 32px;
+            object-fit: cover;
+          }
+          .widget-traffic-M-11-2 {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: var(--size-2);
+            height: var(--size-2);
+            position: absolute;
+            left: 278px !important;
+            top: 540px !important;
+          }
+          .widget-traffic-M-11-2 p {
+            font-family: rubik;
+            color: var(--text-color);
+            font-size: 32px;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+          }
+          .widget-traffic-M-11-2 p:nth-child(3) {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 54px;
+            height: 54px;
+            border: var(--style2);
+            border-radius: 50%;
+            background-color: rgb(0, 154, 251);
+          }
+          .space-div-5-2 {
+            width: 6px;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+          }
+        </style>
+        <script>
+          const getTraffic_11_2 = () => {
+            fetch(
+              'https://admin.i-panel.pro:8088/traffic?url=https%3A%2F%2Fyandex.ru%2Fmaps%2F213%2Fmoscow%2F%3Ffrom%3Dmapframe%26l%3Dsat%252Ctrf%252Ctrfe%26ll%3D37.535429%252C55.751870%26mode%3Dpoi%26poi%255Bpoint%255D%3D37.534747%252C55.751340%26poi%255Buri%255D%3Dymapsbm1%253A%252F%252Forg%253Foid%253D236776270056%26source%3Dmapframe%26um%3Dc%3E',
+              {
+                method: 'GET',
+                headers: {
+                  accept: 'application/json',
+                },
+              }
+            )
+              .then(response => response.json())
+              .then(result => {
+                document.getElementById('current-traffic-11-2').innerHTML =
+                  result.balls == '0' ||
+                  result.balls == '1' ||
+                  result.balls == '2' ||
+                  result.balls == '3' ||
+                  result.balls == '4' ||
+                  result.balls == '5' ||
+                  result.balls == '6' ||
+                  result.balls == '7' ||
+                  result.balls == '8' ||
+                  result.balls == '9' ||
+                  result.balls == '10'
+                    ? result.balls
+                    : '-';
+                //   console.log(result);
+                let value = document.getElementById(
+                  'current-traffic-11-2'
+                ).innerHTML;
+                if (value == '10') {
+                  var style = `6px solid rgba(250, 46, 35, 1)`;
+                } else if (value == '9') {
+                  var style = `6px solid rgba(249, 80, 32, 1)`;
+                } else if (value == '8') {
+                  var style = `6px solid rgba(248, 111, 28, 1)`;
+                } else if (value == '7') {
+                  var style = `6px solid rgba(247, 138, 25, 1)`;
+                } else if (value == '6') {
+                  var style = `6px solid rgba(247, 165, 22, 1)`;
+                } else if (value == '5') {
+                  var style = `6px solid rgba(245, 191, 19, 1)`;
+                } else if (value == '4') {
+                  var style = `6px solid rgba(239, 222, 21, 1)`;
+                } else if (value == '3') {
+                  var style = `6px solid rgba(210, 250, 11, 1)`;
+                } else if (value == '2') {
+                  var style = `6px solid rgba(164, 243, 18, 1)`;
+                } else if (value == '1') {
+                  var style = `6px solid rgba(144, 243, 13, 1)`;
+                } else {
+                  var style = `6px solid rgba(77, 243, 12, 1)`;
+                }
+                document.documentElement.style.setProperty(
+                  `--style2`,
+                  `${style}`
+                );
+
+                document
+                  .getElementById('image-traffic-11-2')
+                  .setAttribute('src', `data:image/png;base64,${result.img}`);
+              });
+          };
+          getTraffic_11_2();
+          setInterval(() => {
+            getTraffic_11_2();
+          }, 1000 * 60 * 60);
+        </script>
+      </div>
+      <div
+        class="design-4 video react-draggable react-draggable react-draggable react-draggable-dragged react-draggable react-draggable"
+        style="
+          position: absolute !important;
+          top: 671px !important;
+          left: 16px !important;
+          --background-widgets: rgba(30, 30, 30, 1) !important;
+          --text-color: rgba(255, 255, 255, 1) !important;
+        "
+      >
+        <video
+          id="videoPlayer"
+          autoplay=""
+          poster="http://legacy.reactjs.org/logo-og.png"
+        ></video>
+        <style>
+          .video {
+            position: absolute;
+            left: 16px !important;
+            top: 680px !important;
+          }
+          .video video {
+            object-fit: fill;
+            width: 508px;
+            height: 286px;
+            border-radius: 32px;
+          }
+        </style>
+        <script>
+          const player = async () => {
+            let currentVideoIndex = 0;
+            let videoSources = [];
+            const getVideos = async () => {
+              const response = await fetch(
+                `http://212.41.9.251:8000/files/${panelId}`,
+                {
+                  method: 'GET',
+                  headers: { Accept: 'application/json' },
+                }
+              );
+              const result = await response.json();
+              videoSources = result.files.filter(elem => elem.endsWith('.mp4'));
+              videoSources = videoSources.map(
+                elem => 'http://212.41.9.251:8000' + elem
+              );
+              console.log(videoSources);
+            };
+            await getVideos();
+            const videoPlayer = document.getElementById('videoPlayer');
+            const loadNext = async () => {
+              currentVideoIndex == videoSources.length - 1
+                ? (currentVideoIndex = 0)
+                : (currentVideoIndex += 1);
+              videoPlayer.src = videoSources[currentVideoIndex];
+              videoPlayer.load();
+              videoPlayer.play();
+            };
+            videoPlayer.src = videoSources[currentVideoIndex];
+            videoPlayer.load();
+            videoPlayer.play();
+
+            videoPlayer.addEventListener('ended', loadNext);
+            setInterval(getVideos, 1800000);
+          };
+          player();
+        </script>
+      </div>
+      <div
+        class="design-4 widget-metals-XL-11-1 metal-XL react-draggable react-draggable react-draggable react-draggable-dragged react-draggable react-draggable"
+        style="
+          position: absolute !important;
+          top: 1527px !important;
+          left: 16px !important;
+          --background-widgets: rgba(0, 0, 0, 0.15) !important;
+          --text-color: rgba(255, 255, 255, 1) !important;
+        "
+      >
+        <div>
+          <p class="name-metal-11-1">Нефть</p>
+          <p id="oil-divide-price-11-1">0.00</p>
+          <p id="oil-perc-price-11-1">0.00%</p>
+          <div class="widget-metal-last-11-1">
+            <p id="oil-price-11-1">0.00</p>
+            <div class="space-div-8-1"></div>
+            <img
+              id="updown-11-1-1"
+              src="http://212.41.9.251:8000/static/green_triangle.svg"
+            />
+          </div>
+        </div>
+        <div>
+          <p class="name-metal-11-1">Серебро</p>
+          <p id="silver-divide-price-11-1">0.00</p>
+          <p id="silver-perc-price-11-1">0.00%</p>
+          <div class="widget-metal-last-11-1">
+            <p id="silver-price-11-1">0.00</p>
+            <div class="space-div-8-1"></div>
+            <img
+              id="updown-11-1-2"
+              src="http://212.41.9.251:8000/static/green_triangle.svg"
+            />
+          </div>
+        </div>
+        <div>
+          <p class="name-metal-11-1">Золото</p>
+          <p id="gold-divide-price-11-1">0.00</p>
+          <p id="gold-perc-price-11-1">0.00%</p>
+          <div class="widget-metal-last-11-1">
+            <p id="gold-price-11-1">0.00</p>
+            <div class="space-div-8-1"></div>
+            <img
+              id="updown-11-1-3"
+              src="http://212.41.9.251:8000/static/green_triangle.svg"
+            />
+          </div>
+        </div>
+        <div>
+          <p class="name-metal-11-1">Платина</p>
+          <p id="platinum-divide-price-11-1">0.00</p>
+          <p id="platinum-perc-price-11-1">0.00%</p>
+          <div class="widget-metal-last-11-1">
+            <p id="platinum-price-11-1">0.00</p>
+            <div class="space-div-8-1"></div>
+            <img
+              id="updown-11-1-4"
+              src="http://212.41.9.251:8000/static/green_triangle.svg"
+            />
+          </div>
+        </div>
+        <div>
+          <p class="name-metal-11-1">Никель</p>
+          <p id="nikel-divide-price-11-1">0.00</p>
+          <p id="nikel-perc-price-11-1">0.00%</p>
+          <div class="widget-metal-last-11-1">
+            <p id="nikel-price-11-1">0.00</p>
+            <div class="space-div-8-1"></div>
+            <img
+              id="updown-11-1-5"
+              src="http://212.41.9.251:8000/static/green_triangle.svg"
+            />
+          </div>
+        </div>
+        <style>
+          * {
+            margin: 0px;
+            padding: 0px;
+          }
+          :root {
+            --background-widgets: rgba(0, 0, 0, 0.15);
+            --text-color: rgba(255, 255, 255, 1);
+            --size-2: 246px;
+            --size-4: 508px;
+          }
+          .design-4 {
+            background-color: var(--background-widgets);
+            border-radius: 32px;
+          }
+          .widget-metals-XL-11-1 {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            width: var(--size-4);
+            height: var(--size-2);
+            position: absolute;
+            left: 16px !important;
+            top: 1398px !important;
+          }
+          .widget-metals-XL-11-1 div {
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            color: var(--text-color);
+            font-family: Rubik;
+          }
+          .name-metal-11-1 {
+            color: white;
+            text-align: start;
+            width: 129px;
+          }
+          .widget-metals-XL-11-1 div p:nth-child(2) {
+            color: rgb(115, 115, 115);
+            width: 61px;
+            text-align: end;
+          }
+          .widget-metals-XL-11-1 div p:nth-child(3) {
+            color: rgb(115, 115, 115);
+            width: 80px;
+            text-align: end;
+          }
+          .widget-metal-last-11-1 p {
+            width: 125px;
+            text-align: end;
+          }
+          .widget-metals-XL-11-1 img {
+            width: 12px;
+            height: 11px;
+          }
+          .space-div-8-1 {
+            width: 6px;
+          }
+        </style>
+        <script>
+          const getMetal = () => {
+            fetch('https://admin.i-panel.pro:8088/metal', {
+              method: 'GET',
+              headers: {
+                accept: 'application/json',
+              },
+            })
+              .then(response => response.json())
+              .then(result => {
+                // нефть
+                const oilResult = result.data[12].split('\t');
+                let newOilPrice = oilResult[2];
+                let percOilPrice = (
+                  parseFloat(newOilPrice) *
+                    (1 +
+                      parseFloat(
+                        oilResult[3].replace(',', '.').replace('%', '') / 100
+                      )) -
+                  parseFloat(newOilPrice)
+                ).toFixed(2);
+                if (
+                  parseFloat(oilResult[3].replace(',', '.').replace('%', '')) >=
+                  0
+                ) {
+                  document
+                    .getElementById('updown-11-1-1')
+                    .setAttribute(
+                      'src',
+                      'http://212.41.9.251:8000/static/green_triangle.svg'
+                    );
+                } else {
+                  document
+                    .getElementById('updown-11-1-1')
+                    .setAttribute(
+                      'src',
+                      'http://212.41.9.251:8000/static/red_triangle.svg'
+                    );
+                }
+                document.getElementById('oil-price-11-1').innerHTML =
+                  newOilPrice;
+                document.getElementById('oil-divide-price-11-1').innerHTML =
+                  percOilPrice;
+                document.getElementById('oil-perc-price-11-1').innerHTML =
+                  oilResult[3];
+
+                // серебро
+                const silverResult = result.data[15].split('\t');
+                let newSilverPrice = silverResult[2];
+                let percSilverPrice = (
+                  parseFloat(newSilverPrice) *
+                    (1 +
+                      parseFloat(
+                        silverResult[3].replace(',', '.').replace('%', '') / 100
+                      )) -
+                  parseFloat(newSilverPrice)
+                ).toFixed(2);
+                if (
+                  parseFloat(
+                    silverResult[3].replace(',', '.').replace('%', '')
+                  ) >= 0
+                ) {
+                  document
+                    .getElementById('updown-11-1-2')
+                    .setAttribute(
+                      'src',
+                      'http://212.41.9.251:8000/static/green_triangle.svg'
+                    );
+                } else {
+                  document
+                    .getElementById('updown-11-1-2')
+                    .setAttribute(
+                      'src',
+                      'http://212.41.9.251:8000/static/red_triangle.svg'
+                    );
+                }
+                document.getElementById('silver-price-11-1').innerHTML =
+                  newSilverPrice;
+                document.getElementById('silver-divide-price-11-1').innerHTML =
+                  percSilverPrice;
+                document.getElementById('silver-perc-price-11-1').innerHTML =
+                  silverResult[3];
+
+                // золото
+                const goldResult = result.data[14].split('\t');
+                let newGoldPrice = goldResult[2];
+                let percGoldPrice = (
+                  parseFloat(newGoldPrice) *
+                    (1 +
+                      parseFloat(
+                        goldResult[3].replace(',', '.').replace('%', '') / 100
+                      )) -
+                  parseFloat(newGoldPrice)
+                ).toFixed(2);
+                if (
+                  parseFloat(
+                    goldResult[3].replace(',', '.').replace('%', '')
+                  ) >= 0
+                ) {
+                  document
+                    .getElementById('updown-11-1-3')
+                    .setAttribute(
+                      'src',
+                      'http://212.41.9.251:8000/static/green_triangle.svg'
+                    );
+                } else {
+                  document
+                    .getElementById('updown-11-1-3')
+                    .setAttribute(
+                      'src',
+                      'http://212.41.9.251:8000/static/red_triangle.svg'
+                    );
+                }
+                document.getElementById('gold-price-11-1').innerHTML =
+                  newGoldPrice;
+                document.getElementById('gold-divide-price-11-1').innerHTML =
+                  percGoldPrice;
+                document.getElementById('gold-perc-price-11-1').innerHTML =
+                  goldResult[3];
+
+                // платина
+                const platinumResult = result.data[13].split('\t');
+                let newplatinumPrice = platinumResult[2];
+                let percplatinumPrice = (
+                  parseFloat(newplatinumPrice) *
+                    (1 +
+                      parseFloat(
+                        platinumResult[3].replace(',', '.').replace('%', '') /
+                          100
+                      )) -
+                  parseFloat(newplatinumPrice)
+                ).toFixed(2);
+                if (
+                  parseFloat(
+                    platinumResult[3].replace(',', '.').replace('%', '')
+                  ) >= 0
+                ) {
+                  document
+                    .getElementById('updown-11-1-4')
+                    .setAttribute(
+                      'src',
+                      'http://212.41.9.251:8000/static/green_triangle.svg'
+                    );
+                } else {
+                  document
+                    .getElementById('updown-11-1-4')
+                    .setAttribute(
+                      'src',
+                      'http://212.41.9.251:8000/static/red_triangle.svg'
+                    );
+                }
+                document.getElementById('platinum-price-11-1').innerHTML =
+                  newplatinumPrice;
+                document.getElementById(
+                  'platinum-divide-price-11-1'
+                ).innerHTML = percplatinumPrice;
+                document.getElementById('platinum-perc-price-11-1').innerHTML =
+                  platinumResult[3];
+
+                // никель
+                const nikelResult = result.data[17].split('\t');
+                let newnikelPrice = nikelResult[2];
+                let percnikelPrice = (
+                  parseFloat(newnikelPrice) *
+                    (1 +
+                      parseFloat(
+                        nikelResult[3].replace(',', '.').replace('%', '') / 100
+                      )) -
+                  parseFloat(newnikelPrice)
+                ).toFixed(2);
+                if (
+                  parseFloat(
+                    nikelResult[3].replace(',', '.').replace('%', '')
+                  ) >= 0
+                ) {
+                  document
+                    .getElementById('updown-11-1-5')
+                    .setAttribute(
+                      'src',
+                      'http://212.41.9.251:8000/static/green_triangle.svg'
+                    );
+                } else {
+                  document
+                    .getElementById('updown-11-1-5')
+                    .setAttribute(
+                      'src',
+                      'http://212.41.9.251:8000/static/red_triangle.svg'
+                    );
+                }
+                document.getElementById('nikel-price-11-1').innerHTML =
+                  newnikelPrice;
+                document.getElementById('nikel-divide-price-11-1').innerHTML =
+                  percnikelPrice;
+                document.getElementById('nikel-perc-price-11-1').innerHTML =
+                  nikelResult[3];
+              });
+          };
+          setTimeout(() => {
+            setInterval(() => {
+              getMetal();
+            }, 172800000);
+            getMetal();
+          }, 1000);
+        </script>
+      </div>
+      <div
+        class="design-4 widget-about-company-11-1 company-L react-draggable react-draggable-dragged react-draggable react-draggable-dragged react-draggable react-draggable-dragged react-draggable react-draggable"
+        style="
+          position: absolute !important;
+          top: 1789px !important;
+          left: 16px !important;
+          --background-widgets: rgba(80, 227, 194, 0.08) !important;
+          --text-color: rgba(255, 255, 255, 1) !important;
+        "
+      >
+        <div>
+          <p>Лифт обслуживает компания</p>
+          <input
+            type="text"
+            id="text1"
+            name="input1"
+            style="
+              text-align: end;
+              background-color: rgba(0, 0, 0, 0);
+              border: medium;
+              color: var(--text-color);
+              font-family: rubik;
+              font-size: 18px;
+              width: 180px;
+            "
+            value="АО ЛифтКоннект"
+          />
+        </div>
+        <div>
+          <p>Телефон поддержки</p>
+          <input
+            type="text"
+            name="input1"
+            id="text2"
+            style="
+              text-align: end;
+              background-color: rgba(0, 0, 0, 0);
+              border: medium;
+              color: var(--text-color);
+              font-family: rubik;
+              font-size: 18px;
+              width: 180px;
+            "
+            value="84951364194"
+          />
+        </div>
+        <style>
+          * {
+            margin: 0px;
+            padding: 0px;
+          }
+          :root {
+            --background-widgets: rgba(80, 227, 194, 0.08);
+            --text-color: rgba(255, 255, 255, 1);
+            --size-1: 115px;
+            --size-4: 508px;
+          }
+          .design-4 {
+            background-color: var(--background-widgets);
+            border-radius: 32px;
+            backdrop-filter: blur(60px);
+          }
+          .widget-about-company-11-1 {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            width: var(--size-4);
+            height: var(--size-1);
+            position: absolute;
+            left: 16px !important;
+            top: 1657px !important;
+          }
+          .widget-about-company-11-1 div {
+            display: flex;
+            justify-content: space-around;
+          }
+          .widget-about-company-11-1 p {
+            font-family: rubik;
+            color: var(--text-color);
+            font-size: 18px;
+            width: 255px;
+            text-align: start;
+          }
+          .widget-about-company-11-1 p:first-child {
+            color: rgb(115, 115, 115);
+          }
+        </style>
+        <script>
+          const submit_action = e => {
+            if (e.key === 'Enter') {
+              // Получаем все input элементы внутри формы
+              const inputs = document.querySelectorAll('input[type="text"]');
+
+              // Проходимся по всем input элементам и заменяем их на новые с обновленными значениями
+              inputs.forEach(input => {
+                const newValue = input.value;
+                const newInput = document.createElement('input');
+                newInput.type = 'text';
+                newInput.name = input.name;
+                newInput.value = newValue;
+                newInput.style.color = 'black';
+                input.outerHTML =
+                  input.outerHTML.slice(0, 6) +
+                  ` value="${newValue}" ` +
+                  input.outerHTML.slice(6);
+                console.log(input.outerHTML);
+              });
+            }
+          };
+          document.addEventListener('keypress', submit_action);
+        </script>
+      </div>
+    </div>
+    <style>
+      .container {
+        background-image: url('http://212.41.9.251:8000/static/oboi/22825362-3f9f-4ad3-8590-c27a2b29c726.jpg');
+        background-color: none;
+        background-size: cover;
+      }
+    </style>
+  </body>
+</html>

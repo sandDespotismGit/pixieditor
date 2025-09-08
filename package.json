@@ -10,7 +10,8 @@
   },
   "dependencies": {
     "@pixi/devtools": "^2.0.1",
-    "pixi.js": "^8.8.1"
+    "pixi.js": "^8.8.1",
+    "tween.js": "^16.6.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.21.0",

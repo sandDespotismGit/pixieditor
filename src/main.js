@@ -7,6 +7,8 @@ import WeatherWidget from "./widgetsGrid/widgets/weather";
 import TrafficWidget from "./widgetsGrid/widgets/traffic";
 import RatesWidget from "./widgetsGrid/widgets/rates";
 import MetalsWidget from "./widgetsGrid/widgets/metals";
+import AnalogClockWidget from "./widgetsGrid/widgets/analog_clock";
+import NewsWidget from "./widgetsGrid/widgets/news";
 
 (async () => {
   const app = new Application();
@@ -68,6 +70,15 @@ import MetalsWidget from "./widgetsGrid/widgets/metals";
 
 
   // Кнопки для добавления виджетов
+  const analogCLockButton1 = document.getElementById("analog-clock-1")
+  const analogCLockButton2 = document.getElementById("analog-clock-2")
+  const analogCLockButton3 = document.getElementById("analog-clock-3")
+  const analogCLockButton4 = document.getElementById("analog-clock-4")
+  const analogCLockButton5 = document.getElementById("analog-clock-5")
+  const analogCLockButton6 = document.getElementById("analog-clock-6")
+  const analogCLockButton7 = document.getElementById("analog-clock-7")
+  const analogCLockButton8 = document.getElementById("analog-clock-8")
+
   const digitalClockButton1 = document.getElementById("digital-clock-1");
   const digitalClockButton2 = document.getElementById("digital-clock-2");
   const digitalClockButton3 = document.getElementById("digital-clock-3");
@@ -89,9 +100,8 @@ import MetalsWidget from "./widgetsGrid/widgets/metals";
   const trafficButton2 = document.getElementById("traffic-2");
   const trafficButton3 = document.getElementById("traffic-3");
 
-  // Новости
+  const newsButton1 = document.getElementById("news-1");
 
-  // Курс доллара / евро
   const usdEurButton1 = document.getElementById("usdEur-1");
   const usdEurButton2 = document.getElementById("usdEur-2");
   const usdEurButton3 = document.getElementById("usdEur-3");
@@ -99,15 +109,63 @@ import MetalsWidget from "./widgetsGrid/widgets/metals";
   const usdEurButton5 = document.getElementById("usdEur-5");
   const usdEurButton6 = document.getElementById("usdEur-6");
 
-  // Металлы
   const metalButton1 = document.getElementById("metal-1");
+  const metalButton2 = document.getElementById("metal-2");
 
-  // О компании
   const companyButton1 = document.getElementById("company-1")
   const companyButton2 = document.getElementById("company-2")
   const companyButton3 = document.getElementById("company-3")
 
   // Обработчики для добавления виджетов
+  analogCLockButton1.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new AnalogClockWidget(bounds, 246, 246, {
+      clockType: 1
+    }));
+  });
+  analogCLockButton2.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new AnalogClockWidget(bounds, 246, 246, {
+      clockType: 2
+    }));
+  });
+  analogCLockButton3.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new AnalogClockWidget(bounds, 246, 246, {
+      clockType: 3
+    }));
+  });
+  analogCLockButton4.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new AnalogClockWidget(bounds, 246, 246, {
+      clockType: 4
+    }));
+  });
+  analogCLockButton5.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new AnalogClockWidget(bounds, 246, 246, {
+      clockType: 5
+    }));
+  });
+  analogCLockButton6.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new AnalogClockWidget(bounds, 246, 246, {
+      clockType: 6
+    }));
+  });
+  analogCLockButton7.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new AnalogClockWidget(bounds, 246, 246, {
+      clockType: 7
+    }));
+  });
+  analogCLockButton8.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new AnalogClockWidget(bounds, 246, 246, {
+      clockType: 8
+    }));
+  });
+
   digitalClockButton1.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new DigitalClockWidget(bounds, 508, 246, {
@@ -192,16 +250,20 @@ import MetalsWidget from "./widgetsGrid/widgets/metals";
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new TrafficWidget(bounds, 377, 115));
   });
-
   trafficButton2.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new TrafficWidget(bounds, 246, 115));
   });
-
   trafficButton3.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new TrafficWidget(bounds, 115, 115));
   });
+
+  newsButton1.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new NewsWidget(bounds, 508, 538));
+  });
+
   usdEurButton1.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new RatesWidget(bounds, 115, 115));
@@ -230,6 +292,12 @@ import MetalsWidget from "./widgetsGrid/widgets/metals";
   metalButton1.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new MetalsWidget(bounds, 508, 246));
+  })
+  metalButton2.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new MetalsWidget(bounds, 508, 115, {
+      showAllMetals: false
+    }));
   })
 
   const resizeButton = document.getElementById("resize")

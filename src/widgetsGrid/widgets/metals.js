@@ -10,19 +10,27 @@ export default class MetalsWidget extends DraggableWidget {
 
         // Фон виджета
         const bg = new Graphics();
-        bg.rect(0, 0, width, height);
-        bg.fill({ color: options.backgroundColor ?? 0x1e1e1e, alpha: options.backgroundAlpha ?? 1 });
-        bg.roundRect(0, 0, width, height, options.cornerRadius ?? 32);
+        bg.beginFill(options.backgroundColor ?? 0x1e1e1e, options.backgroundAlpha ?? 1)
+            .drawRoundedRect(0, 0, width, height, options.cornerRadius ?? 32)
+            .endFill();
         content.addChild(bg);
 
-        // Создаем контент для виджета металлов
-        createMetalsContent(content, width, height);
+        // Определяем тип виджета (полный или сокращенный)
+        const isFullVersion = options.showAllMetals !== false; // По умолчанию полная версия
+
+        // Создаем соответствующий тип контента
+        if (isFullVersion) {
+            createMetalsContent(content, width, height);
+        } else {
+            createMetalsShortContent(content, width, height);
+        }
 
         super(bounds, content, options);
 
         this._width = width;
         this._height = height;
         this.bg = bg;
+        this.isFullVersion = isFullVersion;
 
         // URL API для металлов
         this.metalsApiUrl = "https://admin.i-panel.pro:8088/metal";
@@ -56,12 +64,17 @@ export default class MetalsWidget extends DraggableWidget {
     }
 
     updateMetals(metalsData) {
-        const metals = [
+        // Определяем какие металлы отображать в зависимости от версии
+        const metals = this.isFullVersion ? [
             { index: 12, name: 'oil', prefix: 'oil' },
             { index: 15, name: 'silver', prefix: 'silver' },
             { index: 14, name: 'gold', prefix: 'gold' },
             { index: 13, name: 'platinum', prefix: 'platinum' },
             { index: 18, name: 'nikel', prefix: 'nikel' }
+        ] : [
+            { index: 12, name: 'oil', prefix: 'oil' },
+            { index: 14, name: 'gold', prefix: 'gold' },
+            { index: 13, name: 'platinum', prefix: 'platinum' }
         ];
 
         metals.forEach(metal => {
@@ -111,8 +124,10 @@ export default class MetalsWidget extends DraggableWidget {
     showErrorState() {
         const errorText = "---,--";
 
-        // Список всех металлов
-        const metals = ['oil', 'silver', 'gold', 'platinum', 'nikel'];
+        // Список металлов в зависимости от версии
+        const metals = this.isFullVersion ?
+            ['oil', 'silver', 'gold', 'platinum', 'nikel'] :
+            ['oil', 'gold', 'platinum'];
 
         metals.forEach(metal => {
             if (this.content[`${metal}PriceText`]) {
@@ -143,7 +158,7 @@ export default class MetalsWidget extends DraggableWidget {
     }
 }
 
-// Вспомогательная функция для создания контента
+// Вспомогательная функция для создания полного контента (6 строк)
 function createMetalsContent(content, width, height) {
     const styleName = new TextStyle({
         fontFamily: "Rubik",
@@ -169,7 +184,7 @@ function createMetalsContent(content, width, height) {
         resolution: 2
     });
 
-    // Металлы и их порядок
+    // Металлы и их порядок (полная версия)
     const metals = [
         { name: "Нефть  ", key: "oil", width: 129 },
         { name: "Серебро  ", key: "silver", width: 129 },
@@ -226,7 +241,7 @@ function createMetalsContent(content, width, height) {
 
         // Пространство между ценой и иконкой
         const space = new Container();
-        space.x = priceText.width;
+        space.x = priceText.width + 6;
         priceContainer.addChild(space);
 
         // Иконка тренда
@@ -234,7 +249,104 @@ function createMetalsContent(content, width, height) {
         trendIcon.width = 12;
         trendIcon.height = 11;
         trendIcon.anchor.set(0, 0.5);
-        trendIcon.x = priceText.width;
+        trendIcon.x = priceText.width + 12;
+        priceContainer.addChild(trendIcon);
+        content[`${metal.key}Icon`] = trendIcon;
+
+        content.addChild(priceContainer);
+    });
+}
+
+// Вспомогательная функция для создания сокращенного контента (3 строки)
+function createMetalsShortContent(content, width, height) {
+    const styleName = new TextStyle({
+        fontFamily: "Rubik",
+        fontSize: 18,
+        fill: 0xffffff,
+        fontWeight: 300,
+        resolution: 2
+    });
+
+    const styleValue = new TextStyle({
+        fontFamily: "Rubik",
+        fontSize: 18,
+        fill: 0xffffff,
+        fontWeight: 300,
+        resolution: 2
+    });
+
+    const styleSecondary = new TextStyle({
+        fontFamily: "Rubik",
+        fontSize: 18,
+        fill: 0x737373,
+        fontWeight: 300,
+        resolution: 2
+    });
+
+    // Металлы для сокращенной версии (только 3 основных)
+    const metals = [
+        { name: "Нефть  ", key: "oil", width: 129 },
+        { name: "Золото  ", key: "gold", width: 129 },
+        { name: "Платина  ", key: "platinum", width: 129 }
+    ];
+
+    const rowHeight = height / 3;
+    const columns = [
+        { x: 40, width: 140 }, // Название
+        { x: 169, width: 61 }, // Изменение цены
+        { x: 230, width: 80 }, // Процент
+        { x: 410, width: 160 } // Цена
+    ];
+
+    metals.forEach((metal, index) => {
+        const rowY = rowHeight * (index + 0.5);
+
+        // Название металла
+        const nameText = new Text(metal.name, styleName);
+        nameText.anchor.set(0, 0.5);
+        nameText.x = columns[0].x;
+        nameText.y = rowY;
+        content.addChild(nameText);
+
+        // Изменение цены
+        const divideText = new Text("---,--", styleSecondary);
+        divideText.anchor.set(1, 0.5);
+        divideText.x = columns[1].x + columns[1].width;
+        divideText.y = rowY;
+        content.addChild(divideText);
+        content[`${metal.key}DivideText`] = divideText;
+
+        // Процент изменения
+        const percText = new Text("---,--", styleSecondary);
+        percText.anchor.set(1, 0.5);
+        percText.x = columns[2].x + columns[2].width;
+        percText.y = rowY;
+        content.addChild(percText);
+        content[`${metal.key}PercText`] = percText;
+
+        // Контейнер для цены и иконки
+        const priceContainer = new Container();
+        priceContainer.x = columns[3].x;
+        priceContainer.y = rowY;
+
+        // Цена
+        const priceText = new Text("---,--", styleValue);
+        priceText.anchor.set(1, 0.5);
+        priceText.x = 0;
+        priceContainer.addChild(priceText);
+        content[`${metal.key}PriceText`] = priceText;
+
+        // Пространство между ценой и иконкой
+        const space = new Container();
+        space.x = priceText.width + 6;
+        priceContainer.addChild(space);
+
+        // Иконка тренда
+        const trendIcon = Sprite.from(PIXI.Texture.EMPTY);
+        trendIcon.width = 12;
+        trendIcon.height = 11;
+        trendIcon.anchor.set(0, 0.5);
+        trendIcon.x = priceText.width + 12;
         priceContainer.addChild(trendIcon);
         content[`${metal.key}Icon`] = trendIcon;
 
