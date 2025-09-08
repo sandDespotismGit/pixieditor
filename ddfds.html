@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div class="design-1 widget-metals-XL-11-1 metal-XL">
+      <div>
+        <p class="name-metal-11-1">Нефть</p>
+        <p id="oil-divide-price-11-1">---,--</p>
+        <p id="oil-perc-price-11-1">---,--</p>
+        <div class="widget-metal-last-11-1">
+          <p id="oil-price-11-1">---,--</p>
+          <div class="space-div-8-1"></div>
+          <img
+            id="updown-11-1-1"
+            src="http://212.41.9.251:8000/static/red_triangle.svg"
+          />
+        </div>
+      </div>
+      <div>
+        <p class="name-metal-11-1">Серебро</p>
+        <p id="silver-divide-price-11-1">---,--</p>
+        <p id="silver-perc-price-11-1">---,--</p>
+        <div class="widget-metal-last-11-1">
+          <p id="silver-price-11-1">---,--</p>
+          <div class="space-div-8-1"></div>
+          <img
+            id="updown-11-1-2"
+            src="http://212.41.9.251:8000/static/red_triangle.svg"
+          />
+        </div>
+      </div>
+      <div>
+        <p class="name-metal-11-1">Золото</p>
+        <p id="gold-divide-price-11-1">---,--</p>
+        <p id="gold-perc-price-11-1">---,--</p>
+        <div class="widget-metal-last-11-1">
+          <p id="gold-price-11-1">---,--</p>
+          <div class="space-div-8-1"></div>
+          <img
+            id="updown-11-1-3"
+            src="http://212.41.9.251:8000/static/red_triangle.svg"
+          />
+        </div>
+      </div>
+      <div>
+        <p class="name-metal-11-1">Платина</p>
+        <p id="platinum-divide-price-11-1">---,--</p>
+        <p id="platinum-perc-price-11-1">---,--</p>
+        <div class="widget-metal-last-11-1">
+          <p id="platinum-price-11-1">---,--</p>
+          <div class="space-div-8-1"></div>
+          <img
+            id="updown-11-1-4"
+            src="http://212.41.9.251:8000/static/red_triangle.svg"
+          />
+        </div>
+      </div>
+      <div>
+        <p class="name-metal-11-1">Никель</p>
+        <p id="nikel-divide-price-11-1">---,--</p>
+        <p id="nikel-perc-price-11-1">---,--</p>
+        <div class="widget-metal-last-11-1">
+          <p id="nikel-price-11-1">---,--</p>
+          <div class="space-div-8-1"></div>
+          <img
+            id="updown-11-1-5"
+            src="http://212.41.9.251:8000/static/red_triangle.svg"
+          />
+        </div>
+      </div>
+      <style>
+        @import url("https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap");
+        * {
+          margin: 0;
+          padding: 0;
+        }
+        :root {
+          --size-2: 246px;
+          --size-4: 508px;
+          --background-widgets: rgba(30, 30, 30, 1);
+          --text-color: rgba(255, 255, 255, 1);
+        }
+        .design-1 {
+          background-color: var(--background-widgets);
+          border-radius: 32px;
+        }
+        .widget-metals-XL-11-1 {
+          display: flex;
+          flex-direction: column;
+          justify-content: space-evenly;
+          width: var(--size-4);
+          height: var(--size-2);
+          position: absolute;
+          left: 16px;
+          bottom: 278px;
+        }
+        .widget-metals-XL-11-1 div {
+          display: flex;
+          justify-content: space-evenly;
+          align-items: center;
+          color: var(--text-color);
+          font-size: 18;
+          font-family: Rubik;
+        }
+        .name-metal-11-1 {
+          color: white;
+          text-align: start;
+          width: 129px;
+        }
+        .widget-metals-XL-11-1 div p:nth-child(2) {
+          color: rgba(115, 115, 115, 1);
+          width: 61px;
+          text-align: end;
+        }
+        .widget-metals-XL-11-1 div p:nth-child(3) {
+          color: rgba(115, 115, 115, 1);
+          width: 80px;
+          text-align: end;
+        }
+        .widget-metal-last-11-1 p {
+          width: 125px;
+          text-align: end;
+        }
+        .widget-metals-XL-11-1 img {
+          width: 12px;
+          height: 11px;
+        }
+        .space-div-8-1 {
+          width: 6px;
+        }
+      </style>
+      <script>
+        const getMetal = () => {
+          fetch("https://admin.i-panel.pro:8088/metal", {
+            method: "GET",
+            headers: {
+              accept: "application/json",
+            },
+          })
+            .then((response) => response.json())
+            .then((result) => {
+              // нефть
+              const oilResult = result.data[12].split("\t");
+              let newOilPrice = oilResult[2];
+              let percOilPrice = (
+                parseFloat(newOilPrice) *
+                  (1 +
+                    parseFloat(
+                      oilResult[3].replace(",", ".").replace("%", "") / 100
+                    )) -
+                parseFloat(newOilPrice)
+              ).toFixed(2);
+              if (
+                parseFloat(oilResult[3].replace(",", ".").replace("%", "")) >= 0
+              ) {
+                document
+                  .getElementById("updown-11-1-1")
+                  .setAttribute(
+                    "src",
+                    "http://212.41.9.251:8000/static/green_triangle.svg"
+                  );
+              } else {
+                document
+                  .getElementById("updown-11-1-1")
+                  .setAttribute(
+                    "src",
+                    "http://212.41.9.251:8000/static/red_triangle.svg"
+                  );
+              }
+              document.getElementById("oil-price-11-1").innerHTML = newOilPrice;
+              document.getElementById("oil-divide-price-11-1").innerHTML =
+                percOilPrice;
+              document.getElementById("oil-perc-price-11-1").innerHTML =
+                oilResult[3];
+              // серебро
+              const silverResult = result.data[15].split("\t");
+              let newSilverPrice = silverResult[2];
+              let percSilverPrice = (
+                parseFloat(newSilverPrice) *
+                  (1 +
+                    parseFloat(
+                      silverResult[3].replace(",", ".").replace("%", "") / 100
+                    )) -
+                parseFloat(newSilverPrice)
+              ).toFixed(2);
+              if (
+                parseFloat(
+                  silverResult[3].replace(",", ".").replace("%", "")
+                ) >= 0
+              ) {
+                document
+                  .getElementById("updown-11-1-2")
+                  .setAttribute(
+                    "src",
+                    "http://212.41.9.251:8000/static/green_triangle.svg"
+                  );
+              } else {
+                document
+                  .getElementById("updown-11-1-2")
+                  .setAttribute(
+                    "src",
+                    "http://212.41.9.251:8000/static/red_triangle.svg"
+                  );
+              }
+              document.getElementById("silver-price-11-1").innerHTML =
+                newSilverPrice;
+              document.getElementById("silver-divide-price-11-1").innerHTML =
+                percSilverPrice;
+              document.getElementById("silver-perc-price-11-1").innerHTML =
+                silverResult[3];
+              // золото
+              const goldResult = result.data[14].split("\t");
+              let newGoldPrice = goldResult[2];
+              let percGoldPrice = (
+                parseFloat(newGoldPrice) *
+                  (1 +
+                    parseFloat(
+                      goldResult[3].replace(",", ".").replace("%", "") / 100
+                    )) -
+                parseFloat(newGoldPrice)
+              ).toFixed(2);
+              if (
+                parseFloat(goldResult[3].replace(",", ".").replace("%", "")) >=
+                0
+              ) {
+                document
+                  .getElementById("updown-11-1-3")
+                  .setAttribute(
+                    "src",
+                    "http://212.41.9.251:8000/static/green_triangle.svg"
+                  );
+              } else {
+                document
+                  .getElementById("updown-11-1-3")
+                  .setAttribute(
+                    "src",
+                    "http://212.41.9.251:8000/static/red_triangle.svg"
+                  );
+              }
+              document.getElementById("gold-price-11-1").innerHTML =
+                newGoldPrice;
+              document.getElementById("gold-divide-price-11-1").innerHTML =
+                percGoldPrice;
+              document.getElementById("gold-perc-price-11-1").innerHTML =
+                goldResult[3];
+              // платина
+              const platinumResult = result.data[13].split("\t");
+              let newplatinumPrice = platinumResult[2];
+              let percplatinumPrice = (
+                parseFloat(newplatinumPrice) *
+                  (1 +
+                    parseFloat(
+                      platinumResult[3].replace(",", ".").replace("%", "") / 100
+                    )) -
+                parseFloat(newplatinumPrice)
+              ).toFixed(2);
+              if (
+                parseFloat(
+                  platinumResult[3].replace(",", ".").replace("%", "")
+                ) >= 0
+              ) {
+                document
+                  .getElementById("updown-11-1-4")
+                  .setAttribute(
+                    "src",
+                    "http://212.41.9.251:8000/static/green_triangle.svg"
+                  );
+              } else {
+                document
+                  .getElementById("updown-11-1-4")
+                  .setAttribute(
+                    "src",
+                    "http://212.41.9.251:8000/static/red_triangle.svg"
+                  );
+              }
+              document.getElementById("platinum-price-11-1").innerHTML =
+                newplatinumPrice;
+              document.getElementById("platinum-divide-price-11-1").innerHTML =
+                percplatinumPrice;
+              document.getElementById("platinum-perc-price-11-1").innerHTML =
+                platinumResult[3];
+              // никель
+              const nikelResult = result.data[18].split("\t");
+              let newnikelPrice = nikelResult[2];
+              let percnikelPrice = (
+                parseFloat(newnikelPrice) *
+                  (1 +
+                    parseFloat(
+                      nikelResult[3].replace(",", ".").replace("%", "") / 100
+                    )) -
+                parseFloat(newnikelPrice)
+              ).toFixed(2);
+              if (
+                parseFloat(nikelResult[3].replace(",", ".").replace("%", "")) >=
+                0
+              ) {
+                document
+                  .getElementById("updown-11-1-5")
+                  .setAttribute(
+                    "src",
+                    "http://212.41.9.251:8000/static/green_triangle.svg"
+                  );
+              } else {
+                document
+                  .getElementById("updown-11-1-5")
+                  .setAttribute(
+                    "src",
+                    "http://212.41.9.251:8000/static/red_triangle.svg"
+                  );
+              }
+              document.getElementById("nikel-price-11-1").innerHTML =
+                newnikelPrice;
+              document.getElementById("nikel-divide-price-11-1").innerHTML =
+                percnikelPrice;
+              document.getElementById("nikel-perc-price-11-1").innerHTML =
+                nikelResult[3];
+            });
+        };
+        setTimeout(() => {
+          setInterval(() => {
+            getMetal();
+          }, 172800000);
+          getMetal();
+        }, 1000);
+      </script>
+    </div>
+  </body>
+</html>

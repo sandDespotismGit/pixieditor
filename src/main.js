@@ -6,6 +6,7 @@ import CalendarWidget from "./widgetsGrid/widgets/calendar";
 import WeatherWidget from "./widgetsGrid/widgets/weather";
 import TrafficWidget from "./widgetsGrid/widgets/traffic";
 import RatesWidget from "./widgetsGrid/widgets/rates";
+import MetalsWidget from "./widgetsGrid/widgets/metals";
 
 (async () => {
   const app = new Application();
@@ -97,6 +98,9 @@ import RatesWidget from "./widgetsGrid/widgets/rates";
   const usdEurButton4 = document.getElementById("usdEur-4");
   const usdEurButton5 = document.getElementById("usdEur-5");
   const usdEurButton6 = document.getElementById("usdEur-6");
+
+  // Металлы
+  const metalButton1 = document.getElementById("metal-1");
 
   // О компании
   const companyButton1 = document.getElementById("company-1")
@@ -222,6 +226,12 @@ import RatesWidget from "./widgetsGrid/widgets/rates";
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new RatesWidget(bounds, 377, 115, { currency: "USD" }));
   })
+
+  metalButton1.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new MetalsWidget(bounds, 508, 246));
+  })
+
   const resizeButton = document.getElementById("resize")
   resizeButton.addEventListener("click", () => {
     const width = document.getElementById("width")

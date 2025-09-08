@@ -18,7 +18,6 @@ export default class TrafficWidget extends DraggableWidget {
         const isTrafficM = width === 246 && height === 115;
         const isTrafficS = width === 115 && height === 115;
 
-
         super(bounds, content, options);
         // Создаем соответствующий тип виджета
         if (isTrafficL) {

@@ -22,10 +22,6 @@ export default class CalendarWidget extends DraggableWidget {
         const isDateS = width === 246 && height === 246;
         const isDateXS = width === 246 && height === 115;
 
-
-
-
-
         super(bounds, content, options);
 
         // Создаем соответствующий тип виджета

@@ -21,8 +21,6 @@ export default class RatesWidget extends DraggableWidget {
         const isEurMedium = width === 246 && height === 115 && options.currency === 'EUR';
         const isBothSmall = width === 115 && height === 115;
 
-
-
         super(bounds, content, options);
         // Создаем соответствующий тип виджета
         if (isUsdLarge) {

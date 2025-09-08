@@ -21,9 +21,6 @@ export default class CompanyWidget extends DraggableWidget {
         const isCompanyLogos = options.type === 'logos';
         const isCompanySimpleLogos = options.type === 'simple-logos';
 
-
-
-
         super(bounds, content, options);
         if (isCompanyInfo) {
             createCompanyInfoContent(content, width, height);
