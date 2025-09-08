@@ -5,6 +5,7 @@ import DigitalClockWidget from "./widgetsGrid/widgets/digital_clock";
 import CalendarWidget from "./widgetsGrid/widgets/calendar";
 import WeatherWidget from "./widgetsGrid/widgets/weather";
 import TrafficWidget from "./widgetsGrid/widgets/traffic";
+import RatesWidget from "./widgetsGrid/widgets/rates";
 
 (async () => {
   const app = new Application();
@@ -59,6 +60,11 @@ import TrafficWidget from "./widgetsGrid/widgets/traffic";
   exportButton.addEventListener("click", (e) => {
     console.log(editor.exportScene());
   });
+  const importButton = document.getElementById("import")
+  importButton.addEventListener("click", () => {
+    editor.importScene({ "background": { "color": 15098112, "alpha": 1 }, "grid": { "size": 20, "visible": true }, "display": { "width": 1734, "height": 686 }, "widgets": [{ "type": "TRAFFICL", "widgetClass": "Container", "x": 453.22358559188524, "y": 302.1490570612568, "size": { "width": 377, "height": 115 }, "texture": null, "w": "TrafficWidget" }, { "type": "TRAFFICL", "widgetClass": "Container", "x": 37.12846418467075, "y": 300.86876302753126, "size": { "width": 377, "height": 115 }, "texture": null, "w": "TrafficWidget" }, { "type": "XS_day", "widgetClass": "Container", "x": 582.5331783425497, "y": 174.11980020656506, "size": { "width": 246, "height": 115 }, "texture": null, "w": "CalendarWidget" }, { "type": "S", "widgetClass": "Container", "x": 579.9725484128514, "y": 40.969367216970994, "size": { "width": 246, "height": 115 }, "texture": null, "w": "DigitalClockWidget" }, { "type": "XLseconds", "widgetClass": "Container", "x": 39.68909411436903, "y": 39.689073183245455, "size": { "width": 508, "height": 246 }, "texture": null, "w": "DigitalClockWidget" }] })
+  })
+
 
   // Кнопки для добавления виджетов
   const digitalClockButton1 = document.getElementById("digital-clock-1");
@@ -192,4 +198,36 @@ import TrafficWidget from "./widgetsGrid/widgets/traffic";
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new TrafficWidget(bounds, 115, 115));
   });
+  usdEurButton1.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new RatesWidget(bounds, 115, 115));
+  })
+  usdEurButton2.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new RatesWidget(bounds, 246, 115, { currency: "EUR" }));
+  })
+  usdEurButton3.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new RatesWidget(bounds, 246, 115, { currency: "USD" }));
+  })
+  usdEurButton4.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new RatesWidget(bounds, 246, 115));
+  })
+  usdEurButton5.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new RatesWidget(bounds, 377, 115, { currency: "EUR" }));
+  })
+  usdEurButton6.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new RatesWidget(bounds, 377, 115, { currency: "USD" }));
+  })
+  const resizeButton = document.getElementById("resize")
+  resizeButton.addEventListener("click", () => {
+    const width = document.getElementById("width")
+    const height = document.getElementById("height")
+    if (width.value && height.value) {
+      editor.resize(Number(width.value), Number(height.value))
+    }
+  })
 })();

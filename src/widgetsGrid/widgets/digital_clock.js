@@ -142,6 +142,16 @@ export default class DigitalClockWidget extends DraggableWidget {
 
         super(bounds, content, options);
 
+        if (isLarge) {
+            this.type = "L"
+        } else if (isSmall) {
+            this.type = "S"
+        } else if (isXLSingle) {
+            this.type = "XL"
+        } else {
+            this.type = "XLseconds"
+        }
+
         this._width = width;
         this._height = height;
         this.bg = bg;

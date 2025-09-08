@@ -277,6 +277,31 @@ export default class DraggableWidget extends Container {
     getSize() {
         return { width: this._width, height: this._height };
     }
+    // === API для программного ресайза ===
+    resize(width, height) {
+        // Устанавливаем новые размеры
+        this._width = Math.max(20, width);
+        this._height = Math.max(20, height);
+
+        // Обновляем размер контента
+        this.content.width = this._width;
+        this.content.height = this._height;
+
+        // Обновляем выделение и ручки ресайза
+        this.updateSelection();
+
+        // Обновляем линии если они видны
+        if (this.showGuides) {
+            this.updateGuideLines();
+        }
+
+        // Проверяем, чтобы виджет не выходил за границы после ресайза
+        const position = this.getPosition();
+        const newX = Math.max(this.bounds.x, Math.min(this.bounds.x + this.bounds.width - this._width, position.x));
+        const newY = Math.max(this.bounds.y, Math.min(this.bounds.y + this.bounds.height - this._height, position.y));
+
+        this.position.set(newX, newY);
+    }
 
     // === API для управления стилем ===
     setColor(color) {

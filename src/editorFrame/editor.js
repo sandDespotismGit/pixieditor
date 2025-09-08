@@ -49,9 +49,24 @@ export default class EditorFrame {
                 size: w.getSize(),
                 color: w.color,
                 texture: w.content.texture?.textureCacheIds?.[0] || null,
-                w: w.constructor.name
+                w: w.constructor.name,
+                type: w.type
             }));
-
+        console.log(JSON.stringify({
+            background: {
+                color: this.background.tint,
+                alpha: this.background.alpha
+            },
+            grid: {
+                size: this.gridSize,
+                visible: this.gridVisible
+            },
+            display: {
+                width: this._width,
+                height: this._height
+            },
+            widgets
+        }))
         return {
             background: {
                 color: this.background.tint,
@@ -60,6 +75,10 @@ export default class EditorFrame {
             grid: {
                 size: this.gridSize,
                 visible: this.gridVisible
+            },
+            display: {
+                width: this._width,
+                height: this._height
             },
             widgets
         };
@@ -87,13 +106,12 @@ export default class EditorFrame {
         // создать новые
         if (data.widgets) {
             data.widgets.forEach(w => {
-                let graphics = new PIXI.Graphics()
-                    .beginFill(PIXI.utils.string2hex(w.color || "#ff0000"))
-                    .drawRect(0, 0, w.size.width, w.size.height)
-                    .endFill();
-
-                const widget = this.addWidget(graphics, w.x, w.y);
-                widget.color = w.color;
+                console.log(w)
+                if (w.w == "TrafficWidget") {
+                    console.log(w)
+                }
+                // const widget = this.addWidget(graphics, w.x, w.y);
+                // widget.color = w.color;
             });
         }
     }
@@ -315,6 +333,9 @@ export default class EditorFrame {
 
         if (this.grid) {
             this.createGrid();
+        }
+        if (this.dragEnabled) {
+            this.setupDrag()
         }
     }
 

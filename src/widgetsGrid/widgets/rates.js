@@ -21,22 +21,29 @@ export default class RatesWidget extends DraggableWidget {
         const isEurMedium = width === 246 && height === 115 && options.currency === 'EUR';
         const isBothSmall = width === 115 && height === 115;
 
+
+
+        super(bounds, content, options);
         // Создаем соответствующий тип виджета
         if (isUsdLarge) {
             createUsdLargeContent(content, width, height);
+            this.type = "USDL"
         } else if (isEurLarge) {
             createEurLargeContent(content, width, height);
+            this.type = "EURL"
         } else if (isBothMedium) {
             createBothMediumContent(content, width, height);
+            this.type = "USDEURM"
         } else if (isUsdMedium) {
             createUsdMediumContent(content, width, height);
+            this.type = "USDM"
         } else if (isEurMedium) {
             createEurMediumContent(content, width, height);
+            this.type = "EURM"
         } else if (isBothSmall) {
             createBothSmallContent(content, width, height);
+            this.type = "USDEURS"
         }
-
-        super(bounds, content, options);
 
         this._width = width;
         this._height = height;

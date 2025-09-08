@@ -21,16 +21,21 @@ export default class CompanyWidget extends DraggableWidget {
         const isCompanyLogos = options.type === 'logos';
         const isCompanySimpleLogos = options.type === 'simple-logos';
 
-        // Создаем соответствующий тип виджета
-        if (isCompanyInfo) {
-            createCompanyInfoContent(content, width, height);
-        } else if (isCompanyLogos) {
-            createCompanyLogosContent(content, width, height);
-        } else if (isCompanySimpleLogos) {
-            createCompanySimpleLogosContent(content, width, height);
-        }
+
+
 
         super(bounds, content, options);
+        if (isCompanyInfo) {
+            createCompanyInfoContent(content, width, height);
+            this.type = "info"
+        } else if (isCompanyLogos) {
+            createCompanyLogosContent(content, width, height);
+            this.type = "logos"
+
+        } else if (isCompanySimpleLogos) {
+            createCompanySimpleLogosContent(content, width, height);
+            this.type = "simplelogos"
+        }
 
         this._width = width;
         this._height = height;

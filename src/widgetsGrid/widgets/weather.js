@@ -20,18 +20,23 @@ export default class WeatherWidget extends DraggableWidget {
         const isWeatherM = width === 246 && height === 246;
         const isWeatherS = width === 246 && height === 115;
 
+
+
+        super(bounds, content, options);
         // Создаем соответствующий тип виджета
         if (isWeatherXL) {
             createWeatherXLContent(content, width, height);
+            this.type = "XL"
         } else if (isWeatherL) {
             createWeatherLContent(content, width, height);
+            this.type = "L"
         } else if (isWeatherM) {
             createWeatherMContent(content, width, height);
+            this.type = "M"
         } else if (isWeatherS) {
             createWeatherSContent(content, width, height);
+            this.type = "S"
         }
-
-        super(bounds, content, options);
 
         // После super() можно использовать this
         this._width = width;

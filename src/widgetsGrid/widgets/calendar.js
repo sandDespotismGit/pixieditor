@@ -3,6 +3,7 @@ import { Container, Graphics, Text, TextStyle } from "pixi.js";
 import DraggableWidget from "../draggable_widget";
 
 export default class CalendarWidget extends DraggableWidget {
+
     constructor(bounds, width, height, options = {}) {
         const content = new Container();
 
@@ -21,28 +22,40 @@ export default class CalendarWidget extends DraggableWidget {
         const isDateS = width === 246 && height === 246;
         const isDateXS = width === 246 && height === 115;
 
+
+
+
+
+        super(bounds, content, options);
+
         // Создаем соответствующий тип виджета
         if (isCalendarXL) {
             createCalendarContent(content, width, height);
+            this.type = "XL"
         } else if (isDateL) {
             createDateWithPreviousNextContent(content, width, height, false);
+            this.type = "L"
         } else if (isDateM) {
             createSimpleDateContent(content, width, height);
+            this.type = "M"
         } else if (isDateM2) {
             createDateWithPreviousNextContent(content, width, height, true);
+            this.type = "M2"
         } else if (isDateS) {
             createBigDateContent(content, width, height);
+            this.type = "S"
         } else if (isDateXS) {
             if (options.dayOnly) {
                 createDayOnlyContent(content, width, height);
+                this.type = "XS_day"
             } else if (options.dateOnly) {
                 createDateOnlyContent(content, width, height);
+                this.type = "XS_date"
             } else {
                 createDateWithDayContent(content, width, height);
+                this.type = "XS"
             }
         }
-
-        super(bounds, content, options);
 
         this._width = width;
         this._height = height;
