@@ -65,7 +65,7 @@ export default class NewsWidget extends DraggableWidget {
         // Маска для закругления изображения
         this.imageMask = new Graphics();
         this.imageMask.beginFill(0xFFFFFF)
-            .drawRoundedRect(0, 0, this.width - 96, 250, 0)
+            .drawRoundedRect(0, 0, this.width, 250, 0)
             .endFill();
         this.imageContainer.addChild(this.imageMask);
 
@@ -78,7 +78,7 @@ export default class NewsWidget extends DraggableWidget {
 
         // Контейнер для QR-кода с position: absolute
         this.qrContainer = new Container();
-        this.qrContainer.position.set(this.width - 120 - 96, 134); // right: 16px, bottom: 16px
+        this.qrContainer.position.set(this.width - 120 - 98, 133); // right: 16px, bottom: 16px
         this.imageContainer.addChild(this.qrContainer);
 
         // QR код
@@ -96,7 +96,8 @@ export default class NewsWidget extends DraggableWidget {
             fill: this.textColor,
             align: 'left',
             wordWrap: true,
-            wordWrapWidth: this._width - 96
+            wordWrapWidth: this._width - 96,
+
         }));
         this.categoryText.position.set(16, 370);
         this.newsContainer.addChild(this.categoryText);
@@ -116,7 +117,7 @@ export default class NewsWidget extends DraggableWidget {
 
         // Обновляем текст
         this.titleText.text = newsItem.title || '------';
-        this.categoryText.text = newsItem.category === 'politics' ? 'Политика' : 'Экономика';
+        this.categoryText.text = newsItem.category;
 
         // Обновляем изображения
         const mainImageUrl = this.isValidImageUrl(newsItem.image)
