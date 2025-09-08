@@ -266,7 +266,7 @@ import NewsWidget from "./widgetsGrid/widgets/news";
 
   usdEurButton1.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
-    editor.addWidget(new RatesWidget(bounds, 115, 115));
+    editor.addWidget(new RatesWidget(bounds, 115, 115, { currency: "USDEURS" }));
   })
   usdEurButton2.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
@@ -278,7 +278,7 @@ import NewsWidget from "./widgetsGrid/widgets/news";
   })
   usdEurButton4.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
-    editor.addWidget(new RatesWidget(bounds, 246, 115));
+    editor.addWidget(new RatesWidget(bounds, 246, 115, { currency: "USDEURM" }));
   })
   usdEurButton5.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
