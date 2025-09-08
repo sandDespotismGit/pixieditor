@@ -17,7 +17,7 @@ export default class RatesWidget extends DraggableWidget {
         // Определяем тип виджета по размерам и опциям
         const isUsdLarge = width === 377 && height === 115 && options.currency === 'USD';
         const isEurLarge = width === 377 && height === 115 && options.currency === 'EUR';
-        const isBothMedium = width === 246 && height === 115 && options.showBoth;
+        const isBothMedium = width === 246 && height === 115;
         const isUsdMedium = width === 246 && height === 115 && options.currency === 'USD';
         const isEurMedium = width === 246 && height === 115 && options.currency === 'EUR';
         const isBothSmall = width === 115 && height === 115;
@@ -80,6 +80,8 @@ export default class RatesWidget extends DraggableWidget {
     updateRates(ratesData) {
         const usdRate = ratesData.Valute.USD.Value.toFixed(2);
         const eurRate = ratesData.Valute.EUR.Value.toFixed(2);
+
+        console.log("content", this.content)
 
         // Обновляем в зависимости от типа виджета
         if (this.content.usdValueText && this.currencyType === 'USD') {
