@@ -206,24 +206,23 @@ function createCompanySimpleLogosContent(content, width, height) {
     container.y = height / 2;
 
     // Равномерно распределяем логотипы по ширине
-    const spacing = width / 4;
 
     // QR код
     const qrLogo = Sprite.from(PIXI.Texture.EMPTY);
     qrLogo.anchor.set(0.5);
-    qrLogo.x = -spacing;
+    qrLogo.x = -width / 2 + 60;
     container.addChild(qrLogo);
 
     // iPanel логотип
     const ipanelLogo = Sprite.from(PIXI.Texture.EMPTY);
     ipanelLogo.anchor.set(0.5);
-    ipanelLogo.x = 0;
+    ipanelLogo.x = -60;
     container.addChild(ipanelLogo);
 
     // LiftBrand логотип
     const liftbrandLogo = Sprite.from(PIXI.Texture.EMPTY);
     liftbrandLogo.anchor.set(0.5);
-    liftbrandLogo.x = spacing;
+    liftbrandLogo.x = width / 2 - 120;
     container.addChild(liftbrandLogo);
 
     content.addChild(container);

@@ -65,6 +65,7 @@ export default class NewsWidget extends DraggableWidget {
         // Маска для закругления изображения
         this.imageMask = new Graphics();
         this.imageMask.beginFill(0xFFFFFF)
+
             .drawRoundedRect(0, 0, this.width, 250, 0)
             .endFill();
         this.imageContainer.addChild(this.imageMask);
