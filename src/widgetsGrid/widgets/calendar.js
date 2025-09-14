@@ -245,7 +245,7 @@ function createCalendarContent(content, width, height) {
     const cellSize = 50;
     const cellSpacing = 20;
     const startX = 50; // Правильное смещение для центрирования
-    const startY = 100;
+    const startY = 120;
 
     for (let row = 0; row < 6; row++) {
         for (let col = 0; col < 7; col++) {

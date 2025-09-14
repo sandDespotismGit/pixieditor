@@ -60,31 +60,39 @@ export default class AnalogClockWidget extends DraggableWidget {
         switch (this.clockType) {
             case 1:
                 this.drawDots(ctx, centerX, centerY, radius, 12, 4, 0x737373);
+                this.type = "analog-1"
                 break;
             case 2:
                 // Простой циферблат без меток
+                this.type = "analog-2"
                 break;
             case 3:
                 this.drawDots(ctx, centerX, centerY, radius, 60, 3, 0xcccccc);
                 this.drawDots(ctx, centerX, centerY, radius, 12, 3, 0x6f6f6f);
                 this.drawNumbers(ctx, centerX, centerY, radius);
+                this.type = "analog-3"
                 break;
             case 4:
                 this.drawLines(ctx, centerX, centerY, radius, 12, 4, 0x737373);
+                this.type = "analog-4"
                 break;
             case 5:
                 this.drawDots(ctx, centerX, centerY, radius, 12, 4, 0x737373);
+                this.type = "analog-5"
                 break;
             case 6:
                 this.drawLines(ctx, centerX, centerY, radius, 12, 4, 0xffffff);
+                this.type = "analog-6"
                 break;
             case 7:
                 this.drawDots(ctx, centerX, centerY, radius, 60, 4, 0x404040);
                 this.drawDots(ctx, centerX, centerY, radius, 12, 4, 0xffffff);
                 this.drawNumbersWhite(ctx, centerX, centerY, radius);
+                this.type = "analog-7"
                 break;
             case 8:
                 this.drawDots(ctx, centerX, centerY, radius, 12, 5, 0xffffff);
+                this.type = "analog-8"
                 break;
         }
     }

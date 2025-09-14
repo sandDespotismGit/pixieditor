@@ -9,6 +9,7 @@ import RatesWidget from "./widgetsGrid/widgets/rates";
 import MetalsWidget from "./widgetsGrid/widgets/metals";
 import AnalogClockWidget from "./widgetsGrid/widgets/analog_clock";
 import NewsWidget from "./widgetsGrid/widgets/news";
+import CompanyWidget from "./widgetsGrid/widgets/about_company";
 
 (async () => {
   const app = new Application();
@@ -172,21 +173,18 @@ import NewsWidget from "./widgetsGrid/widgets/news";
       showSeconds: true
     }));
   });
-
   digitalClockButton2.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new DigitalClockWidget(bounds, 508, 246, {
       showSeconds: false
     }));
   });
-
   digitalClockButton3.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new DigitalClockWidget(bounds, 377, 115, {
       showSeconds: true
     }));
   });
-
   digitalClockButton4.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new DigitalClockWidget(bounds, 246, 115, {
@@ -198,27 +196,22 @@ import NewsWidget from "./widgetsGrid/widgets/news";
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new CalendarWidget(bounds, 508, 377));
   });
-
   calendarButton2.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new CalendarWidget(bounds, 508, 246));
   });
-
   calendarButton3.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new CalendarWidget(bounds, 508, 115));
   });
-
   calendarButton5.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new CalendarWidget(bounds, 246, 246));
   });
-
   calendarButton6.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new CalendarWidget(bounds, 246, 115));
   });
-
   calendarButton7.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new CalendarWidget(bounds, 246, 115, {
@@ -230,17 +223,14 @@ import NewsWidget from "./widgetsGrid/widgets/news";
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new WeatherWidget(bounds, 508, 246));
   });
-
   weatherButton2.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new WeatherWidget(bounds, 377, 115));
   });
-
   weatherButton3.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new WeatherWidget(bounds, 246, 246));
   });
-
   weatherButton4.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new WeatherWidget(bounds, 246, 115));
@@ -297,6 +287,25 @@ import NewsWidget from "./widgetsGrid/widgets/news";
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new MetalsWidget(bounds, 508, 115, {
       showAllMetals: false
+    }));
+  })
+
+  companyButton1.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new CompanyWidget(bounds, 508, 115, {
+      type: "info"
+    }));
+  })
+  companyButton2.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new CompanyWidget(bounds, 508, 115, {
+      type: "logos"
+    }));
+  })
+  companyButton3.addEventListener('click', () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new CompanyWidget(bounds, 508, 115, {
+      type: "simple-logos"
     }));
   })
 

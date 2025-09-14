@@ -21,8 +21,10 @@ export default class MetalsWidget extends DraggableWidget {
         // Создаем соответствующий тип контента
         if (isFullVersion) {
             createMetalsContent(content, width, height);
+            this.type = "metal-L"
         } else {
             createMetalsShortContent(content, width, height);
+            this.type = "metal-S"
         }
 
         super(bounds, content, options);
