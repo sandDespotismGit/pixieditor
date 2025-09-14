@@ -5,7 +5,7 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="style.css" />
-    <title>PixiJS - Template</title>
+    <title>PixiJS - Hi-Tech Dashboard</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -13,26 +13,211 @@
       href="https://fonts.googleapis.com/css2?family=Rubik:ital,wght@0,300..900;1,300..900&display=swap"
       rel="stylesheet"
     />
+    <style>
+      :root {
+        --bg-primary: #0a0e17;
+        --bg-secondary: rgba(21, 27, 41, 0.7);
+        --accent: #00d4ff;
+        --accent-secondary: #7b61ff;
+        --text-primary: #ffffff;
+        --text-secondary: #8c9db5;
+        --border: rgba(42, 51, 69, 0.6);
+        --success: #00ff9d;
+        --danger: #ff4d7c;
+      }
+
+      body {
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
+        font-family: "Rubik", sans-serif;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      /* Стили для контейнеров управления - ПРОЗРАЧНЫЕ */
+      #background-controls,
+      #widget-controls {
+        background: rgba(21, 27, 41, 0.6);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        backdrop-filter: blur(15px);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        padding: 15px;
+        color: var(--text-primary);
+        font-family: "Rubik", sans-serif;
+        z-index: 10;
+      }
+
+      #background-controls {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        width: 200px;
+      }
+
+      #widget-controls {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        max-height: 90vh;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: var(--accent) transparent;
+      }
+
+      #widget-controls::-webkit-scrollbar {
+        width: 6px;
+      }
+
+      #widget-controls::-webkit-scrollbar-track {
+        background: transparent;
+      }
+
+      #widget-controls::-webkit-scrollbar-thumb {
+        background: var(--accent);
+        border-radius: 3px;
+      }
+
+      /* Заголовки секций */
+      #widget-controls > div > p {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 15px 0 10px 0;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        border-bottom: 1px solid var(--border);
+        padding-bottom: 5px;
+      }
+
+      /* Кнопки - полупрозрачные */
+      button {
+        background: rgba(10, 14, 23, 0.7);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        padding: 8px 12px;
+        margin: 4px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-family: "Rubik", sans-serif;
+        font-size: 12px;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(5px);
+      }
+
+      button:hover {
+        background: rgba(10, 14, 23, 0.9);
+        border-color: var(--accent);
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+        transform: translateY(-2px);
+      }
+
+      button:active {
+        transform: translateY(0);
+        box-shadow: 0 0 8px rgba(0, 212, 255, 0.3);
+      }
+
+      /* Группы кнопок */
+      #widget-controls > div > div {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+      }
+
+      /* Поля ввода - прозрачные */
+      input[type="color"],
+      input[type="range"],
+      input[type="number"] {
+        background: rgba(10, 14, 23, 0.6);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 5px;
+        color: var(--text-primary);
+        font-family: "Rubik", sans-serif;
+        margin-bottom: 8px;
+        backdrop-filter: blur(5px);
+      }
+
+      input[type="range"] {
+        width: 100%;
+        background: transparent;
+      }
+
+      input[type="number"] {
+        width: 80px;
+      }
+
+      input[type="color"]:hover,
+      input[type="range"]:hover,
+      input[type="number"]:hover {
+        border-color: var(--accent);
+      }
+
+      /* Метки */
+      label {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 12px;
+        color: var(--text-secondary);
+      }
+
+      /* Выбранный виджет - прозрачный */
+      #choosed-widget {
+        background: rgba(10, 14, 23, 0.6);
+        border: 1px solid var(--accent);
+        border-radius: 6px;
+        padding: 10px;
+        margin: 0 0 15px 0;
+        text-align: center;
+        font-size: 14px;
+        color: var(--accent);
+        box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        backdrop-filter: blur(5px);
+      }
+
+      /* Специфические стили для background-controls */
+      #background-controls label {
+        color: var(--text-secondary);
+      }
+
+      #background-controls input[type="range"] {
+        margin-top: 5px;
+      }
+
+      /* Адаптивность */
+      @media (max-width: 1200px) {
+        #widget-controls {
+          width: 280px;
+        }
+
+        #background-controls {
+          width: 180px;
+        }
+      }
+
+      @media (max-width: 900px) {
+        #widget-controls {
+          width: 250px;
+          font-size: 12px;
+        }
+
+        button {
+          padding: 6px 10px;
+          font-size: 11px;
+        }
+
+        #background-controls {
+          width: 160px;
+          padding: 10px;
+        }
+      }
+    </style>
   </head>
 
   <body>
-    <div
-      id="background-controls"
-      style="
-        position: absolute;
-        top: 10px;
-        right: 10px;
-        padding: 10px;
-        background: #222;
-        border-radius: 8px;
-        color: #fff;
-        font-family: sans-serif;
-        font-size: 14px;
-        z-index: 10;
-      "
-    >
-      <label>Цвет: <input type="color" id="bg-color" value="#1e1e1e" /></label
-      ><br />
+    <div id="background-controls">
+      <label>Цвет: <input type="color" id="bg-color" value="#1e1e1e" /></label>
       <label
         >Прозрачность:
         <input
@@ -41,38 +226,28 @@
           min="0"
           max="1"
           step="0.05"
-          value="1" /></label
-      ><br />
-      <button id="export">Экспорт</button><button id="import">Импорт</button
-      ><br />
-      <label
-        >Размеры экрана <br /><input
-          type="number"
-          placeholder="Ширина"
-          id="width" /><br />
-        <input type="number" placeholder="Высота" id="height"
-      /></label>
-      <br /><button id="resize">применить</button>
-
-      <br />
+          value="1"
+        />
+      </label>
+      <div style="display: flex; gap: 5px; margin-top: 10px">
+        <button id="export">Экспорт</button>
+        <button id="import">Импорт</button>
+      </div>
+      <div style="margin-top: 10px">
+        <label>Размеры экрана</label>
+        <div style="display: flex; gap: 5px">
+          <input type="number" placeholder="Ширина" id="width" />
+          <input type="number" placeholder="Высота" id="height" />
+        </div>
+        <button id="resize" style="width: 100%; margin-top: 5px">
+          Применить
+        </button>
+      </div>
     </div>
-    <div
-      id="widget-controls"
-      style="
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        padding: 10px;
-        background: #222;
-        border-radius: 8px;
-        color: #fff;
-        font-family: sans-serif;
-        font-size: 14px;
-        z-index: 10;
-      "
-    >
+
+    <div id="widget-controls">
       <label>
-        <p id="choosed-widget"></p>
+        <p id="choosed-widget">Выберите виджет</p>
       </label>
 
       <!-- Аналоговые часы -->
@@ -162,7 +337,6 @@
       <!-- Курсы доллара/евро -->
       <div>
         <p>Курс доллара/евро</p>
-
         <div>
           <button id="usdEur-1">1</button>
           <button id="usdEur-2">2</button>
@@ -180,14 +354,15 @@
       <!-- Драг. металлы -->
       <div>
         <p>Драгоценные металлы</p>
-        <button id="metal-1">1</button>
-        <button id="metal-2">2</button>
+        <div>
+          <button id="metal-1">1</button>
+          <button id="metal-2">2</button>
+        </div>
       </div>
 
       <!-- О компании -->
       <div>
         <p>О компании</p>
-
         <div>
           <button id="company-1">1</button>
           <button id="company-2">2</button>
