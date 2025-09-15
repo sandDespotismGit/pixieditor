@@ -66,7 +66,7 @@ import CompanyWidget from "./widgetsGrid/widgets/about_company";
   });
   const importButton = document.getElementById("import")
   importButton.addEventListener("click", () => {
-    editor.importScene({ "background": { "color": 15098112, "alpha": 1 }, "grid": { "size": 20, "visible": true }, "display": { "width": 1734, "height": 686 }, "widgets": [{ "type": "TRAFFICL", "widgetClass": "Container", "x": 453.22358559188524, "y": 302.1490570612568, "size": { "width": 377, "height": 115 }, "texture": null, "w": "TrafficWidget" }, { "type": "TRAFFICL", "widgetClass": "Container", "x": 37.12846418467075, "y": 300.86876302753126, "size": { "width": 377, "height": 115 }, "texture": null, "w": "TrafficWidget" }, { "type": "XS_day", "widgetClass": "Container", "x": 582.5331783425497, "y": 174.11980020656506, "size": { "width": 246, "height": 115 }, "texture": null, "w": "CalendarWidget" }, { "type": "S", "widgetClass": "Container", "x": 579.9725484128514, "y": 40.969367216970994, "size": { "width": 246, "height": 115 }, "texture": null, "w": "DigitalClockWidget" }, { "type": "XLseconds", "widgetClass": "Container", "x": 39.68909411436903, "y": 39.689073183245455, "size": { "width": 508, "height": 246 }, "texture": null, "w": "DigitalClockWidget" }] })
+    editor.importScene({ "background": { "color": 6370691, "alpha": 1 }, "grid": { "size": 20, "visible": true }, "display": { "width": 1734, "height": 765 }, "widgets": [{ "type": "USDEURS", "widgetClass": "Container", "x": 308.0000474717882, "y": 154.51851738823783, "size": { "width": 115, "height": 115 }, "texture": null, "w": "RatesWidget" }] })
   })
 
 
@@ -317,4 +317,80 @@ import CompanyWidget from "./widgetsGrid/widgets/about_company";
       editor.resize(Number(width.value), Number(height.value))
     }
   })
+  // Функции для работы с черновиками
+  function updateDraftList() {
+    const draftSelect = document.getElementById("draft-select");
+    draftSelect.innerHTML = '<option value="">Выберите черновик</option>';
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("draft_")) {
+        const option = document.createElement("option");
+        option.value = key;
+        option.textContent = key.replace("draft_", "");
+        draftSelect.appendChild(option);
+      }
+    }
+  }
+
+  function saveDraft() {
+    const draftNameInput = document.getElementById("draft-name");
+    const draftName = draftNameInput.value.trim();
+
+    if (!draftName) {
+      alert("Введите название черновика");
+      return;
+    }
+
+    const exportData = editor.exportScene();
+    localStorage.setItem(`draft_${draftName}`, JSON.stringify(exportData));
+    draftNameInput.value = "";
+    updateDraftList();
+    alert(`Черновик "${draftName}" сохранен!`);
+  }
+
+  function loadDraft() {
+    const draftSelect = document.getElementById("draft-select");
+    const selectedDraft = draftSelect.value;
+
+    if (!selectedDraft) {
+      alert("Выберите черновик для загрузки");
+      return;
+    }
+
+    const draftData = localStorage.getItem(selectedDraft);
+    if (draftData) {
+      try {
+        editor.importScene(JSON.parse(draftData));
+        alert("Черновик загружен!");
+      } catch (e) {
+        alert("Ошибка при загрузке черновика: " + e.message);
+      }
+    }
+  }
+
+  function deleteDraft() {
+    const draftSelect = document.getElementById("draft-select");
+    const selectedDraft = draftSelect.value;
+
+    if (!selectedDraft) {
+      alert("Выберите черновик для удаления");
+      return;
+    }
+
+    if (confirm("Удалить выбранный черновик?")) {
+      localStorage.removeItem(selectedDraft);
+      updateDraftList();
+      alert("Черновик удален!");
+    }
+  }
+
+  // Назначаем обработчики для кнопок черновиков
+  document.getElementById("save-draft").addEventListener("click", saveDraft);
+  document.getElementById("load-draft").addEventListener("click", loadDraft);
+  document.getElementById("delete-draft").addEventListener("click", deleteDraft);
+
+  // Инициализируем список черновиков при загрузке
+  updateDraftList();
+
 })();

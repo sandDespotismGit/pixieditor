@@ -18,6 +18,9 @@ export default class MetalsWidget extends DraggableWidget {
         // Определяем тип виджета (полный или сокращенный)
         const isFullVersion = options.showAllMetals !== false; // По умолчанию полная версия
 
+
+
+        super(bounds, content, options);
         // Создаем соответствующий тип контента
         if (isFullVersion) {
             createMetalsContent(content, width, height);
@@ -26,8 +29,6 @@ export default class MetalsWidget extends DraggableWidget {
             createMetalsShortContent(content, width, height);
             this.type = "metal-S"
         }
-
-        super(bounds, content, options);
 
         this._width = width;
         this._height = height;

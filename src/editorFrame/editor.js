@@ -2,6 +2,15 @@ import { Container, Sprite, Texture, TilingSprite, Graphics } from "pixi.js";
 import * as PIXI from 'pixi.js';
 
 import DraggableWidget from "../widgetsGrid/draggable_widget";
+import AnalogClockWidget from "../widgetsGrid/widgets/analog_clock";
+import DigitalClockWidget from "../widgetsGrid/widgets/digital_clock";
+import CalendarWidget from "../widgetsGrid/widgets/calendar";
+import WeatherWidget from "../widgetsGrid/widgets/weather";
+import TrafficWidget from "../widgetsGrid/widgets/traffic";
+import NewsWidget from "../widgetsGrid/widgets/news";
+import RatesWidget from "../widgetsGrid/widgets/rates";
+import MetalsWidget from "../widgetsGrid/widgets/metals";
+import CompanyWidget from "../widgetsGrid/widgets/about_company";
 
 export default class EditorFrame {
 
@@ -33,7 +42,9 @@ export default class EditorFrame {
         this.setupDrag();
 
         this.createBackground();
+        this.setupBackgroundInteraction()
         this.createGrid();
+        this.setupGlobalMiddleClick()
     }
 
     // ==== СЕРИАЛИЗАЦИЯ/ИМПОРТ/ЭКСПОРТ ====
@@ -107,8 +118,335 @@ export default class EditorFrame {
         if (data.widgets) {
             data.widgets.forEach(w => {
                 console.log(w)
+                if (w.w == "AnalogClockWidget") {
+                    if (w.type == 'analog-1') {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new AnalogClockWidget(bounds, 246, 246, {
+                            clockType: 1
+                        })
+
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "analog-2") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new AnalogClockWidget(bounds, 246, 246, {
+                            clockType: 2
+                        })
+
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "analog-3") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new AnalogClockWidget(bounds, 246, 246, {
+                            clockType: 3
+                        })
+
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "analog-4") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new AnalogClockWidget(bounds, 246, 246, {
+                            clockType: 4
+                        })
+
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "analog-5") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new AnalogClockWidget(bounds, 246, 246, {
+                            clockType: 5
+                        })
+
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "analog-6") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new AnalogClockWidget(bounds, 246, 246, {
+                            clockType: 6
+                        })
+
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "analog-7") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new AnalogClockWidget(bounds, 246, 246, {
+                            clockType: 7
+                        })
+
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "analog-8") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new AnalogClockWidget(bounds, 246, 246, {
+                            clockType: 8
+                        })
+
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+
+
+                }
+                if (w.w == "DigitalClockWidget") {
+                    if (w.type == "XLseconds") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new DigitalClockWidget(bounds, 508, 246, {
+                            showSeconds: true
+                        })
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "XL") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new DigitalClockWidget(bounds, 508, 246, {
+                            showSeconds: false
+                        })
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "L") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new DigitalClockWidget(bounds, 377, 115, {
+                            showSeconds: true
+                        })
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "S") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new DigitalClockWidget(bounds, 246, 115, {
+                            showSeconds: false
+                        })
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                }
+                if (w.w == "CalendarWidget") {
+                    if (w.type == "XL") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new CalendarWidget(bounds, 508, 377)
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "L") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new CalendarWidget(bounds, 508, 246)
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "M") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new CalendarWidget(bounds, 508, 115)
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "S") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new CalendarWidget(bounds, 246, 246)
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "XS") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new CalendarWidget(bounds, 246, 115)
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "XS_day") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new CalendarWidget(bounds, 246, 115, { dayOnly: true })
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                }
+                if (w.w == "WeatherWidget") {
+                    if (w.type == "XL") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new WeatherWidget(bounds, 508, 246)
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "L") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new WeatherWidget(bounds, 377, 115)
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "M") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new WeatherWidget(bounds, 246, 246)
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "S") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new WeatherWidget(bounds, 246, 115)
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                }
                 if (w.w == "TrafficWidget") {
-                    console.log(w)
+                    if (w.type == "TRAFFICL") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new TrafficWidget(bounds, 377, 115)
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "TRAFFICM") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new TrafficWidget(bounds, 246, 115)
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "TRAFFICS") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new TrafficWidget(bounds, 115, 115)
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                }
+                if (w.w == "NewsWidget") {
+                    const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                    const widget = new NewsWidget(bounds, 508, 538)
+                    this.addWidget(widget);
+                    widget.setPosition(w.x, w.y)
+                    widget.resize(w.size.width, w.size.height)
+                }
+                if (w.w == "RatesWidget") {
+                    if (w.type == "USDEURS") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new RatesWidget(bounds, 115, 115, { currency: "USDEURS" })
+                        this.addWidget(widget);
+                        widget.setColor(0xff0000); // Красная рамка
+
+                        // 2. Изменение прозрачности рамки (0-1)
+                        widget.setAlpha(0.1); // Полупрозрачная рамка
+
+                        // 3. Изменение радиуса закругления углов
+                        widget.setCornerRadius(30); // Более закругленные углы
+
+                        // 4. Изменение цвета фона (HEX значение)
+                        widget.setBackgroundColor("red"); // Темно-серый фон
+
+                        // 5. Изменение прозрачности фона (0-1)
+                        widget.setBackgroundAlpha(0.1); // Почти непрозрачный фон
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "EURM") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new RatesWidget(bounds, 246, 115, { currency: "EUR" })
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "USDM") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new RatesWidget(bounds, 246, 115, { currency: "USD" })
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "USDEURM") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new RatesWidget(bounds, 246, 115, { currency: "USDEURM" })
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "USDL") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new RatesWidget(bounds, 377, 115, { currency: "USD" })
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "EURL") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new RatesWidget(bounds, 377, 115, { currency: "EUR" })
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                }
+                if (w.w == "MetalsWidget") {
+                    if (w.type == "metal-L") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new MetalsWidget(bounds, 508, 246)
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "metal-S") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new MetalsWidget(bounds, 508, 115)
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                }
+                if (w.w == "CompanyWidget") {
+                    if (w.type == "info") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new CompanyWidget(bounds, 508, 115, {
+                            type: "info"
+                        })
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "logos") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new CompanyWidget(bounds, 508, 115, {
+                            type: "logos"
+                        })
+                        this.addWidget(widget);
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+                    if (w.type == "simple-logos") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new CompanyWidget(bounds, 508, 115, {
+                            type: "simple-logos"
+                        })
+                        this.addWidget(widget);
+
+
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
                 }
                 // const widget = this.addWidget(graphics, w.x, w.y);
                 // widget.color = w.color;
@@ -294,6 +632,13 @@ export default class EditorFrame {
             widgetContent.on("pointerdown", (e) => {
                 e.stopPropagation(); // чтобы не срабатывал drag editor'а
                 console.log(widgetContent)
+                // if (widgetContent.isSelected) {
+                //     widgetContent.deselect()
+                // } else {
+                //     widgetContent.select()
+                // }
+
+
             });
             return widgetContent;
         }
@@ -301,12 +646,34 @@ export default class EditorFrame {
         const widget = new DraggableWidget(bounds, widgetContent);
         widget.position.set(x, y);
         this.container.addChild(widget);
-        widget.on("pointerdown", (e) => {
-            e.stopPropagation(); // чтобы не срабатывал drag editor'а
-            console.log(widget)
-        });
+
 
         return widget;
+    }
+    // В конструкторе EditorFrame или в main.js
+    setupBackgroundInteraction() {
+
+        // Обработчик клика по фону
+        this.background.on('pointerdown', (event) => {
+            this.deselectAllWidgets();
+        });
+    }
+
+    deselectAllWidgets() {
+        this.container.children.forEach(widget => {
+            console.log(widget instanceof DraggableWidget)
+            if (widget instanceof DraggableWidget) {
+                widget.deselect()
+            }
+        });
+    }
+    setupGlobalMiddleClick() {
+        this.eventMode = 'static';
+        this.container.on('pointerdown', (event) => {
+            if (event.button === 1) { // Средняя кнопка мыши
+                this.deselectAllWidgets();
+            }
+        });
     }
 
     toggleGrid(visible) {
@@ -389,5 +756,11 @@ export default class EditorFrame {
         if (options.alpha !== undefined) {
             this.background.alpha = options.alpha;
         }
+        // Обработчик клика по фону
+        this.background.on('pointerdown', (event) => {
+            console.log("deselect")
+            this.deselectAllWidgets();
+        });
     }
+
 }

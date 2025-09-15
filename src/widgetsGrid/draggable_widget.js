@@ -1,4 +1,4 @@
-import { Container, Graphics, Point, Rectangle } from "pixi.js";
+import { Color, Container, Graphics, Point, Rectangle } from "pixi.js";
 
 export default class DraggableWidget extends Container {
 
@@ -62,16 +62,50 @@ export default class DraggableWidget extends Container {
 
         this.selection.clear();
 
-        // Фон
+        // Фон (если нужен)
         if (backgroundAlpha > 0) {
             this.selection.beginFill(backgroundColor, backgroundAlpha);
             this.selection.drawRoundedRect(-3, -3, this._width + 6, this._height + 6, cornerRadius);
             this.selection.endFill();
         }
 
-        // Рамка
-        this.selection.lineStyle(2, color, alpha)
-            .drawRoundedRect(-3, -3, this._width + 6, this._height + 6, cornerRadius);
+        // Рамка - рисуем только контур, не заливая середину
+        if (alpha > 0) {
+            this.selection.beginFill(color, alpha);
+
+            // Верхняя часть рамки
+            this.selection.drawRect(-3, -3, this._width + 6, 3);
+
+            // Правая часть рамки
+            this.selection.drawRect(this._width + 3, -3, 3, this._height + 6);
+
+            // Нижняя часть рамки
+            this.selection.drawRect(-3, this._height + 3, this._width + 6, 3);
+
+            // Левая часть рамки
+            this.selection.drawRect(-3, -3, 3, this._height + 6);
+
+            // Закругленные углы (если нужны)
+            if (cornerRadius > 0) {
+                // Верхний левый угол
+                this.selection.drawRect(-3, -3, cornerRadius, 3);
+                this.selection.drawRect(-3, -3, 3, cornerRadius);
+
+                // Верхний правый угол
+                this.selection.drawRect(this._width + 3 - cornerRadius, -3, cornerRadius, 3);
+                this.selection.drawRect(this._width + 3, -3, 3, cornerRadius);
+
+                // Нижний правый угол
+                this.selection.drawRect(this._width + 3 - cornerRadius, this._height + 3, cornerRadius, 3);
+                this.selection.drawRect(this._width + 3, this._height + 3 - cornerRadius, 3, cornerRadius);
+
+                // Нижний левый угол
+                this.selection.drawRect(-3, this._height + 3, cornerRadius, 3);
+                this.selection.drawRect(-3, this._height + 3 - cornerRadius, 3, cornerRadius);
+            }
+
+            this.selection.endFill();
+        }
     }
 
     updateSelection() {
