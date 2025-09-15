@@ -229,6 +229,47 @@
           value="1"
         />
       </label>
+
+      <!-- Новый раздел для управления черновиками -->
+      <div
+        style="margin-top: 15px; border-top: 1px solid #ccc; padding-top: 10px"
+      >
+        <h3 style="margin: 5px 0">Черновики</h3>
+
+        <div
+          style="
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+            flex-direction: column;
+          "
+        >
+          <input
+            type="text"
+            id="draft-name"
+            placeholder="Название черновика"
+            style="flex: 1"
+          /><br />
+          <button id="save-draft">Сохранить</button>
+        </div>
+
+        <div
+          style="
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+            flex-direction: column;
+          "
+        >
+          <select id="draft-select" style="flex: 1">
+            <option value="">Выберите черновик</option>
+          </select>
+          <br />
+          <button id="load-draft">Загрузить</button>
+          <button id="delete-draft">Удалить</button>
+        </div>
+      </div>
+
       <div style="display: flex; gap: 5px; margin-top: 10px">
         <button id="export">Экспорт</button>
         <button id="import">Импорт</button>
