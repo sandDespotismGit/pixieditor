@@ -78,7 +78,6 @@ import CompanyWidget from "./widgetsGrid/widgets/about_company";
   const analogCLockButton5 = document.getElementById("analog-clock-5")
   const analogCLockButton6 = document.getElementById("analog-clock-6")
   const analogCLockButton7 = document.getElementById("analog-clock-7")
-  const analogCLockButton8 = document.getElementById("analog-clock-8")
 
   const digitalClockButton1 = document.getElementById("digital-clock-1");
   const digitalClockButton2 = document.getElementById("digital-clock-2");
@@ -145,27 +144,28 @@ import CompanyWidget from "./widgetsGrid/widgets/about_company";
   analogCLockButton5.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new AnalogClockWidget(bounds, 246, 246, {
-      clockType: 5
+      clockType: 5,
+      bgDial: 0x101010,
+      strokeDial: 0x101010,
     }));
   });
   analogCLockButton6.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new AnalogClockWidget(bounds, 246, 246, {
-      clockType: 6
+      clockType: 6,
+      bgDial: 0x101010,
+      strokeDial: 0x101010
     }));
   });
   analogCLockButton7.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new AnalogClockWidget(bounds, 246, 246, {
-      clockType: 7
+      clockType: 7,
+      bgDial: 0x101010,
+      strokeDial: 0x101010
     }));
   });
-  analogCLockButton8.addEventListener('click', () => {
-    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
-    editor.addWidget(new AnalogClockWidget(bounds, 246, 246, {
-      clockType: 8
-    }));
-  });
+
 
   digitalClockButton1.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());

@@ -19,6 +19,8 @@ export default class AnalogClockWidget extends DraggableWidget {
         this._height = height;
         this.bg = bg;
         this.clockType = options.clockType || 1;
+        this.bgDial = options.bgDial;
+        this.strokeDial = options.strokeDial;
 
         // Центр часов
         this.centerX = width / 2;
@@ -53,46 +55,39 @@ export default class AnalogClockWidget extends DraggableWidget {
 
         // Базовый циферблат для всех типов
         ctx.circle(centerX, centerY, radius);
-        ctx.fill({ color: 0xffffff });
-        ctx.stroke({ width: 2, color: 0xffffff });
+        ctx.fill({ color: this.bgDial ?? 0xffffff });
+        ctx.stroke({ width: 2, color: this.strokeDial ?? 0xffffff });
 
         // Дополнительные элементы в зависимости от типа
         switch (this.clockType) {
             case 1:
-                this.drawDots(ctx, centerX, centerY, radius, 12, 4, 0x737373);
+                this.drawHourDots(ctx, centerX, centerY, radius, 4, 0x737373)
                 this.type = "analog-1"
                 break;
             case 2:
-                // Простой циферблат без меток
                 this.type = "analog-2"
                 break;
             case 3:
-                this.drawDots(ctx, centerX, centerY, radius, 60, 3, 0xcccccc);
-                this.drawDots(ctx, centerX, centerY, radius, 12, 3, 0x6f6f6f);
-                this.drawNumbers(ctx, centerX, centerY, radius);
+                this.drawSecondDots(ctx, centerX, centerY, radius, 3, 0xcccccc);
+                this.drawHourDots(ctx, centerX, centerY, radius, 3, 0x737373);
                 this.type = "analog-3"
                 break;
             case 4:
-                this.drawLines(ctx, centerX, centerY, radius, 12, 4, 0x737373);
+                this.drawHourLines(ctx, centerX, centerY, radius, 4, 0x737373);
                 this.type = "analog-4"
                 break;
             case 5:
-                this.drawDots(ctx, centerX, centerY, radius, 12, 4, 0x737373);
+                this.drawHourDots(ctx, centerX, centerY, radius, 4, 0x737373)
                 this.type = "analog-5"
                 break;
             case 6:
-                this.drawLines(ctx, centerX, centerY, radius, 12, 4, 0xffffff);
+                this.drawHourLines(ctx, centerX, centerY, radius, 4, 0xffffff);
                 this.type = "analog-6"
                 break;
             case 7:
-                this.drawDots(ctx, centerX, centerY, radius, 60, 4, 0x404040);
-                this.drawDots(ctx, centerX, centerY, radius, 12, 4, 0xffffff);
-                this.drawNumbersWhite(ctx, centerX, centerY, radius);
+                this.drawSecondDots(ctx, centerX, centerY, radius, 3, 0x404040);
+                this.drawHourDots(ctx, centerX, centerY, radius, 4, 0xffffff)
                 this.type = "analog-7"
-                break;
-            case 8:
-                this.drawDots(ctx, centerX, centerY, radius, 12, 5, 0xffffff);
-                this.type = "analog-8"
                 break;
         }
     }
@@ -109,59 +104,114 @@ export default class AnalogClockWidget extends DraggableWidget {
 
         switch (this.clockType) {
             case 1:
-                this.drawHand(ctx, centerX, centerY, (hours * Math.PI) / 6, radius * 0.35, 12, 0x404040);
-                this.drawHand(ctx, centerX, centerY, (minutes * Math.PI) / 30, radius * 0.65, 8, 0x737373);
-                this.drawHand(ctx, centerX, centerY, (seconds * Math.PI) / 30, radius * 0.93, 4, 0xcccccc);
+                this.drawSimpleHoursArrow(ctx, centerX, centerY, Math.PI * 2 * ((hours + minutes / 60) / 12) - Math.PI / 2, radius * 0.35, 12, 0x404040);
+                this.drawSimpleMinutesArrow(ctx, centerX, centerY, (minutes * Math.PI) / 30, radius * 0.65, 8, 0x737373);
+                this.drawSimpleSecondArrow(ctx, centerX, centerY, (seconds * Math.PI) / 30, radius * 0.93, 4, 0xcccccc);
                 break;
-
             case 2:
-                this.drawComplexHand(ctx, centerX, centerY, (minutes * Math.PI) / 30, radius, 8, 0x737373, 0.43, 0.33);
-                this.drawComplexHand(ctx, centerX, centerY, (seconds * Math.PI) / 30, radius, 12, 0xfb9739, 0.9, 1.0);
-                this.drawComplexHand(ctx, centerX, centerY, (hours * Math.PI) / 6, radius, 12, 0x1e1e1e, 1.0, 0.3);
-
-                // Центральный кружок
-                ctx.circle(centerX, centerY, 10);
-                ctx.fill({ color: 0xffffff });
+                this.drawDoubleHand(ctx, centerX, centerY, (seconds * Math.PI) / 30, radius, 12, 0xfb9739, 0xffffff, 0.89, 0.9);
+                this.drawDoubleHand(ctx, centerX, centerY, (minutes * Math.PI) / 30, radius, 8, 0x737373, 0xffffff, 0.35, 0.7);
+                this.drawSimpleHoursArrow(ctx, centerX, centerY, Math.PI * 2 * ((hours + minutes / 60) / 12) - Math.PI / 2, radius * 0.35, 12, 0x1e1e1e);
+                
                 break;
-
             case 3:
+                this.drawNumbers(ctx, centerX, centerY, radius, 0x000000)
+                this.drawDoubleHand(ctx, centerX, centerY, (minutes * Math.PI) / 30, radius, 8, 0x737373, 0x737373, 0.15, 0.5);
+                this.drawDoubleHand(ctx, centerX, centerY, Math.PI * 2 * ((hours + minutes / 60) / 12), radius, 8, 0x737373, 0x737373, 0.15, 0.35);
+                this.drawCenterCircle(ctx, centerX, centerY, 5, 0x737373, 0x737373)
+                this.drawCenterCircle(ctx, centerX, centerY, 3, 0x000000, 0x000000)
+                this.drawArrow(ctx, centerX, centerY, (seconds * Math.PI) / 30 - Math.PI / 2, (60 * 25) / 14, 20, 3, 0x000000);
+                break;
             case 4:
-                this.drawDoubleHand(ctx, centerX, centerY, (hours * Math.PI) / 6, radius, 8, 0xffffff, 0x737373, 0.2, 0.25);
-                this.drawDoubleHand(ctx, centerX, centerY, (minutes * Math.PI) / 30, radius, 8, 0xffffff, 0x737373, 0.2, 0.4);
-                this.drawSecondHand(ctx, centerX, centerY, seconds, radius);
-                break;
+                this.drawDoubleHand(ctx, centerX, centerY, (minutes * Math.PI) / 30, radius, 8, 0x737373, 0x737373, 0.15, 0.5);
+                this.drawDoubleHand(ctx, centerX, centerY, Math.PI * 2 * ((hours + minutes / 60) / 12), radius, 8, 0x737373, 0x737373, 0.15, 0.35);
+                this.drawCenterCircle(ctx, centerX, centerY, 5, 0x737373, 0x737373)
+                this.drawArrow(ctx, centerX, centerY, (seconds * Math.PI) / 30 - Math.PI / 2, (60 * 25) / 14, 20, 3, 0xfb9739);
+                this.drawCenterCircle(ctx, centerX, centerY, 3, 0xffffff, 0xfb9739)
 
+                break;
             case 5:
-                this.drawHand(ctx, centerX, centerY, (hours * Math.PI) / 6, radius * 0.35, 12, 0x737373);
-                this.drawHand(ctx, centerX, centerY, (minutes * Math.PI) / 30, radius * 0.65, 8, 0xcccccc);
-                this.drawHand(ctx, centerX, centerY, (seconds * Math.PI) / 30, radius * 0.9, 4, 0xffffff);
+                this.drawSimpleHoursArrow(ctx, centerX, centerY, Math.PI * 2 * ((hours + minutes / 60) / 12) - Math.PI / 2, radius * 0.35, 12, 0x737373);
+                this.drawSimpleMinutesArrow(ctx, centerX, centerY, (minutes * Math.PI) / 30, radius * 0.65, 8, 0xcccccc);
+                this.drawSimpleSecondArrow(ctx, centerX, centerY, (seconds * Math.PI) / 30, radius * 0.93, 4, 0xffffff);
                 break;
-
             case 6:
-                this.drawDoubleHand(ctx, centerX, centerY, (hours * Math.PI) / 6, radius, 8, 0xffffff, 0xffffff, 0.2, 0.25);
-                this.drawDoubleHand(ctx, centerX, centerY, (minutes * Math.PI) / 30, radius, 8, 0xffffff, 0xffffff, 0.2, 0.4);
-                this.drawSecondHand(ctx, centerX, centerY, seconds, radius, 0x737373);
+                this.drawDoubleHand(ctx, centerX, centerY, (minutes * Math.PI) / 30, radius, 8, 0xffffff, 0xffffff, 0.15, 0.5);
+                this.drawDoubleHand(ctx, centerX, centerY, Math.PI * 2 * ((hours + minutes / 60) / 12), radius, 8, 0xffffff, 0xffffff, 0.15, 0.35);
+                this.drawCenterCircle(ctx, centerX, centerY, 5, 0xffffff, 0xffffff)
+                this.drawArrow(ctx, centerX, centerY, (seconds * Math.PI) / 30 - Math.PI / 2, (60 * 25) / 14, 20, 3, 0x737373);
+                this.drawCenterCircle(ctx, centerX, centerY, 3, 0xffffff, 0x737373)
                 break;
-
             case 7:
-                this.drawDoubleHand(ctx, centerX, centerY, (hours * Math.PI) / 6, radius, 8, 0x737373, 0x737373, 0.2, 0.25);
-                this.drawDoubleHand(ctx, centerX, centerY, (minutes * Math.PI) / 30, radius, 8, 0x737373, 0x737373, 0.2, 0.4);
-                this.drawSecondHand(ctx, centerX, centerY, seconds, radius, 0xffffff);
-                break;
-
-            case 8:
-                this.drawHand(ctx, centerX, centerY, (hours * Math.PI) / 6, radius * 0.45, 8, 0xffffff);
-                this.drawHand(ctx, centerX, centerY, (minutes * Math.PI) / 30, radius * 0.7, 8, 0xffffff);
-                this.drawSecondHand(ctx, centerX, centerY, seconds, radius, 0xffffff);
+                this.drawNumbers(ctx, centerX, centerY, radius, 0xffffff)
+                this.drawDoubleHand(ctx, centerX, centerY, (minutes * Math.PI) / 30, radius, 8, 0x737373, 0x737373, 0.15, 0.5);
+                this.drawDoubleHand(ctx, centerX, centerY, Math.PI * 2 * ((hours + minutes / 60) / 12), radius, 8, 0x737373, 0x737373, 0.15, 0.35);
+                this.drawCenterCircle(ctx, centerX, centerY, 5, 0x737373, 0x737373)
+                this.drawCenterCircle(ctx, centerX, centerY, 3, 0xffffff, 0xffffff)
+                this.drawArrow(ctx, centerX, centerY, (seconds * Math.PI) / 30 - Math.PI / 2, (60 * 25) / 14, 20, 3, 0xffffff);
                 break;
         }
     }
 
-    drawHand(ctx, centerX, centerY, angle, length, width, color) {
+    // 1, 3, 5, 7 часы
+    drawHourDots = (ctx, centerX, centerY, radius, size, color) => {
+        for (let i = 0; i < 12; i++) {
+            const angle = (i * 2 * Math.PI) / 12;
+            const x = centerX + Math.cos(angle) * radius * 0.95;
+            const y = centerY + Math.sin(angle) * radius * 0.95;
+
+            ctx.circle(x, y, size);
+            ctx.fill({ color: color });
+        }
+    }
+    // 3, 7 часы
+    drawSecondDots = (ctx, centerX, centerY, radius, size, color) => {
+        for (let i = 0; i < 60; i++) {
+            const angle = (i * 2 * Math.PI) / 60;
+            const x = centerX + Math.cos(angle) * radius * 0.95;
+            const y = centerY + Math.sin(angle) * radius * 0.95;
+
+            ctx.circle(x, y, size);
+            ctx.fill({ color: color });
+        }
+    }
+    // 4, 6 часы
+    drawHourLines = (ctx, centerX, centerY, radius, width, color) => {
+        for (let i = 0; i < 12; i++) {
+            const angle = (i * 2 * Math.PI) / 12;
+            const x1 = centerX + Math.cos(angle) * radius * 0.85;
+            const y1 = centerY + Math.sin(angle) * radius * 0.85;
+            const x2 = centerX + Math.cos(angle) * radius * 0.75;
+            const y2 = centerY + Math.sin(angle) * radius * 0.75;
+
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke({ width: width, color: color, cap: 'round' });
+        }
+    }
+
+    // Для 1 и 5 часов
+    drawSimpleSecondArrow = (ctx, centerX, centerY, angle, length, width, color) => {
         ctx.moveTo(centerX, centerY);
         ctx.lineTo(
             centerX + Math.sin(angle) * length,
             centerY - Math.cos(angle) * length
+        );
+        ctx.stroke({ width: width, color: color, cap: 'round' });
+    }
+    drawSimpleMinutesArrow = (ctx, centerX, centerY, angle, length, width, color) => {
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(
+            centerX + Math.sin(angle) * length,
+            centerY - Math.cos(angle) * length
+        );
+        ctx.stroke({ width: width, color: color, cap: 'round' });
+    }
+    drawSimpleHoursArrow = (ctx, centerX, centerY, angle, length, width, color) => {
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(
+            centerX + Math.cos(angle) * length,
+            centerY + Math.sin(angle) * length
         );
         ctx.stroke({ width: width, color: color, cap: 'round' });
     }
@@ -179,58 +229,40 @@ export default class AnalogClockWidget extends DraggableWidget {
         ctx.lineTo(endX, endY);
         ctx.stroke({ width: width, color: color, cap: 'round' });
     }
-
+    // 3, 4, 6, 7 часовые и минутные стрелки
     drawDoubleHand(ctx, centerX, centerY, angle, radius, width, outerColor, innerColor, innerRatio, outerRatio) {
-        this.drawComplexHand(ctx, centerX, centerY, angle, radius, width, outerColor, innerRatio, outerRatio);
         this.drawComplexHand(ctx, centerX, centerY, angle, radius, width - 4, innerColor, 0, innerRatio);
+        this.drawComplexHand(ctx, centerX, centerY, angle, radius, width, outerColor, innerRatio, outerRatio);
     }
-
-    drawSecondHand(ctx, centerX, centerY, seconds, radius, color = 0x000000) {
-        const angle = (seconds * Math.PI / 30) - (Math.PI / 2);
+    // секундные стрелки с хвостом
+    drawArrow = (ctx, centerX, centerY, angle, mainLength, backLength, width, color) => {
+        // Основная линия (как в вашем оригинальном коде)
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(
+            centerX + Math.cos(angle) * mainLength,
+            centerY + Math.sin(angle) * mainLength
+        );
 
         ctx.moveTo(centerX, centerY);
         ctx.lineTo(
-            centerX + Math.cos(angle) * radius * 0.9,
-            centerY + Math.sin(angle) * radius * 0.9
+            centerX - Math.cos(angle) * backLength,
+            centerY - Math.sin(angle) * backLength
         );
-        ctx.stroke({ width: 3, color: color, cap: 'round' });
 
-        // Центральный кружок
-        ctx.circle(centerX, centerY, 4);
-        ctx.fill({ color: color });
+        ctx.stroke({ width: width, color: color, cap: 'round' });
     }
-
-    drawDots(ctx, centerX, centerY, radius, count, size, color) {
-        for (let i = 0; i < count; i++) {
-            const angle = (i * 2 * Math.PI) / count;
-            const x = centerX + Math.cos(angle) * radius * 0.95;
-            const y = centerY + Math.sin(angle) * radius * 0.95;
-
-            ctx.circle(x, y, size);
-            ctx.fill({ color: color });
-        }
+    drawCenterCircle = (ctx, centerX, centerY, size, color, addColor) => {
+        ctx.circle(centerX, centerY, size);
+        ctx.fill({ color: color ?? 0xffffff });
+        ctx.stroke({ width: 1, color: addColor ?? 0xffffff });
     }
-
-    drawLines(ctx, centerX, centerY, radius, count, width, color) {
-        for (let i = 0; i < count; i++) {
-            const angle = (i * 2 * Math.PI) / count;
-            const x1 = centerX + Math.cos(angle) * radius * 0.85;
-            const y1 = centerY + Math.sin(angle) * radius * 0.85;
-            const x2 = centerX + Math.cos(angle) * radius * 0.75;
-            const y2 = centerY + Math.sin(angle) * radius * 0.75;
-
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke({ width: width, color: color, cap: 'round' });
-        }
-    }
-
-    drawNumbers(ctx, centerX, centerY, radius) {
+    // 3, 7 часы
+    drawNumbers(ctx, centerX, centerY, radius, color) {
         const style = new TextStyle({
             fontFamily: "Rubik",
             fontSize: radius * 0.18,
-            fill: 0x000000,
-            fontWeight: 300
+            fill: color,
+            fontWeight: 300,
         });
 
         for (let num = 1; num <= 12; num++) {
@@ -246,26 +278,7 @@ export default class AnalogClockWidget extends DraggableWidget {
         }
     }
 
-    drawNumbersWhite(ctx, centerX, centerY, radius) {
-        const style = new TextStyle({
-            fontFamily: "Rubik",
-            fontSize: radius * 0.18,
-            fill: 0xffffff,
-            fontWeight: 300
-        });
 
-        for (let num = 1; num <= 12; num++) {
-            const angle = (num * Math.PI) / 6;
-            const x = centerX + Math.sin(angle) * radius * 0.75;
-            const y = centerY - Math.cos(angle) * radius * 0.75;
-
-            const text = new Text(num.toString(), style);
-            text.anchor.set(0.5);
-            text.x = x;
-            text.y = y;
-            this.content.addChild(text);
-        }
-    }
 
     destroy(options) {
         if (this._timer) {
