@@ -103,12 +103,16 @@ export default class EditorFrame {
         };
     }
     getSelected() {
-        this.container.children
-            .filter((elem) => elem instanceof DraggableWidget)
+        return this.container.children
+            .filter((elem) => elem instanceof DraggableWidget && elem.isSelected)
     }
     deleteSelected() {
         this.container.children
             .filter((elem) => elem instanceof DraggableWidget && elem.isSelected).map((elem) => elem.destroy())
+    }
+    deleteAll() {
+        this.container.children
+            .filter((elem) => elem instanceof DraggableWidget).map((elem) => elem.destroy())
     }
 
     async importScene(data) {

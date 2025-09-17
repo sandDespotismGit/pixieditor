@@ -627,6 +627,25 @@ import CompanyWidget from "./widgetsGrid/widgets/about_company";
   document.getElementById("save-draft").addEventListener("click", saveDraft);
   document.getElementById("load-draft").addEventListener("click", loadDraft);
   document.getElementById("delete-draft").addEventListener("click", deleteDraft);
+  document.getElementById("delete-all").addEventListener("click", () => { editor.deleteAll() })
+  document.getElementById("delete-selected").addEventListener("click", () => { editor.deleteSelected() })
+  // Цвет фона
+  document.getElementById("background-color").addEventListener("input", (e) => {
+    const color = parseInt(e.target.value.replace("#", "0x"), 16);
+    editor.getSelected().map((elem) => elem.setBackgroundColor(color))
+  });
+
+  // Прозрачность фона
+  document.getElementById("background-alpha").addEventListener("input", (e) => {
+    const alpha = parseFloat(e.target.value);
+    editor.getSelected().map((elem) => elem.setBackgroundAlpha(alpha))
+  });
+
+  // Радиус закругления
+  document.getElementById("corner-radius").addEventListener("input", (e) => {
+    const radius = parseInt(e.target.value, 10);
+    editor.getSelected().map((elem) => elem.setCornerRadius(radius))
+  });
 
   // Инициализируем список черновиков при загрузке
   updateDraftList();
