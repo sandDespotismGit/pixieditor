@@ -540,6 +540,7 @@ import CompanyWidget from "./widgetsGrid/widgets/about_company";
   const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
   const testCompany = new WeatherWidget(bounds, 246, 115)
   editor.addWidget(testCompany)
+  editor.deleteSelected()
   setTimeout(() => {
     testCompany.setBackgroundColor("red")
     testCompany.setBackgroundAlpha(0.1)

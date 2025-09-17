@@ -102,6 +102,14 @@ export default class EditorFrame {
             widgets
         };
     }
+    getSelected() {
+        this.container.children
+            .filter((elem) => elem instanceof DraggableWidget)
+    }
+    deleteSelected() {
+        this.container.children
+            .filter((elem) => elem instanceof DraggableWidget && elem.isSelected).map((elem) => elem.destroy())
+    }
 
     async importScene(data) {
         if (!data) return;

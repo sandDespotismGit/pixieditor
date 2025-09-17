@@ -55,6 +55,12 @@
         right: 15px;
         width: 200px;
       }
+      #background-controls-widget {
+        position: absolute;
+        bottom: 15px;
+        right: 30vw;
+        width: 200px;
+      }
 
       #widget-controls {
         position: absolute;
@@ -321,6 +327,20 @@
           Применить
         </button>
       </div>
+    </div>
+    <div
+      id="background-controls-widget"
+      style="
+        position: absolute !important;
+        bottom: 15px !important;
+        left: 30vw !important;
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        height: 40px !important;
+      "
+    >
+      <button id="delete-selected">Удалить</button>
     </div>
 
     <div id="widget-controls">
