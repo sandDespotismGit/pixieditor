@@ -69,6 +69,235 @@ import CompanyWidget from "./widgetsGrid/widgets/about_company";
     editor.importScene({ "background": { "color": 6370691, "alpha": 1 }, "grid": { "size": 20, "visible": true }, "display": { "width": 1734, "height": 765 }, "widgets": [{ "type": "USDEURS", "widgetClass": "Container", "x": 308.0000474717882, "y": 154.51851738823783, "size": { "width": 115, "height": 115 }, "texture": null, "w": "RatesWidget" }] })
   })
 
+  // Добавьте этот код после создания editor
+
+  // Элементы для работы с URL фонами
+  const bgUrlInput = document.getElementById("bg-url-input");
+  const loadBgUrlButton = document.getElementById("load-bg-url");
+  const savedBackgroundsContainer = document.getElementById("saved-backgrounds");
+
+  // Функция для загрузки изображения по URL
+  async function loadImageFromUrl(url) {
+    try {
+      // Проверяем, является ли URL валидным
+      if (!url || !url.startsWith('http')) {
+        alert('Пожалуйста, введите корректный URL изображения');
+        return null;
+      }
+
+      // Пробуем загрузить изображение
+      const texture = await PIXI.Assets.load(url);
+      return texture;
+    } catch (error) {
+      console.error('Ошибка загрузки изображения:', error);
+      alert('Не удалось загрузить изображение. Проверьте URL и попробуйте снова.');
+      return null;
+    }
+  }
+
+  // Функция для сохранения фона в localStorage
+  function saveBackgroundToStorage(name, url) {
+    try {
+      const savedBackgrounds = getSavedBackgrounds();
+
+      // Проверяем, нет ли уже такого фона
+      if (!savedBackgrounds.some(bg => bg.url === url)) {
+        savedBackgrounds.push({
+          id: Date.now().toString(),
+          name: name || `Фон ${savedBackgrounds.length + 1}`,
+          url: url,
+          date: new Date().toISOString()
+        });
+
+        localStorage.setItem('saved_backgrounds', JSON.stringify(savedBackgrounds));
+        updateSavedBackgroundsList();
+        return true;
+      } else {
+        alert('Этот фон уже сохранен');
+        return false;
+      }
+    } catch (error) {
+      console.error('Ошибка сохранения фона:', error);
+      return false;
+    }
+  }
+
+  // Функция для получения сохраненных фонов
+  function getSavedBackgrounds() {
+    try {
+      const saved = localStorage.getItem('saved_backgrounds');
+      return saved ? JSON.parse(saved) : [];
+    } catch (error) {
+      console.error('Ошибка получения сохраненных фонов:', error);
+      return [];
+    }
+  }
+
+  // Функция для обновления списка сохраненных фонов
+  function updateSavedBackgroundsList() {
+    const savedBackgrounds = getSavedBackgrounds();
+    savedBackgroundsContainer.innerHTML = '';
+
+    if (savedBackgrounds.length === 0) {
+      savedBackgroundsContainer.innerHTML = '<p style="color: #666; font-style: italic;">Нет сохраненных фонов</p>';
+      return;
+    }
+
+    savedBackgrounds.forEach(background => {
+      const bgButton = document.createElement('button');
+      bgButton.className = 'saved-bg-button';
+      bgButton.title = background.name;
+      bgButton.style.backgroundImage = `url(${background.url})`;
+      bgButton.dataset.url = background.url;
+
+      bgButton.addEventListener('click', async () => {
+        try {
+          // Показываем индикатор загрузки
+          bgButton.style.opacity = '0.7';
+
+          const texture = await PIXI.Assets.load(background.url);
+          editor.changeBackground({ texture: texture });
+
+          // Убираем индикатор
+          bgButton.style.opacity = '1';
+
+          // Подсвечиваем активную кнопку
+          document.querySelectorAll('.saved-bg-button').forEach(btn => {
+            btn.classList.remove('active');
+          });
+          bgButton.classList.add('active');
+
+        } catch (error) {
+          console.error('Ошибка загрузки сохраненного фона:', error);
+          bgButton.style.opacity = '1';
+          alert('Не удалось загрузить сохраненный фон');
+        }
+      });
+
+      // Кнопка удаления
+      const deleteButton = document.createElement('button');
+      deleteButton.innerHTML = '×';
+      deleteButton.style.position = 'absolute';
+      deleteButton.style.top = '-5px';
+      deleteButton.style.right = '-5px';
+      deleteButton.style.background = 'red';
+      deleteButton.style.color = 'white';
+      deleteButton.style.border = 'none';
+      deleteButton.style.borderRadius = '50%';
+      deleteButton.style.width = '20px';
+      deleteButton.style.height = '20px';
+      deleteButton.style.cursor = 'pointer';
+      deleteButton.style.fontSize = '12px';
+      deleteButton.style.lineHeight = '1';
+
+      deleteButton.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (confirm('Удалить этот фон?')) {
+          deleteBackground(background.id);
+        }
+      });
+
+      const wrapper = document.createElement('div');
+      wrapper.style.position = 'relative';
+      wrapper.style.display = 'inline-block';
+      wrapper.appendChild(bgButton);
+      wrapper.appendChild(deleteButton);
+
+      savedBackgroundsContainer.appendChild(wrapper);
+    });
+  }
+
+  // Функция для удаления фона
+  function deleteBackground(id) {
+    try {
+      const savedBackgrounds = getSavedBackgrounds();
+      const filteredBackgrounds = savedBackgrounds.filter(bg => bg.id !== id);
+
+      localStorage.setItem('saved_backgrounds', JSON.stringify(filteredBackgrounds));
+      updateSavedBackgroundsList();
+    } catch (error) {
+      console.error('Ошибка удаления фона:', error);
+    }
+  }
+
+  // Обработчик кнопки загрузки по URL
+  loadBgUrlButton.addEventListener('click', async () => {
+    const url = bgUrlInput.value.trim();
+
+    if (!url) {
+      alert('Пожалуйста, введите URL изображения');
+      return;
+    }
+
+    // Показываем индикатор загрузки
+    loadBgUrlButton.disabled = true;
+    loadBgUrlButton.textContent = 'Загрузка...';
+
+    try {
+      const texture = await loadImageFromUrl(url);
+
+      if (texture) {
+        // Применяем фон
+        editor.changeBackground({ texture: texture });
+
+        // Сохраняем в localStorage
+        const saveSuccess = saveBackgroundToStorage(null, url);
+
+        if (saveSuccess) {
+          bgUrlInput.value = '';
+          alert('Фон успешно загружен и сохранен!');
+        }
+      }
+    } catch (error) {
+      console.error('Ошибка:', error);
+    } finally {
+      // Восстанавливаем кнопку
+      loadBgUrlButton.disabled = false;
+      loadBgUrlButton.textContent = 'Загрузить фоновое изображение';
+    }
+  });
+
+  // Обработчик клавиши Enter в поле ввода
+  bgUrlInput.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      loadBgUrlButton.click();
+    }
+  });
+
+  // Инициализация при загрузке
+  updateSavedBackgroundsList();
+
+  // Добавьте эту функцию в класс EditorFrame для поддержки URL текстур
+  // (должна быть уже реализована по предыдущим инструкциям)
+
+  // Кнопки для добавления картинки на задний фон
+  const bgButton1 = document.getElementById("bg-1");
+  const bgButton2 = document.getElementById("bg-2");
+
+  const bgTextures = {};
+
+  async function loadBackgroundTextures() {
+    try {
+      bgTextures.bg1 = await PIXI.Assets.load('/assets/1.png');
+      bgTextures.bg2 = await PIXI.Assets.load('/assets/2.png');
+      console.log('Фоновые текстуры загружены');
+    } catch (error) {
+      console.error('Ошибка загрузки фоновых текстур:', error);
+    }
+  }
+
+  // Вызовите эту функцию в async функции main.js
+  await loadBackgroundTextures();
+
+  // Тогда обработчики можно упростить:
+  bgButton1.addEventListener('click', () => {
+    editor.changeBackground({ texture: bgTextures.bg1 });
+  });
+
+  bgButton2.addEventListener('click', () => {
+    editor.changeBackground({ texture: bgTextures.bg2 });
+  });
+
 
   // Кнопки для добавления виджетов
   const analogCLockButton1 = document.getElementById("analog-clock-1")

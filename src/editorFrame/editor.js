@@ -66,11 +66,19 @@ export default class EditorFrame {
                 bgAlpha: w._backgroundAlpha,
                 cornerRadius: w._cornerRadius
             }));
+
+
+        // Добавляем информацию о текстуре фона
+        const backgroundData = {
+            color: this.background.tint,
+            alpha: this.background.alpha,
+            hasTexture: this.backgroundSprite !== null,
+            texturePath: this.backgroundSprite ? this.backgroundSprite.texture.textureCacheIds?.[0] || null : null
+        };
+
         console.log(JSON.stringify({
-            background: {
-                color: this.background.tint,
-                alpha: this.background.alpha
-            },
+            background: backgroundData,
+
             grid: {
                 size: this.gridSize,
                 visible: this.gridVisible
@@ -82,10 +90,7 @@ export default class EditorFrame {
             widgets
         }))
         return {
-            background: {
-                color: this.background.tint,
-                alpha: this.background.alpha
-            },
+            background: backgroundData,
             grid: {
                 size: this.gridSize,
                 visible: this.gridVisible
@@ -106,7 +111,7 @@ export default class EditorFrame {
             .filter((elem) => elem instanceof DraggableWidget && elem.isSelected).map((elem) => elem.destroy())
     }
 
-    importScene(data) {
+    async importScene(data) {
         if (!data) return;
 
         // фон
@@ -794,16 +799,22 @@ export default class EditorFrame {
         }
     }
 
+    // Обновляем метод resize для обработки текстуры фона
     resize(width, height) {
         this._width = width;
         this._height = height;
 
         if (this.background) {
-            this.background.width = width;
-            this.background.height = height;
-            if (this.background instanceof TilingSprite) {
-                this.background.width = width;
-                this.background.height = height;
+            // Обновляем размер основного фона
+            this.background.children.forEach(child => {
+                child.width = width;
+                child.height = height;
+            });
+
+            // Обновляем размер текстуры, если она есть
+            if (this.backgroundSprite) {
+                this.backgroundSprite.width = width;
+                this.backgroundSprite.height = height;
             }
         }
 
@@ -811,7 +822,7 @@ export default class EditorFrame {
             this.createGrid();
         }
         if (this.dragEnabled) {
-            this.setupDrag()
+            this.setupDrag();
         }
     }
 
@@ -820,11 +831,18 @@ export default class EditorFrame {
     }
 
     createBackground() {
+        this.background = new Container();
+        this.backgroundSprite = null;
+
+        // Создаем базовый фон
         const bg = new Sprite(Texture.WHITE);
-        this.background = bg;
-        this.resize(this.app.screen.width, this.app.screen.height);
+        bg.width = this._width;
+        bg.height = this._height;
         bg.tint = 'rgb(30, 30, 30)';
-        this.container.addChild(bg);
+        this.background.addChild(bg);
+
+        this.container.addChildAt(this.background, 0);
+        this.setupBackgroundInteraction();
     }
 
     getWidth() {
@@ -839,7 +857,7 @@ export default class EditorFrame {
         return { width: this._width, height: this._height };
     }
 
-    changeBackground(options = {}) {
+    async changeBackground(options = {}) {
         if (!this.background) {
             this.createBackground();
         }
@@ -848,28 +866,53 @@ export default class EditorFrame {
             this.background.tint = options.color;
         }
 
-        if (options.texture) {
-            PIXI.Assets.load(options.texture).then(texture => {
-                this.background.texture = texture;
-                if (options.tiling) {
-                    const oldBg = this.background;
-                    this.background = new TilingSprite(texture, this._width, this._height);
-                    this.background.tint = oldBg.tint;
-                    this.background.alpha = oldBg.alpha;
-                    this.container.removeChild(oldBg);
-                    this.container.addChildAt(this.background, 0);
+        if (options.texture !== undefined) {
+            // Если передана текстура (объект PIXI.Texture)
+            if (options.texture instanceof PIXI.Texture) {
+                this.applyTextureBackground(options.texture);
+            }
+            // Если передан путь к текстуре (URL или local path)
+            else if (typeof options.texture === 'string') {
+                try {
+                    const texture = await PIXI.Assets.load(options.texture);
+                    this.applyTextureBackground(texture);
+                } catch (error) {
+                    console.error('Ошибка загрузки текстуры фона:', error);
+                    throw error; // Пробрасываем ошибку для обработки в main.js
                 }
-            });
+            }
         }
 
         if (options.alpha !== undefined) {
             this.background.alpha = options.alpha;
         }
-        // Обработчик клика по фону
-        this.background.on('pointerdown', (event) => {
-            console.log("deselect")
-            this.deselectAllWidgets();
-        });
+    }
+
+    applyTextureBackground(texture) {
+        // Удаляем предыдущий спрайт текстуры, если он есть
+        if (this.backgroundSprite) {
+            this.background.removeChild(this.backgroundSprite);
+            this.backgroundSprite.destroy();
+        }
+
+        // Создаем новый спрайт с текстурой
+        this.backgroundSprite = new Sprite(texture);
+
+        // Устанавливаем размеры спрайта под размеры редактора
+        this.backgroundSprite.width = this._width;
+        this.backgroundSprite.height = this._height;
+
+        // Удаляем старый фон и добавляем текстуру как новый фон
+        this.container.removeChild(this.background);
+        this.background.destroy();
+
+        // Создаем новый контейнер для фона
+        this.background = new Container();
+        this.background.addChild(this.backgroundSprite);
+        this.container.addChildAt(this.background, 0);
+
+        // Восстанавливаем обработчики событий
+        this.setupBackgroundInteraction();
     }
 
 }
