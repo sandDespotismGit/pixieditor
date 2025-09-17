@@ -76,24 +76,6 @@ import CompanyWidget from "./widgetsGrid/widgets/about_company";
   const loadBgUrlButton = document.getElementById("load-bg-url");
   const savedBackgroundsContainer = document.getElementById("saved-backgrounds");
 
-  // Функция для загрузки изображения по URL
-  async function loadImageFromUrl(url) {
-    try {
-      // Проверяем, является ли URL валидным
-      if (!url || !url.startsWith('http')) {
-        alert('Пожалуйста, введите корректный URL изображения');
-        return null;
-      }
-
-      // Пробуем загрузить изображение
-      const texture = await PIXI.Assets.load(url);
-      return texture;
-    } catch (error) {
-      console.error('Ошибка загрузки изображения:', error);
-      alert('Не удалось загрузить изображение. Проверьте URL и попробуйте снова.');
-      return null;
-    }
-  }
 
   // Функция для сохранения фона в localStorage
   function saveBackgroundToStorage(name, url) {
@@ -148,12 +130,13 @@ import CompanyWidget from "./widgetsGrid/widgets/about_company";
       bgButton.className = 'saved-bg-button';
       bgButton.title = background.name;
       bgButton.style.backgroundImage = `url(${background.url})`;
+      bgButton.style.width = 300
       bgButton.dataset.url = background.url;
 
       bgButton.addEventListener('click', async () => {
         try {
           // Показываем индикатор загрузки
-          bgButton.style.opacity = '0.7';
+          bgButton.style.opacity = '1';
 
           const texture = await PIXI.Assets.load(background.url);
           editor.changeBackground({ texture: texture });
@@ -221,6 +204,7 @@ import CompanyWidget from "./widgetsGrid/widgets/about_company";
   }
 
   // Обработчик кнопки загрузки по URL
+  // Обработчик кнопки загрузки по URL
   loadBgUrlButton.addEventListener('click', async () => {
     const url = bgUrlInput.value.trim();
 
@@ -234,22 +218,34 @@ import CompanyWidget from "./widgetsGrid/widgets/about_company";
     loadBgUrlButton.textContent = 'Загрузка...';
 
     try {
-      const texture = await loadImageFromUrl(url);
+      // Загружаем текстуру
+      const texture = await PIXI.Assets.load({
+        src: url,
+        loadParser: 'texture' // Явно указываем парсер
+      });
 
-      if (texture) {
-        // Применяем фон
-        editor.changeBackground({ texture: texture });
+      // Применяем фон
+      await editor.changeBackground({
+        texture: texture,
+        alpha: parseFloat(alphaInput.value) // Сохраняем текущую прозрачность
+      });
 
-        // Сохраняем в localStorage
-        const saveSuccess = saveBackgroundToStorage(null, url);
+      // Сохраняем в localStorage
+      const saveSuccess = saveBackgroundToStorage(null, url);
 
-        if (saveSuccess) {
-          bgUrlInput.value = '';
-          alert('Фон успешно загружен и сохранен!');
-        }
+      if (saveSuccess) {
+        bgUrlInput.value = '';
+        alert('Фон успешно загружен и сохранен!');
       }
     } catch (error) {
-      console.error('Ошибка:', error);
+      console.error('Ошибка загрузки изображения:', error);
+
+      // Проверяем CORS ошибки :cite[7]
+      if (error.message.includes('CORS') || error.message.includes('cross-origin')) {
+        alert('Ошибка CORS: невозможно загрузить изображение с этого домена. Попробуйте использовать изображение с другого источника или разместите его на своем сервере.');
+      } else {
+        alert('Не удалось загрузить изображение. Проверьте URL и попробуйте снова.');
+      }
     } finally {
       // Восстанавливаем кнопку
       loadBgUrlButton.disabled = false;
