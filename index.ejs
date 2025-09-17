@@ -338,11 +338,51 @@
         left: 30vw !important;
         display: flex;
         flex-direction: row;
+        align-items: center;
         gap: 10px;
         height: 40px !important;
+        padding: 5px 10px;
+        border-radius: 8px;
       "
     >
-      <button id="delete-selected">Удалить</button>
+      <!-- Управление объектами -->
+      <button id="delete-all">Удалить все</button>
+      <button id="delete-selected">Удалить выбранное</button>
+      <button id="select-all">Выбрать все</button>
+
+      <!-- Цвет фона -->
+      <label style="display: flex; align-items: center; gap: 5px">
+        Цвет фона:
+        <input type="color" id="background-color" value="#1e1e1e" />
+      </label>
+
+      <!-- Прозрачность фона -->
+      <label style="display: flex; align-items: center; gap: 5px">
+        Прозрачность:
+        <input
+          type="range"
+          id="background-alpha"
+          min="0"
+          max="1"
+          step="0.01"
+          value="1"
+          style="width: 100px"
+        />
+      </label>
+
+      <!-- Радиус закругления -->
+      <label style="display: flex; align-items: center; gap: 5px">
+        Закругление:
+        <input
+          type="range"
+          id="corner-radius"
+          min="0"
+          max="100"
+          step="1"
+          value="32"
+          style="width: 100px"
+        />
+      </label>
     </div>
 
     <div id="widget-controls">
