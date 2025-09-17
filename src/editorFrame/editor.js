@@ -882,54 +882,67 @@ export default class EditorFrame {
             this.createBackground();
         }
 
-        // Если передается цвет - удаляем текстуру если она есть
-        if (options.color !== undefined) {
-            // Удаляем текстуру если она была
-            if (this.backgroundSprite) {
-                this.background.removeChild(this.backgroundSprite);
-                this.backgroundSprite.destroy();
-                this.backgroundSprite = null;
-            }
+        // Полностью очищаем текущий фон при любом изменении
+        this.container.removeChild(this.background);
+        this.background.destroy();
 
-            // Создаем базовый цветной фон
+        // Создаем новый контейнер для фона
+        this.background = new Container();
+        this.backgroundSprite = null;
+
+        // Обработка цветного фона
+        if (options.color !== undefined) {
             const bg = new Sprite(Texture.WHITE);
             bg.width = this._width;
             bg.height = this._height;
             bg.tint = options.color;
-
-            // Удаляем старый фон и добавляем новый
-            this.container.removeChild(this.background);
-            this.background.destroy();
-
-            this.background = new Container();
+            bg.alpha = options.alpha !== undefined ? options.alpha : 1;
             this.background.addChild(bg);
-            this.container.addChildAt(this.background, 0);
-
-            // Восстанавливаем обработчики событий
-            this.setupBackgroundInteraction();
         }
+        // Обработка текстурированного фона
+        else if (options.texture !== undefined) {
+            try {
+                let texture;
 
-        // Если передается текстура - удаляем цветной фон
-        if (options.texture !== undefined) {
-            // Если передана текстура (объект PIXI.Texture)
-            if (options.texture instanceof PIXI.Texture) {
-                this.applyTextureBackground(options.texture);
-            }
-            // Если передан путь к текстуре (URL или local path)
-            else if (typeof options.texture === 'string') {
-                try {
-                    const texture = await PIXI.Assets.load(options.texture);
-                    this.applyTextureBackground(texture);
-                } catch (error) {
-                    console.error('Ошибка загрузки текстуры фона:', error);
-                    throw error;
+                // Если передан URL строкой
+                if (typeof options.texture === 'string') {
+                    texture = await PIXI.Assets.load(options.texture);
                 }
+                // Если передана готовая текстура
+                else if (options.texture instanceof PIXI.Texture) {
+                    texture = options.texture;
+                }
+
+                if (texture) {
+                    this.backgroundSprite = new Sprite(texture);
+                    this.backgroundSprite.width = this._width;
+                    this.backgroundSprite.height = this._height;
+                    this.backgroundSprite.alpha = options.alpha !== undefined ? options.alpha : 1;
+                    this.background.addChild(this.backgroundSprite);
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки текстуры фона:', error);
+                // В случае ошибки создаем цветной фон по умолчанию
+                const bg = new Sprite(Texture.WHITE);
+                bg.width = this._width;
+                bg.height = this._height;
+                bg.tint = 0x1e1e1e; // Цвет по умолчанию
+                this.background.addChild(bg);
             }
         }
-
-        if (options.alpha !== undefined) {
-            this.background.alpha = options.alpha;
+        // Если не указано ни цвета ни текстуры - используем фон по умолчанию
+        else {
+            const bg = new Sprite(Texture.WHITE);
+            bg.width = this._width;
+            bg.height = this._height;
+            bg.tint = 0x1e1e1e; // Цвет по умолчанию
+            bg.alpha = options.alpha !== undefined ? options.alpha : 1;
+            this.background.addChild(bg);
         }
+
+        // Добавляем фон на сцену и настраиваем взаимодействие
+        this.container.addChildAt(this.background, 0);
+        this.setupBackgroundInteraction();
     }
 
     applyTextureBackground(texture) {
