@@ -866,10 +866,34 @@ export default class EditorFrame {
             this.createBackground();
         }
 
+        // Если передается цвет - удаляем текстуру если она есть
         if (options.color !== undefined) {
-            this.background.tint = options.color;
+            // Удаляем текстуру если она была
+            if (this.backgroundSprite) {
+                this.background.removeChild(this.backgroundSprite);
+                this.backgroundSprite.destroy();
+                this.backgroundSprite = null;
+            }
+
+            // Создаем базовый цветной фон
+            const bg = new Sprite(Texture.WHITE);
+            bg.width = this._width;
+            bg.height = this._height;
+            bg.tint = options.color;
+
+            // Удаляем старый фон и добавляем новый
+            this.container.removeChild(this.background);
+            this.background.destroy();
+
+            this.background = new Container();
+            this.background.addChild(bg);
+            this.container.addChildAt(this.background, 0);
+
+            // Восстанавливаем обработчики событий
+            this.setupBackgroundInteraction();
         }
 
+        // Если передается текстура - удаляем цветной фон
         if (options.texture !== undefined) {
             // Если передана текстура (объект PIXI.Texture)
             if (options.texture instanceof PIXI.Texture) {
@@ -882,7 +906,7 @@ export default class EditorFrame {
                     this.applyTextureBackground(texture);
                 } catch (error) {
                     console.error('Ошибка загрузки текстуры фона:', error);
-                    throw error; // Пробрасываем ошибку для обработки в main.js
+                    throw error;
                 }
             }
         }
