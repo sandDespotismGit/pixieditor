@@ -1,8 +1,7 @@
 // CompanyWidget.js
 import { Container, Graphics, Text, TextStyle, Sprite } from "pixi.js";
 import DraggableWidget from "../draggable_widget";
-import * as PIXI from 'pixi.js'; // Для модульной системы
-
+import * as PIXI from "pixi.js"; // Для модульной системы
 
 export default class CompanyWidget extends DraggableWidget {
     constructor(bounds, width, height, options = {}) {
@@ -15,33 +14,44 @@ export default class CompanyWidget extends DraggableWidget {
             .endFill();
         content.addChild(bg);
 
-
         // Определяем тип виджета по опциям
-        const isCompanyInfo = options.type === 'info';
-        const isCompanyLogos = options.type === 'logos';
-        const isCompanySimpleLogos = options.type === 'simple-logos';
+        const isCompanyInfo = options.type === "info";
+        const isCompanyLogos = options.type === "logos";
+        const isCompanySimpleLogos = options.type === "simple-logos";
 
         super(bounds, content, options);
+
         if (isCompanyInfo) {
             createCompanyInfoContent(content, width, height);
-            this.type = "info"
+            this.type = "info";
         } else if (isCompanyLogos) {
             createCompanyLogosContent(content, width, height);
-            this.type = "logos"
-
+            this.type = "logos";
         } else if (isCompanySimpleLogos) {
             createCompanySimpleLogosContent(content, width, height);
-            this.type = "simplelogos"
+            this.type = "simplelogos";
         }
 
         this._width = width;
         this._height = height;
         this.bg = bg;
 
+        // Сохраняем стили
+        this._backgroundColor = options.backgroundColor ?? 0x1e1e1e;
+        this._backgroundAlpha = options.backgroundAlpha ?? 1;
+        this._cornerRadius = options.cornerRadius ?? 32;
+
+        this._borderColor = options.borderColor ?? 0xffffff;
+        this._borderAlpha = options.borderAlpha ?? 1;
+        this._borderWidth = options.borderWidth ?? 0;
+
         // Загружаем изображения если это логотипы
         if (isCompanyLogos || isCompanySimpleLogos) {
             this.loadLogos();
         }
+
+        // Первая отрисовка
+        this._redrawBackground();
     }
 
     async loadLogos() {
@@ -49,7 +59,7 @@ export default class CompanyWidget extends DraggableWidget {
             qr: "http://212.41.9.251:8000/static/light_qr.svg",
             ipanel: "http://212.41.9.251:8000/static/light_ipanel.svg",
             liftbrand: "http://212.41.9.251:8000/static/light_liftbrand.svg",
-            videovision: "http://212.41.9.251:8000/static/light_videovision.svg"
+            videovision: "http://212.41.9.251:8000/static/light_videovision.svg",
         };
 
         try {
@@ -87,7 +97,6 @@ export default class CompanyWidget extends DraggableWidget {
                 const liftbrandTexture = await PIXI.Assets.load(logoUrls.liftbrand);
                 this.content.simpleLiftbrandLogo.texture = liftbrandTexture;
             }
-
         } catch (error) {
             console.error("Error loading logos:", error);
         }
@@ -95,6 +104,68 @@ export default class CompanyWidget extends DraggableWidget {
 
     destroy(options) {
         super.destroy(options);
+    }
+
+    // === API для управления стилем ===
+    _redrawBackground() {
+        this.bg.clear();
+
+        // Фон
+        this.bg.beginFill(this._backgroundColor, this._backgroundAlpha)
+            .drawRoundedRect(0, 0, this._width, this._height, this._cornerRadius)
+            .endFill();
+
+        // Рамка (если есть толщина)
+        if (this._borderWidth > 0) {
+            this.bg.fill(this._borderWidth, this._borderColor, this._borderAlpha);
+            this.bg.drawRoundedRect(0, 0, this._width, this._height, this._cornerRadius);
+        }
+    }
+
+    setColor(color) {
+        this._backgroundColor = color;
+        this._redrawBackground();
+    }
+
+    setAlpha(alpha) {
+        this._backgroundAlpha = alpha;
+        this._redrawBackground();
+    }
+
+    setCornerRadius(radius) {
+        this._cornerRadius = radius;
+        this._redrawBackground();
+    }
+
+    setBackgroundColor(color) {
+        this.setColor(color);
+    }
+
+    setBackgroundAlpha(alpha) {
+        this.setAlpha(alpha);
+    }
+
+    // === Методы для рамки ===
+    setBorderColor(color) {
+        this._borderColor = color;
+        this._redrawBackground();
+    }
+
+    setBorderAlpha(alpha) {
+        this._borderAlpha = alpha;
+        this._redrawBackground();
+    }
+
+    setBorderWidth(width) {
+        this._borderWidth = width;
+        this._redrawBackground();
+    }
+
+    // === Размеры ===
+    setSize(width, height) {
+        this._width = width;
+        this._height = height;
+        this._redrawBackground();
     }
 }
 
@@ -105,7 +176,7 @@ function createCompanyInfoContent(content, width, height) {
         fontSize: 18,
         fill: 0x737373,
         fontWeight: 300,
-        resolution: 2
+        resolution: 2,
     });
 
     const styleValue = new TextStyle({
@@ -113,7 +184,7 @@ function createCompanyInfoContent(content, width, height) {
         fontSize: 18,
         fill: 0xffffff,
         fontWeight: 300,
-        resolution: 2
+        resolution: 2,
     });
 
     const container = new Container();

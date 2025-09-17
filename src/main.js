@@ -308,6 +308,19 @@ import CompanyWidget from "./widgetsGrid/widgets/about_company";
       type: "simple-logos"
     }));
   })
+  const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+  const testCompany = new AnalogClockWidget(bounds, 246, 246, {
+    clockType: 2
+  });
+
+  editor.addWidget(testCompany)
+  setTimeout(() => {
+    testCompany.setBackgroundColor("red")
+    testCompany.setBackgroundAlpha(0.1)
+    testCompany.setCornerRadius(50)
+    testCompany.setBorderColor("green")
+    testCompany.setBorderAlpha(0.5)
+  }, 5000)
 
   const resizeButton = document.getElementById("resize")
   resizeButton.addEventListener("click", () => {
