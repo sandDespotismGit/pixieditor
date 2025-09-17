@@ -71,10 +71,10 @@ export default class EditorFrame {
 
         // Добавляем информацию о текстуре фона
         const backgroundData = {
-            color: this.background.tint,
-            alpha: this.background.alpha,
-            hasTexture: this.backgroundSprite !== null,
-            texturePath: this.backgroundSprite ? this.backgroundSprite.texture.textureCacheIds?.[0] || null : null
+            color: this.background.children[0]?.tint ?? 0x1e1e1e,
+            alpha: this.background.children[0]?.alpha ?? 1,
+            hasTexture: !!this.backgroundSprite,
+            texturePath: this.backgroundTexturePath
         };
 
         console.log(JSON.stringify({
@@ -121,8 +121,29 @@ export default class EditorFrame {
 
         // фон
         if (data.background) {
-            this.changeBackground(data.background);
+            let bg1, bg2
+            async function loadBackgroundTextures() {
+                try {
+                    bg1 = await PIXI.Assets.load('/assets/1.png');
+                    bg2 = await PIXI.Assets.load('/assets/2.png');
+                    console.log('Фоновые текстуры загружены');
+                } catch (error) {
+                    console.error('Ошибка загрузки фоновых текстур:', error);
+                }
+            }
+            await loadBackgroundTextures()
+            if (data.background.hasTexture) {
+                if (data.background.texturePath == "1in") {
+                    this.changeBackground({ texture: bg1 })
+                } else if (data.background.texturePath == "2in") {
+                    this.changeBackground({ texture: bg2 })
+                }
+            } else {
+                this.changeBackground(data.background);
+            }
+
         }
+
 
         // сетка
         if (data.grid) {
@@ -911,6 +932,12 @@ export default class EditorFrame {
                 // Если передана готовая текстура
                 else if (options.texture instanceof PIXI.Texture) {
                     texture = options.texture;
+                    console.log(options.texture)
+                    if (options.texture.label.includes("1.png")) {
+                        this.backgroundTexturePath = "1in"
+                    } else if (options.texture.label.includes("2.png")) {
+                        this.backgroundTexturePath = "2in"
+                    }
                 }
 
                 if (texture) {
@@ -919,6 +946,7 @@ export default class EditorFrame {
                     this.backgroundSprite.height = this._height;
                     this.backgroundSprite.alpha = options.alpha !== undefined ? options.alpha : 1;
                     this.background.addChild(this.backgroundSprite);
+
                 }
             } catch (error) {
                 console.error('Ошибка загрузки текстуры фона:', error);
@@ -945,7 +973,7 @@ export default class EditorFrame {
         this.setupBackgroundInteraction();
     }
 
-    applyTextureBackground(texture) {
+    applyTextureBackground(texture, path) {
         // Удаляем предыдущий спрайт текстуры, если он есть
         if (this.backgroundSprite) {
             this.background.removeChild(this.backgroundSprite);
@@ -958,18 +986,18 @@ export default class EditorFrame {
         // Устанавливаем размеры спрайта под размеры редактора
         this.backgroundSprite.width = this._width;
         this.backgroundSprite.height = this._height;
+        this.backgroundSprite.alpha = 1;
 
-        // Удаляем старый фон и добавляем текстуру как новый фон
-        this.container.removeChild(this.background);
-        this.background.destroy();
-
-        // Создаем новый контейнер для фона
-        this.background = new Container();
+        // Очищаем текущий фон, оставляя контейнер
+        this.background.removeChildren();
         this.background.addChild(this.backgroundSprite);
-        this.container.addChildAt(this.background, 0);
+
+        // Сохраняем путь текстуры
+        this.backgroundTexturePath = path ?? null;
 
         // Восстанавливаем обработчики событий
         this.setupBackgroundInteraction();
     }
+
 
 }
