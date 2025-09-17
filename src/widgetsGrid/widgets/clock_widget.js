@@ -70,6 +70,15 @@ export default class ClockWidget extends DraggableWidget {
         this._width = r * 2;
         this._height = r * 2;
 
+        // === Сохраняем стили ===
+        this._backgroundColor = options.backgroundColor ?? 0x1e1e1e;
+        this._backgroundAlpha = options.backgroundAlpha ?? 1;
+        this._cornerRadius = options.cornerRadius ?? 32;
+
+        this._borderColor = options.borderColor ?? 0xffffff;
+        this._borderAlpha = options.borderAlpha ?? 1;
+        this._borderWidth = options.borderWidth ?? 0;
+
         this.hourHand = hourHand;
         this.minuteHand = minuteHand;
         this.secondHand = secondHand;
@@ -87,6 +96,43 @@ export default class ClockWidget extends DraggableWidget {
         this.secondHand.rotation = (s / 60) * Math.PI * 2;
         this.minuteHand.rotation = ((m + s / 60) / 60) * Math.PI * 2;
         this.hourHand.rotation = ((h + m / 60 + s / 3600) / 12) * Math.PI * 2;
+    }
+    // === API для управления стилем ===
+    _redrawBackground() {
+        this.bg.clear();
+
+        // Фон
+        this.bg.beginFill(this._backgroundColor, this._backgroundAlpha)
+            .drawRoundedRect(0, 0, this._width, this._height, this._cornerRadius)
+            .endFill();
+
+        // Рамка
+        if (this._borderWidth > 0) {
+            this.bg.lineStyle(this._borderWidth, this._borderColor, this._borderAlpha);
+            this.bg.drawRoundedRect(0, 0, this._width, this._height, this._cornerRadius);
+        }
+    }
+
+    setColor(color) {
+        this._backgroundColor = color;
+        this._redrawBackground();
+    }
+
+    setAlpha(alpha) {
+        this._backgroundAlpha = alpha;
+        this._redrawBackground();
+    }
+    setCornerRadius(radius) {
+        this._cornerRadius = radius;
+        this._redrawBackground();
+    }
+
+    setBackgroundColor(color) {
+        this.setColor(color);
+    }
+
+    setBackgroundAlpha(alpha) {
+        this.setAlpha(alpha);
     }
 
     destroy(options) {

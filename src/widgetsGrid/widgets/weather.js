@@ -39,6 +39,14 @@ export default class WeatherWidget extends DraggableWidget {
         // После super() можно использовать this
         this._width = width;
         this._height = height;
+        // === Сохраняем стили ===
+        this._backgroundColor = options.backgroundColor ?? 0x1e1e1e;
+        this._backgroundAlpha = options.backgroundAlpha ?? 1;
+        this._cornerRadius = options.cornerRadius ?? 32;
+
+        this._borderColor = options.borderColor ?? 0xffffff;
+        this._borderAlpha = options.borderAlpha ?? 1;
+        this._borderWidth = options.borderWidth ?? 0;
         this.bg = bg;
 
         // URL для получения погоды
@@ -128,6 +136,43 @@ export default class WeatherWidget extends DraggableWidget {
         if (this.content.statusText) {
             this.content.statusText.text = "Нет данных";
         }
+    }
+    // === API для управления стилем ===
+    _redrawBackground() {
+        this.bg.clear();
+
+        // Фон
+        this.bg.beginFill(this._backgroundColor, this._backgroundAlpha)
+            .drawRoundedRect(0, 0, this._width, this._height, this._cornerRadius)
+            .endFill();
+
+        // Рамка
+        if (this._borderWidth > 0) {
+            this.bg.lineStyle(this._borderWidth, this._borderColor, this._borderAlpha);
+            this.bg.drawRoundedRect(0, 0, this._width, this._height, this._cornerRadius);
+        }
+    }
+
+    setColor(color) {
+        this._backgroundColor = color;
+        this._redrawBackground();
+    }
+
+    setAlpha(alpha) {
+        this._backgroundAlpha = alpha;
+        this._redrawBackground();
+    }
+    setCornerRadius(radius) {
+        this._cornerRadius = radius;
+        this._redrawBackground();
+    }
+
+    setBackgroundColor(color) {
+        this.setColor(color);
+    }
+
+    setBackgroundAlpha(alpha) {
+        this.setAlpha(alpha);
     }
 
     destroy(options) {

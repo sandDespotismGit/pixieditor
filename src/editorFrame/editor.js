@@ -61,7 +61,10 @@ export default class EditorFrame {
                 color: w.color,
                 texture: w.content.texture?.textureCacheIds?.[0] || null,
                 w: w.constructor.name,
-                type: w.type
+                type: w.type,
+                bgColor: w._backgroundColor,
+                bgAlpha: w._backgroundAlpha,
+                cornerRadius: w._cornerRadius
             }));
         console.log(JSON.stringify({
             background: {
@@ -126,6 +129,9 @@ export default class EditorFrame {
                         })
 
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -136,6 +142,9 @@ export default class EditorFrame {
                         })
 
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -146,6 +155,9 @@ export default class EditorFrame {
                         })
 
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -156,6 +168,9 @@ export default class EditorFrame {
                         })
 
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -166,6 +181,9 @@ export default class EditorFrame {
                         })
 
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -176,6 +194,9 @@ export default class EditorFrame {
                         })
 
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -186,6 +207,9 @@ export default class EditorFrame {
                         })
 
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -196,6 +220,9 @@ export default class EditorFrame {
                         })
 
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -209,6 +236,9 @@ export default class EditorFrame {
                             showSeconds: true
                         })
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -218,6 +248,9 @@ export default class EditorFrame {
                             showSeconds: false
                         })
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -227,6 +260,9 @@ export default class EditorFrame {
                             showSeconds: true
                         })
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -236,6 +272,9 @@ export default class EditorFrame {
                             showSeconds: false
                         })
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -245,6 +284,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new CalendarWidget(bounds, 508, 377)
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -252,6 +294,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new CalendarWidget(bounds, 508, 246)
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -259,6 +304,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new CalendarWidget(bounds, 508, 115)
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -266,6 +314,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new CalendarWidget(bounds, 246, 246)
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -273,6 +324,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new CalendarWidget(bounds, 246, 115)
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -280,6 +334,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new CalendarWidget(bounds, 246, 115, { dayOnly: true })
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -289,6 +346,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new WeatherWidget(bounds, 508, 246)
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -296,6 +356,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new WeatherWidget(bounds, 377, 115)
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -303,6 +366,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new WeatherWidget(bounds, 246, 246)
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -310,6 +376,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new WeatherWidget(bounds, 246, 115)
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -319,6 +388,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new TrafficWidget(bounds, 377, 115)
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -326,6 +398,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new TrafficWidget(bounds, 246, 115)
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -333,6 +408,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new TrafficWidget(bounds, 115, 115)
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -341,6 +419,9 @@ export default class EditorFrame {
                     const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                     const widget = new NewsWidget(bounds, 508, 538)
                     this.addWidget(widget);
+                    widget.setBackgroundColor(w.bgColor)
+                    widget.setBackgroundAlpha(w.bgAlpha)
+                    widget.setCornerRadius(w.cornerRadius)
                     widget.setPosition(w.x, w.y)
                     widget.resize(w.size.width, w.size.height)
                 }
@@ -349,19 +430,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new RatesWidget(bounds, 115, 115, { currency: "USDEURS" })
                         this.addWidget(widget);
-                        widget.setColor(0xff0000); // Красная рамка
-
-                        // 2. Изменение прозрачности рамки (0-1)
-                        widget.setAlpha(0.1); // Полупрозрачная рамка
-
-                        // 3. Изменение радиуса закругления углов
-                        widget.setCornerRadius(30); // Более закругленные углы
-
-                        // 4. Изменение цвета фона (HEX значение)
-                        widget.setBackgroundColor("red"); // Темно-серый фон
-
-                        // 5. Изменение прозрачности фона (0-1)
-                        widget.setBackgroundAlpha(0.1); // Почти непрозрачный фон
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -369,6 +440,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new RatesWidget(bounds, 246, 115, { currency: "EUR" })
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -376,6 +450,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new RatesWidget(bounds, 246, 115, { currency: "USD" })
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -383,6 +460,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new RatesWidget(bounds, 246, 115, { currency: "USDEURM" })
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -390,6 +470,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new RatesWidget(bounds, 377, 115, { currency: "USD" })
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -397,6 +480,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new RatesWidget(bounds, 377, 115, { currency: "EUR" })
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -406,6 +492,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new MetalsWidget(bounds, 508, 246)
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -413,6 +502,9 @@ export default class EditorFrame {
                         const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                         const widget = new MetalsWidget(bounds, 508, 115)
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -424,6 +516,9 @@ export default class EditorFrame {
                             type: "info"
                         })
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -433,6 +528,9 @@ export default class EditorFrame {
                             type: "logos"
                         })
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
                         widget.setPosition(w.x, w.y)
                         widget.resize(w.size.width, w.size.height)
                     }
@@ -442,6 +540,9 @@ export default class EditorFrame {
                             type: "simple-logos"
                         })
                         this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
 
 
                         widget.setPosition(w.x, w.y)

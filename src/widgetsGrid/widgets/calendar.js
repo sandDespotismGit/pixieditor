@@ -57,6 +57,15 @@ export default class CalendarWidget extends DraggableWidget {
         this._height = height;
         this.bg = bg;
 
+        // === Сохраняем стили ===
+        this._backgroundColor = options.backgroundColor ?? 0x1e1e1e;
+        this._backgroundAlpha = options.backgroundAlpha ?? 1;
+        this._cornerRadius = options.cornerRadius ?? 32;
+
+        this._borderColor = options.borderColor ?? 0xffffff;
+        this._borderAlpha = options.borderAlpha ?? 1;
+        this._borderWidth = options.borderWidth ?? 0;
+
         this.updateDate();
         this._timer = setInterval(() => this.updateDate(), options.updateInterval ?? 1000);
     }
@@ -178,6 +187,38 @@ export default class CalendarWidget extends DraggableWidget {
             "Четверг", "Пятница", "Суббота"];
         this.content.dayElement.text = days[date.getDay()];
     }
+    // === API для управления стилем ===
+    _redrawBackground() {
+        this.bg.clear();
+
+        // Фон
+        this.bg.beginFill(this._backgroundColor, this._backgroundAlpha)
+            .drawRoundedRect(0, 0, this._width, this._height, this._cornerRadius)
+            .endFill();
+
+    }
+    setColor(color) {
+        this._backgroundColor = color;
+        this._redrawBackground();
+    }
+
+    setAlpha(alpha) {
+        this._backgroundAlpha = alpha;
+        this._redrawBackground();
+    }
+    setCornerRadius(radius) {
+        this._cornerRadius = radius;
+        this._redrawBackground();
+    }
+
+    setBackgroundColor(color) {
+        this.setColor(color);
+    }
+
+    setBackgroundAlpha(alpha) {
+        this.setAlpha(alpha);
+    }
+
 
     destroy(options) {
         if (this._timer) {
