@@ -11,6 +11,7 @@ import NewsWidget from "../widgetsGrid/widgets/news";
 import RatesWidget from "../widgetsGrid/widgets/rates";
 import MetalsWidget from "../widgetsGrid/widgets/metals";
 import CompanyWidget from "../widgetsGrid/widgets/about_company";
+import SimpleRectWidget from "../widgetsGrid/widgets/video";
 
 export default class EditorFrame {
 
@@ -556,6 +557,21 @@ export default class EditorFrame {
                         const widget = new CompanyWidget(bounds, 508, 115, {
                             type: "simple-logos"
                         })
+                        this.addWidget(widget);
+                        widget.setBackgroundColor(w.bgColor)
+                        widget.setBackgroundAlpha(w.bgAlpha)
+                        widget.setCornerRadius(w.cornerRadius)
+
+
+                        widget.setPosition(w.x, w.y)
+                        widget.resize(w.size.width, w.size.height)
+                    }
+
+                }
+                if (w.w == "SimpleRectWidget") {
+                    if (w.type == "SimpleRect") {
+                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const widget = new SimpleRectWidget(bounds)
                         this.addWidget(widget);
                         widget.setBackgroundColor(w.bgColor)
                         widget.setBackgroundAlpha(w.bgAlpha)

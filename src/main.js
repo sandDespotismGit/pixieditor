@@ -10,6 +10,7 @@ import MetalsWidget from "./widgetsGrid/widgets/metals";
 import AnalogClockWidget from "./widgetsGrid/widgets/analog_clock";
 import NewsWidget from "./widgetsGrid/widgets/news";
 import CompanyWidget from "./widgetsGrid/widgets/about_company";
+import SimpleRectWidget from "./widgetsGrid/widgets/video";
 
 (async () => {
   const app = new Application();
@@ -536,6 +537,11 @@ import CompanyWidget from "./widgetsGrid/widgets/about_company";
     editor.addWidget(new CompanyWidget(bounds, 508, 115, {
       type: "simple-logos"
     }));
+  })
+  const video1 = document.getElementById("video-1");
+  video1.addEventListener("click", () => {
+    const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+    editor.addWidget(new SimpleRectWidget(bounds));
   })
   const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
   const testCompany = new WeatherWidget(bounds, 246, 115)
