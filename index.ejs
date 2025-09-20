@@ -329,22 +329,36 @@
         </div>
       </div>
 
-      <div style="display: flex; gap: 5px; margin-top: 10px">
+      <div
+        style="display: flex; justify-content: space-between; margin-top: 10px"
+      >
         <button id="export">Экспорт</button>
         <button id="import">Импорт</button>
       </div>
       <div
         style="
           display: flex;
+          flex-direction: column;
           gap: 5px;
           margin-top: 10px;
-          overflow-x: scroll;
           width: 100%;
           margin-bottom: 20px;
         "
       >
-        <button id="theme1">тема горизонтальная</button>
-        <button id="theme2">тема вертикальная</button>
+        <img
+          id="theme1"
+          src="/assets/themes/theme_1_hor.png"
+          style="width: 100%; cursor: pointer"
+          alt=""
+        />
+        <img
+          id="theme2"
+          src="/assets/themes/theme_1_ver.png"
+          style="width: 100%; cursor: pointer"
+          alt=""
+        />
+
+        <!-- <button id="theme2">тема вертикальная</button> -->
       </div>
       <div style="margin-top: 10px">
         <label>Размеры экрана</label>
@@ -414,7 +428,7 @@
 
     <div id="widget-controls">
       <label>
-        <p id="choosed-widget">Выберите виджет</p>
+        <p id="choosed-widget">Виджеты</p>
       </label>
 
       <!-- Аналоговые часы -->
@@ -426,7 +440,6 @@
             src="/assets/analog_clock/analog_1.png"
             alt=""
           />
-
           <img
             id="analog-clock-2"
             src="/assets/analog_clock/analog_2.png"
