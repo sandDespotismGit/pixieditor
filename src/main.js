@@ -475,15 +475,15 @@ import SimpleRectWidget from "./widgetsGrid/widgets/video";
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new SimpleRectWidget(bounds));
   })
-  const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
-  const testCompany = new WeatherWidget(bounds, 246, 115)
-  editor.addWidget(testCompany)
-  editor.deleteSelected()
-  setTimeout(() => {
-    testCompany.setBackgroundColor("red")
-    testCompany.setBackgroundAlpha(0.1)
-    testCompany.setCornerRadius(50)
-  }, 5000)
+  // const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
+  // const testCompany = new WeatherWidget(bounds, 246, 115)
+  // editor.addWidget(testCompany)
+  // editor.deleteSelected()
+  // setTimeout(() => {
+  //   testCompany.setBackgroundColor("red")
+  //   testCompany.setBackgroundAlpha(0.1)
+  //   testCompany.setCornerRadius(50)
+  // }, 5000)
 
   const resizeButton = document.getElementById("resize")
   resizeButton.addEventListener("click", () => {

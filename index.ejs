@@ -47,6 +47,7 @@
         color: var(--text-primary);
         font-family: "Rubik", sans-serif;
         z-index: 10;
+        max-width: 300px;
       }
 
       #background-controls {
@@ -191,6 +192,35 @@
 
       #background-controls input[type="range"] {
         margin-top: 5px;
+      }
+
+      .widgetContainer {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .widgetRow {
+        width: 100%;
+        display: flex;
+        gap: 10px;
+      }
+      .widgetRow img {
+        background: rgba(10, 14, 23, 0.7);
+        object-fit: contain;
+        width: 120px;
+        padding: 5px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        cursor: pointer;
+      }
+
+      .widgetRow img:hover {
+        background: rgba(10, 14, 23, 0.9);
+        border-color: var(--accent);
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+        transform: translateY(-2px);
+        transition: 0.3s;
       }
 
       /* Адаптивность */
@@ -388,129 +418,178 @@
       </label>
 
       <!-- Аналоговые часы -->
-      <div>
+      <div class="widgetContainer">
         <p>Аналоговые часы</p>
-        <div>
-          <button id="analog-clock-1">1</button>
-          <button id="analog-clock-2">2</button>
+        <div class="widgetRow">
+          <img
+            id="analog-clock-1"
+            src="/assets/analog_clock/analog_1.png"
+            alt=""
+          />
+
+          <img
+            id="analog-clock-2"
+            src="/assets/analog_clock/analog_2.png"
+            alt=""
+          />
         </div>
-        <div>
-          <button id="analog-clock-3">3</button>
-          <button id="analog-clock-4">4</button>
+        <div class="widgetRow">
+          <img
+            id="analog-clock-3"
+            src="/assets/analog_clock/analog_3.png"
+            alt=""
+          />
+
+          <img
+            id="analog-clock-4"
+            src="/assets/analog_clock/analog_4.png"
+            alt=""
+          />
         </div>
-        <div>
-          <button id="analog-clock-5">5</button>
-          <button id="analog-clock-6">6</button>
+        <div class="widgetRow">
+          <img
+            id="analog-clock-5"
+            src="/assets/analog_clock/analog_5.png"
+            alt=""
+          />
+
+          <img
+            id="analog-clock-6"
+            src="/assets/analog_clock/analog_6.png"
+            alt=""
+          />
         </div>
-        <div>
-          <button id="analog-clock-7">7</button>
+        <div class="widgetRow">
+          <img
+            id="analog-clock-7"
+            src="/assets/analog_clock/analog_7.png"
+            alt=""
+          />
         </div>
       </div>
 
       <!-- Цифровые часы -->
-      <div>
+      <div class="widgetContainer">
         <p>Цифровые часы</p>
-        <div>
-          <button id="digital-clock-1">1</button>
-          <button id="digital-clock-2">2</button>
+        <div class="widgetRow">
+          <img
+            id="digital-clock-1"
+            src="/assets/digital_clock/digital_1.png"
+            alt=""
+          />
+          <img
+            id="digital-clock-2"
+            src="/assets/digital_clock/digital_2.png"
+            alt=""
+          />
         </div>
-        <div>
-          <button id="digital-clock-3">3</button>
-          <button id="digital-clock-4">4</button>
+        <div class="widgetRow">
+          <img
+            id="digital-clock-3"
+            src="/assets/digital_clock/digital_3.png"
+            alt=""
+          />
+          <img
+            id="digital-clock-4"
+            src="/assets/digital_clock/digital_4.png"
+            alt=""
+          />
         </div>
       </div>
 
       <!-- Даты -->
-      <div>
+      <div class="widgetContainer">
         <p>Календари</p>
-        <div>
-          <button id="calendar-1">1</button>
-          <button id="calendar-2">2</button>
+        <div class="widgetRow">
+          <img id="calendar-1" src="/assets/calendars/calendar_1.png" alt="" />
+          <img id="calendar-2" src="/assets/calendars/calendar_2.png" alt="" />
         </div>
-        <div>
-          <button id="calendar-3">3</button>
-          <button id="calendar-5">4</button>
+        <div class="widgetRow">
+          <img id="calendar-3" src="/assets/calendars/calendar_3.png" alt="" />
+          <img id="calendar-5" src="/assets/calendars/calendar_4.png" alt="" />
         </div>
-        <div>
-          <button id="calendar-6">5</button>
-          <button id="calendar-7">6</button>
+        <div class="widgetRow">
+          <img id="calendar-6" src="/assets/calendars/calendar_5.png" alt="" />
+          <img id="calendar-7" src="/assets/calendars/calendar_6.png" alt="" />
         </div>
       </div>
 
       <!-- Погода -->
-      <div>
+      <div class="widgetContainer">
         <p>Погода</p>
-        <div>
-          <button id="weather-1">1</button>
-          <button id="weather-2">2</button>
+        <div class="widgetRow">
+          <img id="weather-1" src="/assets/weather/weather_1.png" alt="" />
+          <img id="weather-2" src="/assets/weather/weather_2.png" alt="" />
         </div>
-        <div>
-          <button id="weather-3">3</button>
-          <button id="weather-4">4</button>
+        <div class="widgetRow">
+          <img id="weather-3" src="/assets/weather/weather_3.png" alt="" />
+          <img id="weather-4" src="/assets/weather/weather_4.png" alt="" />
         </div>
       </div>
 
       <!-- Трафик -->
-      <div>
+      <div class="widgetContainer">
         <p>Трафик</p>
-        <div>
-          <button id="traffic-1">1</button>
-          <button id="traffic-2">2</button>
+        <div class="widgetRow">
+          <img id="traffic-1" src="/assets/traffic/traffic_1.png" alt="" />
+          <img id="traffic-2" src="/assets/traffic/traffic_2.png" alt="" />
         </div>
-        <div>
-          <button id="traffic-3">3</button>
+        <div class="widgetRow">
+          <img id="traffic-3" src="/assets/traffic/traffic_3.png" alt="" />
         </div>
       </div>
 
       <!-- Новости -->
-      <div>
+      <div class="widgetContainer">
         <p>Новости</p>
-        <div>
-          <button id="news-1">1</button>
+        <div class="widgetRow">
+          <img id="news-1" src="/assets/news/news.png" alt="" />
         </div>
       </div>
 
       <!-- Курсы доллара/евро -->
-      <div>
+      <div class="widgetContainer">
         <p>Курс доллара/евро</p>
-        <div>
-          <button id="usdEur-1">1</button>
-          <button id="usdEur-2">2</button>
+        <div class="widgetRow">
+          <img id="usdEur-1" src="/assets/usd_eur/rates_1.png" alt="" />
+          <img id="usdEur-2" src="/assets/usd_eur/rates_2.png" alt="" />
         </div>
-        <div>
-          <button id="usdEur-3">3</button>
-          <button id="usdEur-4">4</button>
+        <div class="widgetRow">
+          <img id="usdEur-3" src="/assets/usd_eur/rates_3.png" alt="" />
+          <img id="usdEur-4" src="/assets/usd_eur/rates_4.png" alt="" />
         </div>
-        <div>
-          <button id="usdEur-5">5</button>
-          <button id="usdEur-6">6</button>
+        <div class="widgetRow">
+          <img id="usdEur-5" src="/assets/usd_eur/rates_5.png" alt="" />
+          <img id="usdEur-6" src="/assets/usd_eur/rates_6.png" alt="" />
         </div>
       </div>
 
       <!-- Драг. металлы -->
-      <div>
+      <div class="widgetContainer">
         <p>Драгоценные металлы</p>
         <div>
-          <button id="metal-1">1</button>
-          <button id="metal-2">2</button>
+          <div class="widgetRow">
+            <img id="metal-1" src="/assets/metal/metal_1.png" alt="" />
+            <img id="metal-2" src="/assets/metal/metal_2.png" alt="" />
+          </div>
         </div>
       </div>
 
       <!-- О компании -->
-      <div>
+      <div class="widgetContainer">
         <p>О компании</p>
-        <div>
-          <button id="company-1">1</button>
-          <button id="company-2">2</button>
+        <div class="widgetRow">
+          <img id="company-1" src="/assets/company/company_1.png" alt="" />
+          <img id="company-2" src="/assets/company/company_2.png" alt="" />
         </div>
-        <div>
-          <button id="company-3">3</button>
+        <div class="widgetRow">
+          <img id="company-3" src="/assets/company/company_3.png" alt="" />
         </div>
       </div>
-      <div>
+      <div class="widgetContainer">
         <p>Видео</p>
-        <div>
-          <button id="video-1">1</button>
+        <div class="widgetRow">
+          <img id="video-1" src="/assets/video/video.png" alt="" />
         </div>
       </div>
     </div>

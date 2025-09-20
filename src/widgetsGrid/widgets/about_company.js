@@ -214,7 +214,7 @@ function createCompanyInfoContent(content, width, height) {
     phoneLabel.x = -140;
     phoneContainer.addChild(phoneLabel);
 
-    const phoneValue = new Text("+7(800)555-35-35", styleValue);
+    const phoneValue = new Text("+7 (925) 533-22-33", styleValue);
     phoneValue.anchor.set(0.5);
     phoneValue.x = 160;
     phoneContainer.addChild(phoneValue);
