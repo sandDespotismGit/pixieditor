@@ -150,6 +150,9 @@ export default class EditorFrame {
             this.gridSize = data.grid.size;
             this.toggleGrid(data.grid.visible);
         }
+        if (data.display) {
+            this.resize(data.display.width, data.display.height)
+        }
 
         // удалить старые виджеты
         this.container.children
@@ -457,11 +460,11 @@ export default class EditorFrame {
                 if (w.w == "NewsWidget") {
                     const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
                     const widget = new NewsWidget(bounds, 508, 538)
-                    this.addWidget(widget);
+                    this.addWidget(widget); widget.setPosition(w.x, w.y)
                     widget.setBackgroundColor(w.bgColor)
                     widget.setBackgroundAlpha(w.bgAlpha)
                     widget.setCornerRadius(w.cornerRadius)
-                    widget.setPosition(w.x, w.y)
+
                     widget.resize(w.size.width, w.size.height)
                 }
                 if (w.w == "RatesWidget") {

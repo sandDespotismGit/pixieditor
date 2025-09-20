@@ -72,10 +72,6 @@ import SimpleRectWidget from "./widgetsGrid/widgets/video";
 
   // Добавьте этот код после создания editor
 
-  // Элементы для работы с URL фонами
-  const bgUrlInput = document.getElementById("bg-url-input");
-  const loadBgUrlButton = document.getElementById("load-bg-url");
-  const savedBackgroundsContainer = document.getElementById("saved-backgrounds");
 
 
   // Функция для сохранения фона в localStorage
@@ -204,65 +200,8 @@ import SimpleRectWidget from "./widgetsGrid/widgets/video";
     }
   }
 
-  // Обработчик кнопки загрузки по URL
-  // Обработчик кнопки загрузки по URL
-  loadBgUrlButton.addEventListener('click', async () => {
-    const url = bgUrlInput.value.trim();
 
-    if (!url) {
-      alert('Пожалуйста, введите URL изображения');
-      return;
-    }
 
-    // Показываем индикатор загрузки
-    loadBgUrlButton.disabled = true;
-    loadBgUrlButton.textContent = 'Загрузка...';
-
-    try {
-      // Загружаем текстуру
-      const texture = await PIXI.Assets.load({
-        src: url,
-        loadParser: 'texture' // Явно указываем парсер
-      });
-
-      // Применяем фон
-      await editor.changeBackground({
-        texture: texture,
-        alpha: parseFloat(alphaInput.value) // Сохраняем текущую прозрачность
-      });
-
-      // Сохраняем в localStorage
-      const saveSuccess = saveBackgroundToStorage(null, url);
-
-      if (saveSuccess) {
-        bgUrlInput.value = '';
-        alert('Фон успешно загружен и сохранен!');
-      }
-    } catch (error) {
-      console.error('Ошибка загрузки изображения:', error);
-
-      // Проверяем CORS ошибки :cite[7]
-      if (error.message.includes('CORS') || error.message.includes('cross-origin')) {
-        alert('Ошибка CORS: невозможно загрузить изображение с этого домена. Попробуйте использовать изображение с другого источника или разместите его на своем сервере.');
-      } else {
-        alert('Не удалось загрузить изображение. Проверьте URL и попробуйте снова.');
-      }
-    } finally {
-      // Восстанавливаем кнопку
-      loadBgUrlButton.disabled = false;
-      loadBgUrlButton.textContent = 'Загрузить фоновое изображение';
-    }
-  });
-
-  // Обработчик клавиши Enter в поле ввода
-  bgUrlInput.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      loadBgUrlButton.click();
-    }
-  });
-
-  // Инициализация при загрузке
-  updateSavedBackgroundsList();
 
   // Добавьте эту функцию в класс EditorFrame для поддержки URL текстур
   // (должна быть уже реализована по предыдущим инструкциям)
@@ -648,6 +587,15 @@ import SimpleRectWidget from "./widgetsGrid/widgets/video";
     const radius = parseInt(e.target.value, 10);
     editor.getSelected().map((elem) => elem.setCornerRadius(radius))
   });
+  document.getElementById("theme1").addEventListener("click", () => {
+    editor.importScene({ "background": { "color": 1052688, "alpha": 1, "hasTexture": false }, "grid": { "size": 20, "visible": true }, "display": { "width": 1920, "height": 540 }, "widgets": [{ "type": "logos", "widgetClass": "Container", "x": 19.99621891798003, "y": 419.65557405888956, "size": { "width": 500, "height": 101 }, "texture": null, "w": "CompanyWidget", "bgColor": 1973790, "bgAlpha": 1, "cornerRadius": 32 }, { "type": "SimpleRect", "widgetClass": "Container", "x": 940.0576167258606, "y": 19.618109491911433, "size": { "width": 960, "height": 501 }, "texture": null, "w": "SimpleRectWidget", "bgColor": 1973790, "bgAlpha": 1, "cornerRadius": 32 }, { "type": "TRAFFICS", "widgetClass": "Container", "x": 799.6081921099358, "y": 19.88272710549228, "size": { "width": 120, "height": 120 }, "texture": null, "w": "TrafficWidget", "bgColor": 1973790, "bgAlpha": 1, "cornerRadius": 32 }, { "type": "S", "widgetClass": "Container", "x": 540.1296529231313, "y": 19.876552268126858, "size": { "width": 240, "height": 120 }, "texture": null, "w": "WeatherWidget", "bgColor": 1973790, "bgAlpha": 1, "cornerRadius": 32 }, { "type": "USDEURM", "widgetClass": "Container", "x": 279.74716242757984, "y": 279.8157390030841, "size": { "width": 240, "height": 120 }, "texture": null, "w": "RatesWidget", "bgColor": 1973790, "bgAlpha": 1, "cornerRadius": 32 }, { "type": "XS", "widgetClass": "Container", "x": 20.177114452561028, "y": 279.3702955290243, "size": { "width": 242, "height": 121 }, "texture": null, "w": "CalendarWidget", "bgColor": 1973790, "bgAlpha": 1, "cornerRadius": 32 }, { "type": "XLseconds", "widgetClass": "Container", "x": 20.0235815938494, "y": 20.27436271112856, "size": { "width": 500, "height": 240 }, "texture": null, "w": "DigitalClockWidget", "bgColor": 1973790, "bgAlpha": 1, "cornerRadius": 32 }, { "widgetClass": "Container", "x": 539.9518525315758, "y": 155.5398028366739, "size": { "width": 380, "height": 360 }, "texture": null, "w": "NewsWidget", "bgColor": 1973790, "bgAlpha": 1, "cornerRadius": 32 }] }
+    )
+  })
+  document.getElementById("theme2").addEventListener("click", () => {
+    editor.importScene({ "background": { "color": 16777215, "alpha": 1, "hasTexture": true, "texturePath": "2in" }, "grid": { "size": 20, "visible": true }, "display": { "width": 540, "height": 1920 }, "widgets": [{ "widgetClass": "Container", "x": 18.920163817610046, "y": 956.3483784129046, "size": { "width": 501, "height": 544 }, "texture": null, "w": "NewsWidget", "bgColor": 0, "bgAlpha": 0.57, "cornerRadius": 32 }, { "type": "logos", "widgetClass": "Container", "x": 18.522041809229222, "y": 1780.0917736810948, "size": { "width": 502, "height": 118 }, "texture": null, "w": "CompanyWidget", "bgColor": 0, "bgAlpha": 0.57, "cornerRadius": 32 }, { "type": "metal-L", "widgetClass": "Container", "x": 19.40479408540631, "y": 1519.8535051967194, "size": { "width": 501, "height": 241 }, "texture": null, "w": "MetalsWidget", "bgColor": 0, "bgAlpha": 0.57, "cornerRadius": 32 }, { "type": "TRAFFICM", "widgetClass": "Container", "x": 274.7234866168798, "y": 540.1566721895408, "size": { "width": 246, "height": 115 }, "texture": null, "w": "TrafficWidget", "bgColor": 0, "bgAlpha": 0.57, "cornerRadius": 32 }, { "type": "USDEURM", "widgetClass": "Container", "x": 18.755526534927697, "y": 540.3551732877755, "size": { "width": 246, "height": 115 }, "texture": null, "w": "RatesWidget", "bgColor": 0, "bgAlpha": 0.57, "cornerRadius": 32 }, { "type": "S", "widgetClass": "Container", "x": 273.681512920495, "y": 280.03316627652316, "size": { "width": 246, "height": 246 }, "texture": null, "w": "CalendarWidget", "bgColor": 0, "bgAlpha": 0.57, "cornerRadius": 32 }, { "type": "analog-3", "widgetClass": "Container", "x": 19.79750023131254, "y": 280.3391422799979, "size": { "width": 246, "height": 246 }, "texture": null, "w": "AnalogClockWidget", "bgColor": 0, "bgAlpha": 0.57, "cornerRadius": 32 }, { "type": "XL", "widgetClass": "Container", "x": 20.017302491573957, "y": 19.79750023131257, "size": { "width": 501, "height": 239 }, "texture": null, "w": "WeatherWidget", "bgColor": 1973790, "bgAlpha": 0.57, "cornerRadius": 32 }, { "type": "SimpleRect", "widgetClass": "Container", "x": 18, "y": 662.6942873088344, "size": { "width": 502, "height": 278 }, "texture": null, "w": "SimpleRectWidget", "bgColor": 0, "bgAlpha": 0.57, "cornerRadius": 32 }] }
+
+    )
+  })
 
   // Инициализируем список черновиков при загрузке
   updateDraftList();

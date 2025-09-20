@@ -255,25 +255,9 @@
         <img id="bg-2" src="/assets/2.png" alt="" style="object-fit: cover" />
       </div>
 
-      <div style="display: flex; flex-direction: column; margin-top: 20px">
-        <input
-          type="url"
-          id="bg-url-input"
-          placeholder="Введите URL изображения"
-          style="padding: 8px; margin-bottom: 10px"
-        />
-
-        <button id="load-bg-url" style="padding: 8px 12px; margin-bottom: 20px">
-          Загрузить фоновое изображение
-        </button>
-
-        <div
-          id="saved-backgrounds"
-          style="display: flex; flex-wrap: wrap; gap: 10px"
-        >
-          <!-- Здесь будут отображаться сохраненные фоны -->
-        </div>
-      </div>
+      <div
+        style="display: flex; flex-direction: column; margin-top: 20px"
+      ></div>
 
       <!-- Новый раздел для управления черновиками -->
       <div
@@ -318,6 +302,19 @@
       <div style="display: flex; gap: 5px; margin-top: 10px">
         <button id="export">Экспорт</button>
         <button id="import">Импорт</button>
+      </div>
+      <div
+        style="
+          display: flex;
+          gap: 5px;
+          margin-top: 10px;
+          overflow-x: scroll;
+          width: 100%;
+          margin-bottom: 20px;
+        "
+      >
+        <button id="theme1">тема горизонтальная</button>
+        <button id="theme2">тема вертикальная</button>
       </div>
       <div style="margin-top: 10px">
         <label>Размеры экрана</label>
