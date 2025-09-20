@@ -310,24 +310,21 @@ import SimpleRectWidget from "./widgetsGrid/widgets/video";
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new AnalogClockWidget(bounds, 246, 246, {
       clockType: 5,
-      bgDial: 0x101010,
-      strokeDial: 0x101010,
+      centerClockColor: 0x101010,
     }));
   });
   analogCLockButton6.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new AnalogClockWidget(bounds, 246, 246, {
       clockType: 6,
-      bgDial: 0x101010,
-      strokeDial: 0x101010
+      centerClockColor: 0x101010,
     }));
   });
   analogCLockButton7.addEventListener('click', () => {
     const bounds = new PIXI.Rectangle(0, 0, editor.getWidth(), editor.getHeight());
     editor.addWidget(new AnalogClockWidget(bounds, 246, 246, {
       clockType: 7,
-      bgDial: 0x101010,
-      strokeDial: 0x101010
+      centerClockColor: 0x101010,
     }));
   });
 
