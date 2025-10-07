@@ -1,5 +1,14 @@
-import { Container, Sprite, Texture, TilingSprite, Graphics } from "pixi.js";
-import * as PIXI from 'pixi.js';
+import {
+    Container,
+    Sprite,
+    Texture,
+    TilingSprite,
+    Graphics,
+    FillGradient,
+    Text,
+    TextStyle,
+} from "pixi.js";
+import * as PIXI from "pixi.js";
 
 import DraggableWidget from "../widgetsGrid/draggable_widget";
 import AnalogClockWidget from "../widgetsGrid/widgets/analog_clock";
@@ -14,15 +23,38 @@ import CompanyWidget from "../widgetsGrid/widgets/about_company";
 import SimpleRectWidget from "../widgetsGrid/widgets/video";
 
 export default class EditorFrame {
-
     constructor(app) {
         this.app = app;
-        this.container = new Container();
-        this.app.stage.addChild(this.container);
-        this._width = this.app.screen.width;
-        this._height = this.app.screen.height;
 
-        // Параметры сетки
+        // Основной контейнер для всего редактора
+        this.mainContainer = new Container();
+        this.app.stage.addChild(this.mainContainer);
+
+        // Внешнее поле (неизменяемое по размерам)
+        this.outerFrame = new Container();
+        this.mainContainer.addChild(this.outerFrame);
+
+        // Внутреннее рабочее поле
+        this.innerContainer = new Container();
+        this.mainContainer.addChild(this.innerContainer);
+
+        // Сохраняем ссылку для обратной совместимости
+        this.container = this.innerContainer;
+
+        this._width = 1200; // фиксированная ширина внутреннего поля
+        this._height = 800; // фиксированная высота внутреннего поля
+
+        // Параметры внешнего поля
+        this.outerFrameWidth = this._width + 400; // +200px с каждой стороны
+        this.outerFrameHeight = this._height + 400;
+        this.outerFrameColor = 0x1a1a1a;
+        this.outerFrameAlpha = 1;
+
+        // Центрируем внутреннее поле относительно внешнего
+        this.innerContainer.x = 200;
+        this.innerContainer.y = 200;
+
+        // Параметры сетки (только для внутреннего поля)
         this.grid = null;
         this.gridVisible = true;
         this.gridSize = 20;
@@ -36,26 +68,188 @@ export default class EditorFrame {
 
         // Перетаскивание
         this.dragEnabled = true;
-        this.selected_widget = null
+        this.selected_widget = null;
 
         this.setupKeyboardControls();
         this.setupZoom();
         this.setupDrag();
 
+        this.createOuterFrame();
         this.createBackground();
-        this.setupBackgroundInteraction()
+        this.setupBackgroundInteraction();
         this.createGrid();
-        this.setupGlobalMiddleClick()
+        this.setupGlobalMiddleClick();
+
+        // Центрируем на экране
+        this.centerOnScreen();
+    }
+
+    // ==== СОЗДАНИЕ ВНЕШНЕГО ПОЛЯ ====
+
+    createOuterFrame() {
+        // Очищаем предыдущее содержимое
+        this.outerFrame.removeChildren();
+
+        // Создаем фон внешнего поля
+        const outerBg = new Graphics();
+        outerBg.rect(0, 0, this.outerFrameWidth, this.outerFrameHeight);
+        outerBg.fill(this.outerFrameColor);
+        outerBg.alpha = this.outerFrameAlpha;
+
+        this.outerFrame.addChild(outerBg);
+
+        // Добавляем обучающие подписи
+        this.addTutorialLabels();
+
+        // Настраиваем интерактивность для перетаскивания
+        this.setupOuterFrameInteraction();
+    }
+
+    addTutorialLabels() {
+        const style = new TextStyle({
+            fill: 0x666666,
+            fontSize: 16,
+            fontFamily: "Arial",
+            fontWeight: "bold",
+        });
+
+        const smallStyle = new TextStyle({
+            fill: "white",
+            fontSize: 20,
+            fontFamily: "Arial",
+        });
+
+        // Подпись сверху
+        const topLabel = new Text("Рабочая область редактора", style);
+        topLabel.x = this.outerFrameWidth / 2 - topLabel.width / 2;
+        topLabel.y = 50;
+        this.outerFrame.addChild(topLabel);
+
+        // Подпись снизу
+        const bottomLabel = new Text(
+            "Перетащите для перемещения • Колесо мыши для масштабирования",
+            smallStyle,
+        );
+        bottomLabel.x = this.outerFrameWidth / 2 - bottomLabel.width / 2;
+        bottomLabel.y = this.outerFrameHeight - 80;
+        this.outerFrame.addChild(bottomLabel);
+        const bottomLabel1 = new Text(
+            "Автоцентр включает и выключает притягивание виджетов к клеточкам",
+            smallStyle,
+        );
+        const bottomLabel2 = new Text(
+            "Функция пропорции включает и отключает изменение размера строго пропорционально",
+            smallStyle,
+        );
+        bottomLabel1.x = this.outerFrameWidth / 2 - bottomLabel.width / 2;
+        bottomLabel1.y = this.outerFrameHeight - 60;
+        bottomLabel2.x = this.outerFrameWidth / 2 - bottomLabel.width / 2;
+        bottomLabel2.y = this.outerFrameHeight - 40;
+        this.outerFrame.addChild(bottomLabel1);
+        this.outerFrame.addChild(bottomLabel2);
+
+        // Подпись слева
+        const leftLabel = new Text("Область для обучающих материалов", style);
+        leftLabel.rotation = -Math.PI / 2;
+        leftLabel.x = 50;
+        leftLabel.y = this.outerFrameHeight / 2 + leftLabel.width / 2;
+        this.outerFrame.addChild(leftLabel);
+
+        // Подпись справа
+        const rightLabel = new Text("Внешняя рамка", style);
+        rightLabel.rotation = Math.PI / 2;
+        rightLabel.x = this.outerFrameWidth - 50;
+        rightLabel.y = this.outerFrameHeight / 2 - rightLabel.width / 2;
+        this.outerFrame.addChild(rightLabel);
+
+        // Угловые маркеры
+        this.addCornerMarkers();
+    }
+
+    addCornerMarkers() {
+        const markerStyle = new TextStyle({
+            fill: 0x444444,
+            fontSize: 10,
+            fontFamily: "Arial",
+        });
+
+        // Левый верхний
+        const ltMarker = new Text("↖", markerStyle);
+        ltMarker.x = 10;
+        ltMarker.y = 10;
+        this.outerFrame.addChild(ltMarker);
+
+        // Правый верхний
+        const rtMarker = new Text("↗", markerStyle);
+        rtMarker.x = this.outerFrameWidth - 20;
+        rtMarker.y = 10;
+        this.outerFrame.addChild(rtMarker);
+
+        // Левый нижний
+        const lbMarker = new Text("↙", markerStyle);
+        lbMarker.x = 10;
+        lbMarker.y = this.outerFrameHeight - 20;
+        this.outerFrame.addChild(lbMarker);
+
+        // Правый нижний
+        const rbMarker = new Text("↘", markerStyle);
+        rbMarker.x = this.outerFrameWidth - 20;
+        rbMarker.y = this.outerFrameHeight - 20;
+        this.outerFrame.addChild(rbMarker);
+    }
+
+    setupOuterFrameInteraction() {
+        this.outerFrame.interactive = true;
+        this.outerFrame.hitArea = new PIXI.Rectangle(
+            0,
+            0,
+            this.outerFrameWidth,
+            this.outerFrameHeight,
+        );
+
+        this.outerFrame
+            .on("pointerdown", this.onOuterDragStart.bind(this))
+            .on("pointerup", this.onOuterDragEnd.bind(this))
+            .on("pointerupoutside", this.onOuterDragEnd.bind(this))
+            .on("pointermove", this.onOuterDragMove.bind(this));
+    }
+
+    onOuterDragStart(event) {
+        if (!this.dragEnabled) return;
+        this.dragData = event.data;
+        this.dragStart = {
+            x: this.mainContainer.x,
+            y: this.mainContainer.y,
+            pointer: this.dragData.getLocalPosition(this.mainContainer.parent),
+        };
+        this.mainContainer.cursor = "grabbing";
+    }
+
+    onOuterDragMove(event) {
+        if (!this.dragEnabled || !this.dragData) return;
+        const newPosition = this.dragData.getLocalPosition(
+            this.mainContainer.parent,
+        );
+        const dx = newPosition.x - this.dragStart.pointer.x;
+        const dy = newPosition.y - this.dragStart.pointer.y;
+        this.mainContainer.x = this.dragStart.x + dx;
+        this.mainContainer.y = this.dragStart.y + dy;
+    }
+
+    onOuterDragEnd() {
+        this.dragData = null;
+        this.dragStart = null;
+        this.mainContainer.cursor = "grab";
     }
 
     // ==== СЕРИАЛИЗАЦИЯ/ИМПОРТ/ЭКСПОРТ ====
 
     exportScene() {
-        const widgets = this.container.children
-            .filter(c => c instanceof DraggableWidget)
-            .map(w => ({
-                type: w.content.constructor.name, // класс виджета
-                widgetClass: w.content.constructor.name, // альтернативное название для ясности
+        const widgets = this.innerContainer.children
+            .filter((c) => c instanceof DraggableWidget)
+            .map((w) => ({
+                type: w.content.constructor.name,
+                widgetClass: w.content.constructor.name,
                 x: w.x,
                 y: w.y,
                 size: w.getSize(),
@@ -65,55 +259,74 @@ export default class EditorFrame {
                 type: w.type,
                 bgColor: w._backgroundColor,
                 bgAlpha: w._backgroundAlpha,
-                cornerRadius: w._cornerRadius
+                cornerRadius: w._cornerRadius,
             }));
 
-
-        // Добавляем информацию о текстуре фона
         const backgroundData = {
             color: this.background.children[0]?.tint ?? 0x1e1e1e,
             alpha: this.background.children[0]?.alpha ?? 1,
             hasTexture: !!this.backgroundSprite,
-            texturePath: this.backgroundTexturePath
+            texturePath: this.backgroundTexturePath,
+            hasGradient: !!this.backgroundGradient,
+            gradient: this.backgroundGradient
+                ? {
+                    type: this.backgroundGradient.type,
+                    colorStops: this.backgroundGradient.colorStops,
+                    start: this.backgroundGradient.start,
+                    end: this.backgroundGradient.end,
+                    center: this.backgroundGradient.center,
+                    innerRadius: this.backgroundGradient.innerRadius,
+                    outerCenter: this.backgroundGradient.outerCenter,
+                    outerRadius: this.backgroundGradient.outerRadius,
+                    textureSpace: this.backgroundGradient.textureSpace,
+                }
+                : null,
         };
 
-        console.log(JSON.stringify({
-            background: backgroundData,
-
-            grid: {
-                size: this.gridSize,
-                visible: this.gridVisible
-            },
-            display: {
-                width: this._width,
-                height: this._height
-            },
-            widgets
-        }))
+        console.log(
+            JSON.stringify({
+                background: backgroundData,
+                grid: {
+                    size: this.gridSize,
+                    visible: this.gridVisible,
+                },
+                display: {
+                    width: this._width,
+                    height: this._height,
+                },
+                widgets,
+            }),
+        );
         return {
             background: backgroundData,
             grid: {
                 size: this.gridSize,
-                visible: this.gridVisible
+                visible: this.gridVisible,
             },
             display: {
                 width: this._width,
-                height: this._height
+                height: this._height,
             },
-            widgets
+            widgets,
         };
     }
+
     getSelected() {
-        return this.container.children
-            .filter((elem) => elem instanceof DraggableWidget && elem.isSelected)
+        return this.innerContainer.children.filter(
+            (elem) => elem instanceof DraggableWidget && elem.isSelected,
+        );
     }
+
     deleteSelected() {
-        this.container.children
-            .filter((elem) => elem instanceof DraggableWidget && elem.isSelected).map((elem) => elem.destroy())
+        this.innerContainer.children
+            .filter((elem) => elem instanceof DraggableWidget && elem.isSelected)
+            .forEach((elem) => elem.destroy());
     }
+
     deleteAll() {
-        this.container.children
-            .filter((elem) => elem instanceof DraggableWidget).map((elem) => elem.destroy())
+        this.innerContainer.children
+            .filter((elem) => elem instanceof DraggableWidget)
+            .forEach((elem) => elem.destroy());
     }
 
     async importScene(data) {
@@ -121,29 +334,29 @@ export default class EditorFrame {
 
         // фон
         if (data.background) {
-            let bg1, bg2
+            let bg1, bg2;
             async function loadBackgroundTextures() {
                 try {
-                    bg1 = await PIXI.Assets.load('/assets/1.png');
-                    bg2 = await PIXI.Assets.load('/assets/2.png');
-                    console.log('Фоновые текстуры загружены');
+                    bg1 = await PIXI.Assets.load("/assets/1.png");
+                    bg2 = await PIXI.Assets.load("/assets/2.png");
+                    console.log("Фоновые текстуры загружены");
                 } catch (error) {
-                    console.error('Ошибка загрузки фоновых текстур:', error);
+                    console.error("Ошибка загрузки фоновых текстур:", error);
                 }
             }
-            await loadBackgroundTextures()
+            await loadBackgroundTextures();
             if (data.background.hasTexture) {
                 if (data.background.texturePath == "1in") {
-                    this.changeBackground({ texture: bg1 })
+                    this.changeBackground({ texture: bg1 });
                 } else if (data.background.texturePath == "2in") {
-                    this.changeBackground({ texture: bg2 })
+                    this.changeBackground({ texture: bg2 });
                 }
+            } else if (data.background.hasGradient && data.background.gradient) {
+                this.changeBackground({ gradient: data.background.gradient });
             } else {
                 this.changeBackground(data.background);
             }
-
         }
-
 
         // сетка
         if (data.grid) {
@@ -151,463 +364,658 @@ export default class EditorFrame {
             this.toggleGrid(data.grid.visible);
         }
         if (data.display) {
-            this.resize(data.display.width, data.display.height)
+            this.resize(data.display.width, data.display.height);
         }
 
         // удалить старые виджеты
-        this.container.children
-            .filter(c => c instanceof DraggableWidget)
-            .forEach(c => this.container.removeChild(c));
+        this.innerContainer.children
+            .filter((c) => c instanceof DraggableWidget)
+            .forEach((c) => this.innerContainer.removeChild(c));
 
         // создать новые
         if (data.widgets) {
-            data.widgets.forEach(w => {
-                console.log(w)
+            data.widgets.forEach((w) => {
+                console.log(w);
                 if (w.w == "AnalogClockWidget") {
-                    if (w.type == 'analog-1') {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                    if (w.type == "analog-1") {
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
                         const widget = new AnalogClockWidget(bounds, 246, 246, {
-                            clockType: 1
-                        })
+                            clockType: 1,
+                        });
 
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "analog-2") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
                         const widget = new AnalogClockWidget(bounds, 246, 246, {
-                            clockType: 2
-                        })
+                            clockType: 2,
+                        });
 
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "analog-3") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
                         const widget = new AnalogClockWidget(bounds, 246, 246, {
-                            clockType: 3
-                        })
+                            clockType: 3,
+                        });
 
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "analog-4") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
                         const widget = new AnalogClockWidget(bounds, 246, 246, {
-                            clockType: 4
-                        })
+                            clockType: 4,
+                        });
 
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "analog-5") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
                         const widget = new AnalogClockWidget(bounds, 246, 246, {
-                            clockType: 5
-                        })
+                            clockType: 5,
+                        });
 
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "analog-6") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
                         const widget = new AnalogClockWidget(bounds, 246, 246, {
-                            clockType: 6
-                        })
+                            clockType: 6,
+                        });
 
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "analog-7") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
                         const widget = new AnalogClockWidget(bounds, 246, 246, {
-                            clockType: 7
-                        })
+                            clockType: 7,
+                        });
 
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "analog-8") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
                         const widget = new AnalogClockWidget(bounds, 246, 246, {
-                            clockType: 8
-                        })
+                            clockType: 8,
+                        });
 
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
-
-
                 }
                 if (w.w == "DigitalClockWidget") {
                     if (w.type == "XLseconds") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
                         const widget = new DigitalClockWidget(bounds, 508, 246, {
-                            showSeconds: true
-                        })
+                            showSeconds: true,
+                        });
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "XL") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
                         const widget = new DigitalClockWidget(bounds, 508, 246, {
-                            showSeconds: false
-                        })
+                            showSeconds: false,
+                        });
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "L") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
                         const widget = new DigitalClockWidget(bounds, 377, 115, {
-                            showSeconds: true
-                        })
+                            showSeconds: true,
+                        });
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "S") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
                         const widget = new DigitalClockWidget(bounds, 246, 115, {
-                            showSeconds: false
-                        })
+                            showSeconds: false,
+                        });
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                 }
                 if (w.w == "CalendarWidget") {
                     if (w.type == "XL") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new CalendarWidget(bounds, 508, 377)
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new CalendarWidget(bounds, 508, 377);
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "L") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new CalendarWidget(bounds, 508, 246)
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new CalendarWidget(bounds, 508, 246);
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "M") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new CalendarWidget(bounds, 508, 115)
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new CalendarWidget(bounds, 508, 115);
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "S") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new CalendarWidget(bounds, 246, 246)
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new CalendarWidget(bounds, 246, 246);
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "XS") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new CalendarWidget(bounds, 246, 115)
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new CalendarWidget(bounds, 246, 115);
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "XS_day") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new CalendarWidget(bounds, 246, 115, { dayOnly: true })
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new CalendarWidget(bounds, 246, 115, {
+                            dayOnly: true,
+                        });
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                 }
                 if (w.w == "WeatherWidget") {
                     if (w.type == "XL") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new WeatherWidget(bounds, 508, 246)
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new WeatherWidget(bounds, 508, 246);
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "L") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new WeatherWidget(bounds, 377, 115)
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new WeatherWidget(bounds, 377, 115);
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "M") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new WeatherWidget(bounds, 246, 246)
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new WeatherWidget(bounds, 246, 246);
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "S") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new WeatherWidget(bounds, 246, 115)
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new WeatherWidget(bounds, 246, 115);
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                 }
                 if (w.w == "TrafficWidget") {
                     if (w.type == "TRAFFICL") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new TrafficWidget(bounds, 377, 115)
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new TrafficWidget(bounds, 377, 115);
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "TRAFFICM") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new TrafficWidget(bounds, 246, 115)
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new TrafficWidget(bounds, 246, 115);
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "TRAFFICS") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new TrafficWidget(bounds, 115, 115)
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new TrafficWidget(bounds, 115, 115);
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                 }
                 if (w.w == "NewsWidget") {
-                    const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                    const widget = new NewsWidget(bounds, 508, 538)
-                    this.addWidget(widget); widget.setPosition(w.x, w.y)
-                    widget.setBackgroundColor(w.bgColor)
-                    widget.setBackgroundAlpha(w.bgAlpha)
-                    widget.setCornerRadius(w.cornerRadius)
-
-                    widget.resize(w.size.width, w.size.height)
+                    const bounds = new PIXI.Rectangle(
+                        0,
+                        0,
+                        this.getWidth(),
+                        this.getHeight(),
+                    );
+                    const widget = new NewsWidget(bounds, 508, 538);
+                    this.addWidget(widget);
+                    widget.setPosition(w.x, w.y);
+                    widget.setBackgroundColor(w.bgColor);
+                    widget.setBackgroundAlpha(w.bgAlpha);
+                    widget.setCornerRadius(w.cornerRadius);
+                    widget.resize(w.size.width, w.size.height);
                 }
                 if (w.w == "RatesWidget") {
                     if (w.type == "USDEURS") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new RatesWidget(bounds, 115, 115, { currency: "USDEURS" })
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new RatesWidget(bounds, 115, 115, {
+                            currency: "USDEURS",
+                        });
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "EURM") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new RatesWidget(bounds, 246, 115, { currency: "EUR" })
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new RatesWidget(bounds, 246, 115, {
+                            currency: "EUR",
+                        });
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "USDM") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new RatesWidget(bounds, 246, 115, { currency: "USD" })
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new RatesWidget(bounds, 246, 115, {
+                            currency: "USD",
+                        });
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "USDEURM") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new RatesWidget(bounds, 246, 115, { currency: "USDEURM" })
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new RatesWidget(bounds, 246, 115, {
+                            currency: "USDEURM",
+                        });
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "USDL") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new RatesWidget(bounds, 377, 115, { currency: "USD" })
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new RatesWidget(bounds, 377, 115, {
+                            currency: "USD",
+                        });
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "EURL") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new RatesWidget(bounds, 377, 115, { currency: "EUR" })
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new RatesWidget(bounds, 377, 115, {
+                            currency: "EUR",
+                        });
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                 }
                 if (w.w == "MetalsWidget") {
                     if (w.type == "metal-L") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new MetalsWidget(bounds, 508, 246)
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new MetalsWidget(bounds, 508, 246);
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "metal-S") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new MetalsWidget(bounds, 508, 115)
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new MetalsWidget(bounds, 508, 115);
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                 }
                 if (w.w == "CompanyWidget") {
                     if (w.type == "info") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
                         const widget = new CompanyWidget(bounds, 508, 115, {
-                            type: "info"
-                        })
+                            type: "info",
+                        });
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "logos") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
                         const widget = new CompanyWidget(bounds, 508, 115, {
-                            type: "logos"
-                        })
+                            type: "logos",
+                        });
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                     if (w.type == "simple-logos") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
                         const widget = new CompanyWidget(bounds, 508, 115, {
-                            type: "simple-logos"
-                        })
+                            type: "simple-logos",
+                        });
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-
-
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
-
                 }
                 if (w.w == "SimpleRectWidget") {
                     if (w.type == "SimpleRect") {
-                        const bounds = new PIXI.Rectangle(0, 0, this.getWidth(), this.getHeight());
-                        const widget = new SimpleRectWidget(bounds)
+                        const bounds = new PIXI.Rectangle(
+                            0,
+                            0,
+                            this.getWidth(),
+                            this.getHeight(),
+                        );
+                        const widget = new SimpleRectWidget(bounds);
                         this.addWidget(widget);
-                        widget.setBackgroundColor(w.bgColor)
-                        widget.setBackgroundAlpha(w.bgAlpha)
-                        widget.setCornerRadius(w.cornerRadius)
-
-
-                        widget.setPosition(w.x, w.y)
-                        widget.resize(w.size.width, w.size.height)
+                        widget.setBackgroundColor(w.bgColor);
+                        widget.setBackgroundAlpha(w.bgAlpha);
+                        widget.setCornerRadius(w.cornerRadius);
+                        widget.setPosition(w.x, w.y);
+                        widget.resize(w.size.width, w.size.height);
                     }
                 }
-                // const widget = this.addWidget(graphics, w.x, w.y);
-                // widget.color = w.color;
             });
         }
     }
@@ -616,7 +1024,7 @@ export default class EditorFrame {
         const data = this.exportScene();
         let html = `<div style="position:relative; width:${this._width}px; height:${this._height}px; background:#${data.background.color.toString(16)}; opacity:${data.background.alpha};">`;
 
-        data.widgets.forEach(w => {
+        data.widgets.forEach((w) => {
             html += `<div style="
                 position:absolute;
                 left:${w.x}px;
@@ -634,15 +1042,15 @@ export default class EditorFrame {
     // ==== ОСНОВНОЙ ФУНКЦИОНАЛ ====
 
     setupKeyboardControls() {
-        document.addEventListener('keydown', (e) => {
-            if (e.key.toLowerCase() === 'h') {
+        document.addEventListener("keydown", (e) => {
+            if (e.key.toLowerCase() === "h") {
                 this.toggleDrag();
             }
 
-            if (e.key === '+' || e.key === '=') {
+            if (e.key === "+" || e.key === "=") {
                 e.preventDefault();
                 this.handleZoom({ deltaY: -100, global: this.getCenterPosition() });
-            } else if (e.key === '-' || e.key === '_') {
+            } else if (e.key === "-" || e.key === "_") {
                 e.preventDefault();
                 this.handleZoom({ deltaY: 100, global: this.getCenterPosition() });
             }
@@ -652,7 +1060,7 @@ export default class EditorFrame {
     getCenterPosition() {
         return {
             x: this.app.screen.width / 2,
-            y: this.app.screen.height / 2
+            y: this.app.screen.height / 2,
         };
     }
 
@@ -660,19 +1068,24 @@ export default class EditorFrame {
         this.dragEnabled = !this.dragEnabled;
 
         if (this.dragEnabled) {
-            this.container.interactive = true;
-            this.container.cursor = 'grab';
+            this.mainContainer.interactive = true;
+            this.mainContainer.cursor = "grab";
         } else {
-            this.container.interactive = false;
-            this.container.cursor = 'default';
+            this.mainContainer.interactive = false;
+            this.mainContainer.cursor = "default";
             if (this.dragData) this.onDragEnd();
         }
     }
 
     setupZoom() {
-        this.container.interactive = true;
-        this.container.hitArea = new PIXI.Rectangle(0, 0, this._width, this._height);
-        this.container.on('wheel', (event) => {
+        this.mainContainer.interactive = true;
+        this.mainContainer.hitArea = new PIXI.Rectangle(
+            0,
+            0,
+            this.outerFrameWidth,
+            this.outerFrameHeight,
+        );
+        this.mainContainer.on("wheel", (event) => {
             event.preventDefault();
             this.handleZoom(event);
         });
@@ -682,21 +1095,24 @@ export default class EditorFrame {
         const delta = event.deltaY > 0 ? 0.9 : 1.1;
 
         const mousePos = {
-            x: event.global.x - this.container.x,
-            y: event.global.y - this.container.y
+            x: event.global.x - this.mainContainer.x,
+            y: event.global.y - this.mainContainer.y,
         };
 
         const oldScale = this.scale;
-        this.scale = Math.max(this.minScale, Math.min(this.maxScale, this.scale * delta));
-        this.container.scale.set(this.scale);
+        this.scale = Math.max(
+            this.minScale,
+            Math.min(this.maxScale, this.scale * delta),
+        );
+        this.mainContainer.scale.set(this.scale);
 
         const newMousePos = {
-            x: mousePos.x * this.scale / oldScale,
-            y: mousePos.y * this.scale / oldScale
+            x: (mousePos.x * this.scale) / oldScale,
+            y: (mousePos.y * this.scale) / oldScale,
         };
 
-        this.container.x += mousePos.x - newMousePos.x;
-        this.container.y += mousePos.y - newMousePos.y;
+        this.mainContainer.x += mousePos.x - newMousePos.x;
+        this.mainContainer.y += mousePos.y - newMousePos.y;
 
         this.updateGridAfterZoom();
     }
@@ -705,46 +1121,54 @@ export default class EditorFrame {
         if (this.grid) {
             this.createGrid({
                 size: this.gridSize,
-                thickness: 1 / this.scale
+                thickness: 1 / this.scale,
             });
         }
     }
 
     setupDrag() {
-        this.container.interactive = true;
-        this.container.hitArea = new PIXI.Rectangle(0, 0, this._width, this._height);
+        this.mainContainer.interactive = true;
+        this.mainContainer.hitArea = new PIXI.Rectangle(
+            0,
+            0,
+            this.outerFrameWidth,
+            this.outerFrameHeight,
+        );
+        this.mainContainer.cursor = "grab";
 
-        this.container
-            .on('pointerdown', this.onDragStart.bind(this))
-            .on('pointerup', this.onDragEnd.bind(this))
-            .on('pointerupoutside', this.onDragEnd.bind(this))
-            .on('pointermove', this.onDragMove.bind(this));
+        this.mainContainer
+            .on("pointerdown", this.onDragStart.bind(this))
+            .on("pointerup", this.onDragEnd.bind(this))
+            .on("pointerupoutside", this.onDragEnd.bind(this))
+            .on("pointermove", this.onDragMove.bind(this));
     }
 
     onDragStart(event) {
         if (!this.dragEnabled) return;
         this.dragData = event.data;
         this.dragStart = {
-            x: this.container.x,
-            y: this.container.y,
-            pointer: this.dragData.getLocalPosition(this.container.parent)
+            x: this.mainContainer.x,
+            y: this.mainContainer.y,
+            pointer: this.dragData.getLocalPosition(this.mainContainer.parent),
         };
-        this.container.cursor = 'grabbing';
+        this.mainContainer.cursor = "grabbing";
     }
 
     onDragMove(event) {
         if (!this.dragEnabled || !this.dragData) return;
-        const newPosition = this.dragData.getLocalPosition(this.container.parent);
+        const newPosition = this.dragData.getLocalPosition(
+            this.mainContainer.parent,
+        );
         const dx = newPosition.x - this.dragStart.pointer.x;
         const dy = newPosition.y - this.dragStart.pointer.y;
-        this.container.x = this.dragStart.x + dx;
-        this.container.y = this.dragStart.y + dy;
+        this.mainContainer.x = this.dragStart.x + dx;
+        this.mainContainer.y = this.dragStart.y + dy;
     }
 
     onDragEnd() {
         this.dragData = null;
         this.dragStart = null;
-        this.container.cursor = 'grab';
+        this.mainContainer.cursor = "grab";
     }
 
     createGrid(options) {
@@ -755,7 +1179,7 @@ export default class EditorFrame {
         }
 
         if (this.grid) {
-            this.container.removeChild(this.grid);
+            this.innerContainer.removeChild(this.grid);
             this.grid.destroy({ children: true });
         }
 
@@ -773,7 +1197,7 @@ export default class EditorFrame {
 
         if (!this.gridContainer) {
             this.gridContainer = new Container();
-            this.container.addChild(this.gridContainer);
+            this.innerContainer.addChild(this.gridContainer);
         }
 
         this.gridContainer.removeChildren();
@@ -786,49 +1210,40 @@ export default class EditorFrame {
 
         if (widgetContent instanceof DraggableWidget) {
             widgetContent.position.set(x, y);
-            this.container.addChild(widgetContent);
+            this.innerContainer.addChild(widgetContent);
             widgetContent.on("pointerdown", (e) => {
-                e.stopPropagation(); // чтобы не срабатывал drag editor'а
-                console.log(widgetContent)
-                // if (widgetContent.isSelected) {
-                //     widgetContent.deselect()
-                // } else {
-                //     widgetContent.select()
-                // }
-
-
+                e.stopPropagation();
+                console.log(widgetContent);
             });
             return widgetContent;
         }
 
         const widget = new DraggableWidget(bounds, widgetContent);
         widget.position.set(x, y);
-        this.container.addChild(widget);
-
+        this.innerContainer.addChild(widget);
 
         return widget;
     }
-    // В конструкторе EditorFrame или в main.js
-    setupBackgroundInteraction() {
 
-        // Обработчик клика по фону
-        this.background.on('pointerdown', (event) => {
+    setupBackgroundInteraction() {
+        this.background.on("pointerdown", (event) => {
             this.deselectAllWidgets();
         });
     }
 
     deselectAllWidgets() {
-        this.container.children.forEach(widget => {
-            console.log(widget instanceof DraggableWidget)
+        this.innerContainer.children.forEach((widget) => {
+            console.log(widget instanceof DraggableWidget);
             if (widget instanceof DraggableWidget) {
-                widget.deselect()
+                widget.deselect();
             }
         });
     }
+
     setupGlobalMiddleClick() {
-        this.eventMode = 'static';
-        this.container.on('pointerdown', (event) => {
-            if (event.button === 1) { // Средняя кнопка мыши
+        this.mainContainer.eventMode = "static";
+        this.mainContainer.on("pointerdown", (event) => {
+            if (event.button === 1) {
                 this.deselectAllWidgets();
             }
         });
@@ -843,31 +1258,69 @@ export default class EditorFrame {
         }
     }
 
-    // Обновляем метод resize для обработки текстуры фона
     resize(width, height) {
+        // Сохраняем старые размеры
+        const oldWidth = this._width;
+        const oldHeight = this._height;
+
+        // Обновляем размеры внутреннего поля
         this._width = width;
         this._height = height;
 
+        // Автоматически обновляем размеры внешнего поля с сохранением пропорций
+        const padding = 200; // 200px с каждой стороны
+        this.outerFrameWidth = this._width + padding * 2;
+        this.outerFrameHeight = this._height + padding * 2;
+
+        // Обновляем позицию внутреннего контейнера (центрируем во внешнем поле)
+        this.innerContainer.x = padding;
+        this.innerContainer.y = padding;
+
+        // Обновляем фон внутреннего поля
         if (this.background) {
-            // Обновляем размер основного фона
-            this.background.children.forEach(child => {
+            this.background.children.forEach((child) => {
                 child.width = width;
                 child.height = height;
             });
 
-            // Обновляем размер текстуры, если она есть
             if (this.backgroundSprite) {
                 this.backgroundSprite.width = width;
                 this.backgroundSprite.height = height;
             }
         }
 
+        // Пересоздаем внешнее поле с новыми размерами
+        this.createOuterFrame();
+
+        // Обновляем сетку
         if (this.grid) {
             this.createGrid();
         }
-        if (this.dragEnabled) {
-            this.setupDrag();
-        }
+
+        // Обновляем hitArea для перетаскивания
+        this.mainContainer.hitArea = new PIXI.Rectangle(
+            0,
+            0,
+            this.outerFrameWidth,
+            this.outerFrameHeight,
+        );
+
+        // Обновляем границы для всех виджетов
+        this.updateWidgetsBounds();
+
+        // Перецентрируем на экране
+        this.centerOnScreen();
+    }
+
+    // Добавьте этот вспомогательный метод в класс
+    updateWidgetsBounds() {
+        const bounds = new PIXI.Rectangle(0, 0, this._width, this._height);
+
+        this.innerContainer.children.forEach((child) => {
+            if (child instanceof DraggableWidget) {
+                child.setBounds(bounds);
+            }
+        });
     }
 
     snapToGrid(value) {
@@ -878,14 +1331,13 @@ export default class EditorFrame {
         this.background = new Container();
         this.backgroundSprite = null;
 
-        // Создаем базовый фон
         const bg = new Sprite(Texture.WHITE);
         bg.width = this._width;
         bg.height = this._height;
-        bg.tint = 'rgb(30, 30, 30)';
+        bg.tint = "rgb(30, 30, 30)";
         this.background.addChild(bg);
 
-        this.container.addChildAt(this.background, 0);
+        this.innerContainer.addChildAt(this.background, 0);
         this.setupBackgroundInteraction();
     }
 
@@ -901,106 +1353,160 @@ export default class EditorFrame {
         return { width: this._width, height: this._height };
     }
 
+    applyGradientBackground(gradientOptions) {
+        const validatedOptions = this.validateGradientOptions(gradientOptions);
+        this.changeBackground({ gradient: validatedOptions });
+    }
+
+    validateGradientOptions(options) {
+        return {
+            type: options.type || "linear",
+            colorStops: options.colorStops || [
+                { offset: 0, color: "#ff0000" },
+                { offset: 1, color: "#0000ff" },
+            ],
+            start: options.start || { x: 0, y: 0 },
+            end: options.end || { x: 1, y: 1 },
+            textureSpace: options.textureSpace || "local",
+        };
+    }
+
     async changeBackground(options = {}) {
         if (!this.background) {
             this.createBackground();
         }
 
-        // Полностью очищаем текущий фон при любом изменении
-        this.container.removeChild(this.background);
+        this.innerContainer.removeChild(this.background);
         this.background.destroy();
 
-        // Создаем новый контейнер для фона
         this.background = new Container();
         this.backgroundSprite = null;
 
-        // Обработка цветного фона
-        if (options.color !== undefined) {
-            const bg = new Sprite(Texture.WHITE);
-            bg.width = this._width;
-            bg.height = this._height;
-            bg.tint = options.color;
-            bg.alpha = options.alpha !== undefined ? options.alpha : 1;
-            this.background.addChild(bg);
-        }
-        // Обработка текстурированного фона
-        else if (options.texture !== undefined) {
+        if (options.gradient !== undefined) {
             try {
-                let texture;
+                const graphics = new Graphics();
+                const gradient = new FillGradient({
+                    type: options.gradient.type || "linear",
+                    colorStops: options.gradient.colorStops || [
+                        { offset: 0, color: "red" },
+                        { offset: 1, color: "blue" },
+                    ],
+                    start: options.gradient.start || { x: 0, y: 0 },
+                    end: options.gradient.end || { x: 1, y: 1 },
+                    textureSpace: options.gradient.textureSpace || "local",
+                });
 
-                // Если передан URL строкой
-                if (typeof options.texture === 'string') {
-                    texture = await PIXI.Assets.load(options.texture);
-                }
-                // Если передана готовая текстура
-                else if (options.texture instanceof PIXI.Texture) {
-                    texture = options.texture;
-                    console.log(options.texture)
-                    if (options.texture.label.includes("1.png")) {
-                        this.backgroundTexturePath = "1in"
-                    } else if (options.texture.label.includes("2.png")) {
-                        this.backgroundTexturePath = "2in"
-                    }
-                }
+                graphics.rect(0, 0, this._width, this._height);
+                graphics.fill(gradient);
 
-                if (texture) {
-                    this.backgroundSprite = new Sprite(texture);
-                    this.backgroundSprite.width = this._width;
-                    this.backgroundSprite.height = this._height;
-                    this.backgroundSprite.alpha = options.alpha !== undefined ? options.alpha : 1;
-                    this.background.addChild(this.backgroundSprite);
-
-                }
+                this.background.addChild(graphics);
+                this.backgroundGradient = gradient;
             } catch (error) {
-                console.error('Ошибка загрузки текстуры фона:', error);
-                // В случае ошибки создаем цветной фон по умолчанию
-                const bg = new Sprite(Texture.WHITE);
-                bg.width = this._width;
-                bg.height = this._height;
-                bg.tint = 0x1e1e1e; // Цвет по умолчанию
-                this.background.addChild(bg);
+                console.error("Ошибка создания градиента:", error);
+                this.createDefaultBackground(options);
             }
-        }
-        // Если не указано ни цвета ни текстуры - используем фон по умолчанию
-        else {
-            const bg = new Sprite(Texture.WHITE);
-            bg.width = this._width;
-            bg.height = this._height;
-            bg.tint = 0x1e1e1e; // Цвет по умолчанию
-            bg.alpha = options.alpha !== undefined ? options.alpha : 1;
-            this.background.addChild(bg);
+        } else if (options.color !== undefined) {
+            this.createColorBackground(options);
+        } else if (options.texture !== undefined) {
+            await this.createTextureBackground(options);
+        } else {
+            this.createDefaultBackground(options);
         }
 
-        // Добавляем фон на сцену и настраиваем взаимодействие
-        this.container.addChildAt(this.background, 0);
+        this.innerContainer.addChildAt(this.background, 0);
         this.setupBackgroundInteraction();
     }
 
+    createDefaultBackground(options) {
+        const bg = new Sprite(Texture.WHITE);
+        bg.width = this._width;
+        bg.height = this._height;
+        bg.tint = 0x1e1e1e;
+        bg.alpha = options.alpha !== undefined ? options.alpha : 1;
+        this.background.addChild(bg);
+    }
+
+    createColorBackground(options) {
+        const bg = new Sprite(Texture.WHITE);
+        bg.width = this._width;
+        bg.height = this._height;
+        bg.tint = options.color;
+        bg.alpha = options.alpha !== undefined ? options.alpha : 1;
+        this.background.addChild(bg);
+    }
+
+    async createTextureBackground(options) {
+        try {
+            let texture;
+            if (typeof options.texture === "string") {
+                texture = await PIXI.Assets.load(options.texture);
+            } else if (options.texture instanceof Texture) {
+                texture = options.texture;
+                if (options.texture.label.includes("1.png")) {
+                    this.backgroundTexturePath = "1in";
+                } else if (options.texture.label.includes("2.png")) {
+                    this.backgroundTexturePath = "2in";
+                }
+            }
+
+            if (texture) {
+                this.backgroundSprite = new Sprite(texture);
+                this.backgroundSprite.width = this._width;
+                this.backgroundSprite.height = this._height;
+                this.backgroundSprite.alpha =
+                    options.alpha !== undefined ? options.alpha : 1;
+                this.background.addChild(this.backgroundSprite);
+            }
+        } catch (error) {
+            console.error("Ошибка загрузки текстуры фона:", error);
+            this.createDefaultBackground(options);
+        }
+    }
+
     applyTextureBackground(texture, path) {
-        // Удаляем предыдущий спрайт текстуры, если он есть
         if (this.backgroundSprite) {
             this.background.removeChild(this.backgroundSprite);
             this.backgroundSprite.destroy();
         }
 
-        // Создаем новый спрайт с текстурой
         this.backgroundSprite = new Sprite(texture);
-
-        // Устанавливаем размеры спрайта под размеры редактора
         this.backgroundSprite.width = this._width;
         this.backgroundSprite.height = this._height;
         this.backgroundSprite.alpha = 1;
 
-        // Очищаем текущий фон, оставляя контейнер
         this.background.removeChildren();
         this.background.addChild(this.backgroundSprite);
 
-        // Сохраняем путь текстуры
         this.backgroundTexturePath = path ?? null;
-
-        // Восстанавливаем обработчики событий
         this.setupBackgroundInteraction();
     }
 
+    // ==== МЕТОДЫ ДЛЯ РАБОТЫ С ВНЕШНИМ ПОЛЕМ ====
 
+    changeOuterFrameColor(color) {
+        this.outerFrameColor = color;
+        this.createOuterFrame();
+    }
+
+    changeOuterFrameAlpha(alpha) {
+        this.outerFrameAlpha = alpha;
+        this.createOuterFrame();
+    }
+
+    getOuterFrameSize() {
+        return { width: this.outerFrameWidth, height: this.outerFrameHeight };
+    }
+
+    centerOnScreen() {
+        this.mainContainer.x =
+            (this.app.screen.width - this.outerFrameWidth * this.scale) / 2;
+        this.mainContainer.y =
+            (this.app.screen.height - this.outerFrameHeight * this.scale) / 2;
+    }
+
+    resetView() {
+        this.scale = 1;
+        this.mainContainer.scale.set(1);
+        this.centerOnScreen();
+    }
 }

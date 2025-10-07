@@ -54,15 +54,14 @@
         position: absolute;
         top: 15px;
         right: 15px;
-        width: 200px;
+        width: 350px;
         overflow-y: scroll;
         max-height: 80vh;
       }
       #background-controls-widget {
         position: absolute;
         bottom: 15px;
-        right: 30vw;
-        width: 200px;
+        left: 10vw;
       }
 
       #widget-controls {
@@ -371,34 +370,19 @@
         </button>
       </div>
     </div>
-    <div
-      id="background-controls-widget"
-      style="
-        position: absolute !important;
-        bottom: 15px !important;
-        left: 30vw !important;
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        gap: 10px;
-        height: 40px !important;
-        padding: 5px 10px;
-        border-radius: 8px;
-      "
-    >
+    <div id="background-controls-widget">
       <!-- Управление объектами -->
       <button id="delete-all">Удалить все</button>
       <button id="delete-selected">Удалить выбранное</button>
-      <button id="select-all">Выбрать все</button>
 
       <!-- Цвет фона -->
-      <label style="display: flex; align-items: center; gap: 5px">
+      <label>
         Цвет фона:
         <input type="color" id="background-color" value="#1e1e1e" />
       </label>
 
       <!-- Прозрачность фона -->
-      <label style="display: flex; align-items: center; gap: 5px">
+      <label>
         Прозрачность:
         <input
           type="range"
@@ -407,12 +391,19 @@
           max="1"
           step="0.01"
           value="1"
-          style="width: 100px"
+        />
+        <input
+          type="number"
+          id="background-alpha-input"
+          min="0"
+          max="1"
+          step="0.01"
+          value="1"
         />
       </label>
 
       <!-- Радиус закругления -->
-      <label style="display: flex; align-items: center; gap: 5px">
+      <label>
         Закругление:
         <input
           type="range"
@@ -421,12 +412,184 @@
           max="100"
           step="1"
           value="32"
-          style="width: 100px"
         />
+        <input
+          type="number"
+          id="corner-radius-input"
+          min="0"
+          max="100"
+          step="1"
+          value="32"
+        />
+      </label>
+
+      <label>
+        Пропорции:
+        <input type="checkbox" id="proportioned-scaling" checked />
+      </label>
+      <label>
+        Автоцентр:
+        <input type="checkbox" id="autocenter" checked />
+      </label>
+      <label>
+        Скейл:
+        <button id="scale0.5x">0.5x</button>
+        <button id="scale2x">2x</button>
+        <button id="scale3x">3x</button>
       </label>
     </div>
 
-    <div id="widget-controls">
+    <style>
+      #background-controls-widget {
+        position: absolute;
+        bottom: 15px;
+        left: 5vw;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 14px;
+        height: 48px;
+        border-radius: 10px;
+        background: rgba(25, 25, 25, 0.9);
+        color: #fff;
+        font-family: "Inter", Arial, sans-serif;
+        font-size: 13px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(6px);
+        min-width: 65vw;
+      }
+
+      #background-controls-widget button {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 6px;
+        background: #444;
+        color: white;
+        font-size: 13px;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          transform 0.15s;
+      }
+
+      #background-controls-widget button:hover {
+        background: #666;
+        transform: translateY(-1px);
+      }
+
+      #background-controls-widget button:active {
+        background: #333;
+        transform: translateY(0);
+      }
+
+      #background-controls-widget label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.05);
+        padding: 4px 6px;
+        border-radius: 6px;
+      }
+
+      #background-controls-widget input[type="color"] {
+        width: 36px;
+        height: 22px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        background: transparent;
+      }
+
+      #background-controls-widget input[type="range"] {
+        width: 90px;
+        cursor: pointer;
+      }
+
+      #background-controls-widget input[type="number"] {
+        width: 52px;
+        padding: 3px;
+        border: 1px solid #666;
+        border-radius: 4px;
+        background: #2a2a2a;
+        color: white;
+        text-align: center;
+      }
+
+      #background-controls-widget input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+      }
+    </style>
+
+    <script>
+      // Синхронизация ползунков и текстовых полей
+      document.addEventListener("DOMContentLoaded", function () {
+        // Прозрачность
+        const alphaSlider = document.getElementById("background-alpha");
+        const alphaInput = document.getElementById("background-alpha-input");
+
+        alphaSlider.addEventListener("input", function () {
+          alphaInput.value = this.value;
+        });
+
+        alphaInput.addEventListener("input", function () {
+          let value = parseFloat(this.value);
+          if (isNaN(value)) value = 1;
+          value = Math.max(0, Math.min(1, value));
+          this.value = value.toFixed(2);
+          alphaSlider.value = value;
+        });
+
+        // Закругление
+        const radiusSlider = document.getElementById("corner-radius");
+        const radiusInput = document.getElementById("corner-radius-input");
+
+        radiusSlider.addEventListener("input", function () {
+          radiusInput.value = this.value;
+        });
+
+        radiusInput.addEventListener("input", function () {
+          let value = parseInt(this.value);
+          if (isNaN(value)) value = 32;
+          value = Math.max(0, Math.min(100, value));
+          this.value = value;
+          radiusSlider.value = value;
+        });
+
+        // Обработчики для кнопок
+        document
+          .getElementById("delete-all")
+          .addEventListener("click", function () {
+            // Логика удаления всех объектов
+            console.log("Удалить все");
+          });
+
+        document
+          .getElementById("delete-selected")
+          .addEventListener("click", function () {
+            // Логика удаления выбранных объектов
+            console.log("Удалить выбранное");
+          });
+
+        document
+          .getElementById("select-all")
+          .addEventListener("click", function () {
+            // Логика выбора всех объектов
+            console.log("Выбрать все");
+          });
+
+        // Обработчик для цвета фона
+        document
+          .getElementById("background-color")
+          .addEventListener("input", function () {
+            console.log("Цвет фона изменен на:", this.value);
+          });
+      });
+    </script>
+
+    <div id="widget-controls" style="height: 70vh !important">
       <label>
         <p id="choosed-widget">Виджеты</p>
       </label>
@@ -603,6 +766,12 @@
         <p>Видео</p>
         <div class="widgetRow">
           <img id="video-1" src="/assets/video/video.png" alt="" />
+        </div>
+      </div>
+      <div class="widgetContainer">
+        <p>Обьявление</p>
+        <div class="widgetRow">
+          <button id="info-1">Обьявление</button>
         </div>
       </div>
     </div>
