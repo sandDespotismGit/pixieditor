@@ -169,192 +169,193 @@
     </style>
   </head>
   <body>
-    <div
-      class="design-4 widget-analog-clock-M-11-7 analog-clock-M react-draggable react-draggable react-draggable react-draggable-dragged react-draggable react-draggable"
-      style="
-        position: absolute !important;
-        top: 280px !important;
-        left: 15px !important;
-        --background-widgets: rgba(0, 0, 0, 0.18) !important;
-        --text-color: rgba(255, 255, 255, 1) !important;
-      "
-    >
-      <canvas id="canvas1-7" width="246px" height="246px">
-        <style>
-          * {
-            margin: 0px;
-            padding: 0px;
-          }
-          :root {
-            --background-widgets: rgba(0, 0, 0, 0.18);
-            --text-color: rgba(255, 255, 255, 1);
-            --size-2: 246px;
-          }
-          .design-4 {
-            background-color: var(--background-widgets);
-            border-radius: 32px;
-            backdrop-filter: blur(60px);
-          }
-          .widget-analog-clock-M-11-7 {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: var(--size-2);
-            height: var(--size-2);
-            position: absolute;
-            left: 15px !important;
-            top: 280px !important;
-          }
-        </style>
-        <script>
-          analogClock_11_7();
-          function analogClock_11_7() {
-            let center_x = 123;
-            let center_y = 123;
-            let radius = 117;
-            pi = Math.PI;
-            drawClock_11_7();
-            setInterval(drawClock_11_7, 100);
-            function drawClock_11_7() {
-              clock_11_7();
-              mark_circle_seconds2();
-              mark_circle_hours2(ctx, radius);
-              drawWhiteNumbers(ctx, radius);
-              timing_11_7();
-            }
-            // стрелки
-            function timing_11_7() {
-              const d = new Date();
-              let hours = d.getHours() % 12;
-              let minutes = d.getMinutes();
-              let seconds = d.getSeconds();
+    <div class="container">
+      <h1>Конструктор градиентов</h1>
 
-              // Углы для стрелок
-              let secAngle = Math.PI * 2 * (seconds / 60) - Math.PI / 2;
-              let minAngle =
-                Math.PI * 2 * ((minutes + seconds / 60) / 60) - Math.PI / 2;
-              let hourAngle =
-                Math.PI * 2 * ((hours + minutes / 60) / 12) - Math.PI / 2;
+      <div class="gradient-preview" id="gradient-preview"></div>
 
-              // Часовая стрелка
-              ctx.beginPath();
-              ctx.lineWidth = 8;
-              ctx.strokeStyle = "rgba(115, 115, 115, 1)";
-              ctx.moveTo(center_x, center_y);
-              let hourX = center_x + Math.cos(hourAngle) * radius * 0.4;
-              let hourY = center_y + Math.sin(hourAngle) * radius * 0.4;
-              ctx.lineTo(hourX, hourY);
-              ctx.lineCap = "round";
-              ctx.stroke();
-              ctx.closePath();
+      <div class="controls">
+        <div class="color-controls">
+          <h2>Управление цветами</h2>
+          <div class="color-stops" id="color-stops">
+            <!-- Color stops will be added here dynamically -->
+          </div>
 
-              // Минутная стрелка
-              ctx.beginPath();
-              ctx.lineWidth = 6;
-              ctx.strokeStyle = "rgba(115, 115, 115, 1)";
-              ctx.moveTo(center_x, center_y);
-              let minX = center_x + Math.cos(minAngle) * radius * 0.6;
-              let minY = center_y + Math.sin(minAngle) * radius * 0.6;
-              ctx.lineTo(minX, minY);
-              ctx.lineCap = "round";
-              ctx.stroke();
-              ctx.closePath();
+          <div class="buttons">
+            <button id="add-color">Добавить цвет</button>
+            <button id="remove-color">Удалить цвет</button>
+          </div>
+        </div>
 
-              // Секундная стрелка
-              ctx.beginPath();
-              ctx.lineWidth = 3;
-              ctx.strokeStyle = "rgb(255, 255, 255, 1)";
-              ctx.moveTo(center_x, center_y);
-              let secX = center_x + Math.cos(secAngle) * radius * 0.75;
-              let secY = center_y + Math.sin(secAngle) * radius * 0.75;
-              ctx.lineTo(secX, secY);
-              ctx.lineCap = "round";
-              ctx.stroke();
-              ctx.closePath();
+        <div class="gradient-controls">
+          <h2>Настройки градиента</h2>
+          <label for="gradient-type">Тип градиента:</label>
+          <select id="gradient-type">
+            <option value="linear">Линейный</option>
+            <option value="radial">Радиальный</option>
+          </select>
 
-              // Центральная точка
-              ctx.beginPath();
-              ctx.fillStyle = "rgba(255, 255, 255, 1)";
-              ctx.arc(center_x, center_y, 4, 0, 2 * Math.PI, false);
-              ctx.fill();
-              ctx.closePath();
-            }
-            function mark_circle_hours2(ctx, radius) {
-              for (var i = 0; i <= Math.PI * 2; i += (2 * Math.PI) / 12) {
-                fill(function () {
-                  ctx.fillStyle = "rgba(255, 255, 255, 1)";
-                  ctx.arc(
-                    ctx.canvas.width / 2 + ((10 * radius) / 11) * Math.cos(i),
-                    ctx.canvas.height / 2 + ((10 * radius) / 11) * Math.sin(i),
-                    4,
-                    0,
-                    2 * Math.PI
-                  );
-                });
-              }
-            }
+          <label for="gradient-angle">Угол (для линейного градиента):</label>
+          <input
+            type="range"
+            id="gradient-angle"
+            min="0"
+            max="360"
+            value="90"
+          />
+          <div class="angle-value">Угол: <span id="angle-value">90</span>°</div>
 
-            //  секундные метки темно-серые точечные
-            function mark_circle_seconds2() {
-              for (var i = 0; i < 60; i++) {
-                angle = ((i - 3) * (Math.PI * 2)) / 60; // THE ANGLE TO MARK.
-                ctx.lineWidth = 3; // HAND WIDTH.
-                ctx.beginPath();
-                ctx.fillStyle = "rgba(64, 64, 64, 1)";
-                var x1 = center_x + (Math.cos(angle) * 60 * 14) / 8;
-                var y1 = center_y + (Math.sin(angle) * 60 * 14) / 8;
-                ctx.arc(x1, y1, 4, 0, 2 * pi, false);
-                ctx.fill();
-                ctx.closePath();
-              }
-            }
-            function fill(fn, params) {
-              ctx.beginPath();
-              fn(params);
-              ctx.fill();
-              ctx.closePath();
-            }
-            // отрисовка цифр белые
-            function drawWhiteNumbers(ctx, radius) {
-              var ang;
-              var num;
-              ctx.font = radius * 0.18 + "px rubik";
-              ctx.textBaseline = "middle";
-              ctx.textAlign = "center";
-              for (num = 1; num < 13; num++) {
-                ang = (num * Math.PI) / 6;
-                ctx.rotate(ang);
-                ctx.translate(0, -radius * 0.75);
-                ctx.rotate(-ang);
-                ctx.fillText(num.toString(), center_x, center_y);
-                ctx.rotate(ang);
-                ctx.translate(0, radius * 0.75);
-                ctx.rotate(-ang);
-              }
-            }
-            function clock_11_7() {
-              canvas = document.getElementById("canvas1-7");
-              ctx = canvas.getContext("2d");
-              ctx.beginPath(); // начало нового пути
-              ctx.lineWidth = 2;
-              ctx.fillStyle = "rgba(16, 16, 16, 1)";
-              ctx.strokeStyle = "rgba(16, 16, 16, 1)";
-              // Координаты центра круга, радиус, начальный угол, конечный угол, направление по часовой стрелке
-              ctx.arc(center_x, center_y, radius - 2, 0, 2 * pi, false);
-              ctx.fill();
-              ctx.stroke();
-              ctx.closePath();
+          <div class="buttons">
+            <button id="copy-css">Скопировать CSS</button>
+          </div>
+        </div>
+      </div>
 
-              ctx.beginPath(); // начало нового пути
-              ctx.fillStyle = "rgba(115, 115, 115, 1)";
-              // Координаты центра круга, радиус, начальный угол, конечный угол, направление по часовой стрелке
-              ctx.arc(center_x, center_y, 7, 0, 2 * pi, false);
-              ctx.fill();
-              ctx.closePath();
-            }
-          }
-        </script>
-      </canvas>
+      <div class="css-output">
+        <h3>CSS код:</h3>
+        <code id="css-code"></code>
+      </div>
     </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const gradientPreview = document.getElementById("gradient-preview");
+        const colorStopsContainer = document.getElementById("color-stops");
+        const addColorBtn = document.getElementById("add-color");
+        const removeColorBtn = document.getElementById("remove-color");
+        const copyCssBtn = document.getElementById("copy-css");
+        const gradientType = document.getElementById("gradient-type");
+        const gradientAngle = document.getElementById("gradient-angle");
+        const angleValue = document.getElementById("angle-value");
+        const cssCode = document.getElementById("css-code");
+
+        let colorStops = [
+          { color: "#ff0000", position: 0 },
+          { color: "#0000ff", position: 100 },
+        ];
+
+        // Инициализация
+        renderColorStops();
+        updateGradient();
+
+        // Добавление обработчиков событий
+        addColorBtn.addEventListener("click", addColorStop);
+        removeColorBtn.addEventListener("click", removeColorStop);
+        copyCssBtn.addEventListener("click", copyCssToClipboard);
+        gradientType.addEventListener("change", updateGradient);
+        gradientAngle.addEventListener("input", function () {
+          angleValue.textContent = this.value;
+          updateGradient();
+        });
+
+        // Функции
+        function renderColorStops() {
+          colorStopsContainer.innerHTML = "";
+
+          colorStops.forEach((stop, index) => {
+            const colorStopElement = document.createElement("div");
+            colorStopElement.className = "color-stop";
+
+            colorStopElement.innerHTML = `
+                        <input type="color" value="${stop.color}" data-index="${index}" class="color-picker">
+                        <input type="range" min="0" max="100" value="${stop.position}" data-index="${index}" class="position-slider">
+                        <span class="position-value">${stop.position}%</span>
+                    `;
+
+            colorStopsContainer.appendChild(colorStopElement);
+          });
+
+          // Добавляем обработчики для новых элементов
+          document.querySelectorAll(".color-picker").forEach((picker) => {
+            picker.addEventListener("input", function () {
+              const index = parseInt(this.dataset.index);
+              colorStops[index].color = this.value;
+              updateGradient();
+            });
+          });
+
+          document.querySelectorAll(".position-slider").forEach((slider) => {
+            slider.addEventListener("input", function () {
+              const index = parseInt(this.dataset.index);
+              const value = parseInt(this.value);
+              colorStops[index].position = value;
+              this.nextElementSibling.textContent = `${value}%`;
+              updateGradient();
+            });
+          });
+        }
+
+        function addColorStop() {
+          if (colorStops.length >= 5) {
+            alert("Максимальное количество цветов - 5");
+            return;
+          }
+
+          // Находим промежуточную позицию для нового цвета
+          let newPosition = 50;
+          if (colorStops.length > 1) {
+            const lastPosition = colorStops[colorStops.length - 2].position;
+            newPosition = lastPosition + Math.floor((100 - lastPosition) / 2);
+          }
+
+          // Добавляем новый цвет (зеленый по умолчанию)
+          colorStops.splice(colorStops.length - 1, 0, {
+            color: "#00ff00",
+            position: newPosition,
+          });
+
+          renderColorStops();
+          updateGradient();
+        }
+
+        function removeColorStop() {
+          if (colorStops.length <= 2) {
+            alert("Минимальное количество цветов - 2");
+            return;
+          }
+
+          colorStops.splice(colorStops.length - 2, 1);
+          renderColorStops();
+          updateGradient();
+        }
+
+        function updateGradient() {
+          // Сортируем цвета по позиции
+          const sortedStops = [...colorStops].sort(
+            (a, b) => a.position - b.position
+          );
+
+          // Формируем строку градиента
+          const gradientString = sortedStops
+            .map((stop) => `${stop.color} ${stop.position}%`)
+            .join(", ");
+
+          // Применяем градиент в зависимости от типа
+          if (gradientType.value === "linear") {
+            gradientPreview.style.background = `linear-gradient(${gradientAngle.value}deg, ${gradientString})`;
+            cssCode.textContent = `background: linear-gradient(${gradientAngle.value}deg, ${gradientString});`;
+          } else {
+            gradientPreview.style.background = `radial-gradient(circle, ${gradientString})`;
+            cssCode.textContent = `background: radial-gradient(circle, ${gradientString});`;
+          }
+        }
+
+        function copyCssToClipboard() {
+          const textArea = document.createElement("textarea");
+          textArea.value = cssCode.textContent;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textArea);
+
+          // Визуальное подтверждение копирования
+          const originalText = copyCssBtn.textContent;
+          copyCssBtn.textContent = "Скопировано!";
+          setTimeout(() => {
+            copyCssBtn.textContent = originalText;
+          }, 2000);
+        }
+      });
+    </script>
   </body>
 </html>
