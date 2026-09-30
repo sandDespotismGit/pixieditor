@@ -1,6 +1,6 @@
-# Текущая архитектура I-panel Editor и серверного ПО
+# Архитектура I-panel Editor и серверного ПО
 
-Документ предназначен для разработчика, который будет лицензировать и упаковывать текущее ПО на сервере. Здесь описана фактическая структура редактора, runtime-логика, серверные точки интеграции и места, куда безопасно встраивать проверку лицензии.
+Документ описывает фактическую структуру программного комплекса, назначение его модулей, runtime-логику и взаимодействие редактора с серверными компонентами.
 
 ## 1. Состав репозитория
 
@@ -84,8 +84,6 @@
 - восстановление сохраненного background config;
 - upload видеофона на backend: `/api/new_file/{panel_id}/upload-background`.
 
-Для лицензирования важно: загрузку медиа и применение сцен лучше проверять на backend, а frontend считать недоверенным клиентом. Любые ограничения в UI удобны, но не являются защитой.
-
 ## 5. Backend patch
 
 `server_patch/` содержит изменения для FastAPI backend.
@@ -138,117 +136,13 @@ Batch endpoint нужен, чтобы runtime панели мог получит
 | Static storage | Каталог `static/` на backend, где лежат загруженные медиа по `panel_id`. |
 | External data | RSS/news, Open-Meteo, CBR rates, oil/metals fallback, MQTT/REST лифтовых данных при подключении lift widgets. |
 
-Рекомендуемый production-поток:
+Порядок взаимодействия компонентов:
 
-1. Собрать editor: `npm run build`.
-2. Передать `dist/` в backend/static hosting или nginx.
-3. Backend держит API и `/static`.
-4. Admin открывает editor с `panel_id` в query string.
-5. Editor сохраняет сцену в backend через существующие API админки.
-6. Панель/runtime получает сцену, медиа и batch parse data.
+1. Webpack собирает editor из `src/main.js` в `dist/bundle.js`.
+2. Собранный `dist/` отдается через backend static hosting или nginx.
+3. Backend обслуживает API и каталог `/static`.
+4. Главная админка открывает editor с `panel_id` в query string.
+5. Editor сериализует сцену и сохраняет ее через существующие API админки.
+6. Панель/runtime получает сохраненную сцену, медиа и batch parse data.
 
-## 7. Где встраивать лицензирование
-
-Frontend нельзя считать надежной точкой защиты. Лицензия должна проверяться на backend и в runtime-выдаче данных.
-
-### Минимальный набор сущностей
-
-| Сущность | Что хранить |
-| --- | --- |
-| `license` | license_id, owner_id, status, issued_at, expires_at, allowed_domains, allowed_panels, allowed_features. |
-| `installation` | installation_id, server_fingerprint, domain, created_at, last_seen_at. |
-| `panel_limit` | max_panels, max_storage_mb, max_scenes, max_users. |
-| `feature_flags` | editor, monitoring, device_player, lift_widgets, telegram_bot, video_upload, mqtt_lift. |
-| `license_audit` | событие, время, IP, user_id, panel_id, результат проверки. |
-
-### Точки проверки
-
-| Точка | Что проверять |
-| --- | --- |
-| Авторизация в главной админке | Активность лицензии, домен, срок действия, статус клиента. |
-| Открытие editor | Доступ к редактору и выбранному `panel_id`. |
-| Сохранение сцены | Лимиты панелей/сцен, feature flags, срок лицензии. |
-| Upload media | Лимит хранилища, разрешение video/image/audio upload. |
-| Выдача сцены панели | Лицензия активна, панель входит в лимит, устройство не заблокировано. |
-| Parse/batch API | Ограничение по enabled widgets/features. |
-| Lift REST/MQTT | Отдельный feature flag `lift_widgets` или `mqtt_lift`. |
-| Telegram bot | Feature flag `telegram_bot`, лимиты объектов и уведомлений. |
-
-### Поведение при проблемах лицензии
-
-- В админке показывать понятную причину: истек срок, превышен лимит, feature недоступна.
-- Runtime панели не должен резко гаснуть при краткой ошибке проверки. Нужен grace period.
-- При истекшей лицензии можно показывать последнюю сцену ограниченное время, но запретить сохранение новых сцен и upload.
-- Проверку лицензии кэшировать локально на сервере, чтобы внешний license server не ломал работающие панели при кратком сбое связи.
-
-## 8. Предлагаемая схема license server
-
-Вариант для коммерческой поставки:
-
-1. На клиентском сервере хранится signed license token.
-2. Backend при старте проверяет подпись токена локально.
-3. Периодически backend отправляет heartbeat на центральный license server.
-4. License server возвращает статус и feature flags.
-5. При недоступности license server backend использует последний валидный статус в пределах grace period.
-
-Минимальные endpoint'ы:
-
-| Endpoint | Назначение |
-| --- | --- |
-| `POST /license/activate` | Активация установки по ключу. |
-| `POST /license/heartbeat` | Периодическое подтверждение установки. |
-| `GET /license/status` | Текущий статус лицензии и feature flags. |
-| `POST /license/deactivate` | Отвязка установки. |
-
-## 9. Что нельзя класть в публичный репозиторий
-
-- Пароли SSH, root credentials, private keys.
-- Секретные ключи внешних API.
-- Реальные customer tokens, JWT refresh tokens, Telegram bot token.
-- Production `.env`.
-- Бэкапы базы данных.
-- Каталог `static/` с клиентскими медиа, если там реальные файлы заказчика.
-
-В репозитории должны быть только исходники, шаблоны конфигов, миграции/схемы без секретов и документация.
-
-## 10. Быстрый старт для кодера
-
-```bash
-npm install
-npm run build
-```
-
-Для разработки:
-
-```bash
-npm run dev
-```
-
-Редактор ожидает `panel_id` в URL, например:
-
-```text
-http://localhost:5143/?panel_id=11110012
-```
-
-Если проверяется backend patch, разработчику нужно развернуть основной FastAPI backend проекта и перенести файлы из `server_patch/` в соответствующие модули backend. Этот каталог не является отдельным полноценным backend-приложением, а хранит готовые изменения для серверной части.
-
-## 11. Текущие важные доработки в этой версии
-
-- Добавлены новые виджеты: audio player, drawing, shape.
-- Расширены настройки общих эффектов/теней виджетов.
-- Добавлены фоновые ассеты под разные ориентации экранов.
-- Добавлен HTML-конструктор фонов с image/video upload.
-- Добавлен batch-подход к данным виджетов.
-- Добавлены undo/redo и real-time inspector.
-- Улучшена серверная раздача static files с HTTP Range.
-- Добавлена обработка загрузки медиа и faststart optimization для MP4.
-- Обновлены parse endpoints: новости, погода, металлы, курсы, batch.
-
-## 12. Рекомендации перед лицензированием
-
-1. Вынести API base URL и режим окружения в явный конфиг.
-2. Убрать прямые production URL из frontend-кода или сделать их fallback.
-3. Добавить `.env.example` для backend и frontend.
-4. Описать формат сохраненной сцены JSON как отдельную схему.
-5. Покрыть license checks backend-тестами: active, expired, over limit, grace period, feature disabled.
-6. Отдельно проверить, что frontend не содержит секретов перед публикацией.
+Каталог `server_patch/` не является отдельным backend-приложением. Он содержит готовые изменения, которые используются в соответствующих модулях основного FastAPI backend.
