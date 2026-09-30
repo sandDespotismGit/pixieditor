@@ -10,6 +10,7 @@ import MetalsWidget from "./widgetsGrid/widgets/metals";
 import AnalogClockWidget, {
   ANALOG_CLOCK_CUSTOM_FACES,
   ANALOG_CLOCK_CUSTOM_HANDS,
+  getAnalogClockPreferredSize,
 } from "./widgetsGrid/widgets/analog_clock";
 import NewsWidget from "./widgetsGrid/widgets/news";
 import CompanyWidget from "./widgetsGrid/widgets/about_company";
@@ -5764,11 +5765,13 @@ async function loadEditorFonts() {
       editor.getWidth(),
       editor.getHeight(),
     );
+    const customFaceId = "face_2";
+    const preferredSize = getAnalogClockPreferredSize(customFaceId, 520);
     editor.addWidget(
-      new AnalogClockWidget(bounds, 246, 246, {
+      new AnalogClockWidget(bounds, preferredSize.width, preferredSize.height, {
         clockType: 9,
         backgroundAlpha: 0,
-        customFaceId: "face_2",
+        customFaceId,
         customHourHandId: "gold_wide_hour",
         customMinuteHandId: "gold_wide_minute",
         customSecondHandId: "blue_second",

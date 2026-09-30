@@ -1,24 +1,84 @@
-// AnalogClockWidget.js
 import { Assets, Container, Graphics, Sprite, Text, TextStyle, Texture } from "pixi.js";
 import DraggableWidget from "../draggable_widget";
+import { requestWidgetData } from "../../batchWidgetData";
 
 export const ANALOG_CLOCK_CUSTOM_FACES = [
-  { id: "face_1", label: "Фон 1", url: "/assets/analog_clock_custom/faces/face_1.png" },
-  { id: "face_2", label: "Фон 2", url: "/assets/analog_clock_custom/faces/face_2.png" },
-  { id: "face_3", label: "Фон 3", url: "/assets/analog_clock_custom/faces/face_3.png" },
-  { id: "face_4", label: "Фон 4", url: "/assets/analog_clock_custom/faces/face_4.png" },
-  { id: "face_5", label: "Фон 5", url: "/assets/analog_clock_custom/faces/face_5.png" },
-  { id: "face_6", label: "Фон 6", url: "/assets/analog_clock_custom/faces/face_6.png" },
+  { id: "face_1", label: "Пятиугольник 1152x4096", url: "/assets/analog_clock_custom/faces/face_1.png", layout: "pentagon_1152_4096" },
+  { id: "face_2", label: "Пятиугольник 2160x3840", url: "/assets/analog_clock_custom/faces/face_2.png", layout: "pentagon_2160_3840" },
+  { id: "face_3", label: "Пятиугольник 3840x2160", url: "/assets/analog_clock_custom/faces/face_3.png", layout: "pentagon_3840_2160" },
+  { id: "face_4", label: "Пятиугольник 4096x1152", url: "/assets/analog_clock_custom/faces/face_4.png", layout: "pentagon_4096_1152" },
+  { id: "face_5", label: "Пятиугольник 4096x1728", url: "/assets/analog_clock_custom/faces/face_5.png", layout: "pentagon_4096_1728" },
+  { id: "face_6", label: "Пятиугольник 1728x4096", url: "/assets/analog_clock_custom/faces/face_6.png", layout: "pentagon_1728_4096" },
 ];
 
 export const ANALOG_CLOCK_CUSTOM_HANDS = [
-  { id: "gold_thin_hour", label: "Золото тонкая часовая", url: "/assets/analog_clock_custom/hands/gold_thin_hour.png", length: 0.5, anchorX: 0.051, anchorY: 0.5, keyBlack: true },
-  { id: "gold_thin_minute", label: "Золото тонкая минутная", url: "/assets/analog_clock_custom/hands/gold_thin_minute.png", length: 0.74, anchorX: 0.042, anchorY: 0.5, keyBlack: true },
-  { id: "blue_second", label: "Синяя секундная", url: "/assets/analog_clock_custom/hands/blue_second.png", length: 0.84, anchorX: 0.17, anchorY: 0.496, keyBlack: true },
-  { id: "gold_wide_hour", label: "Золото широкая часовая", url: "/assets/analog_clock_custom/hands/gold_wide_hour.png", length: 0.5, anchorX: 0.064, anchorY: 0.5, keyBlack: true },
-  { id: "gold_wide_minute", label: "Золото широкая минутная", url: "/assets/analog_clock_custom/hands/gold_wide_minute.png", length: 0.76, anchorX: 0.046, anchorY: 0.5, keyBlack: true },
-  { id: "gold_wide_second", label: "Золото широкая секундная", url: "/assets/analog_clock_custom/hands/gold_wide_second.png", length: 0.82, anchorX: 0.225, anchorY: 0.491, keyBlack: true },
+  { id: "gold_thin_hour", label: "Золото тонкая часовая", url: "/assets/analog_clock_custom/hands/gold_thin_hour.png", length: 0.52, anchorX: 0.056, anchorY: 0.5, keyBlack: true },
+  { id: "gold_thin_minute", label: "Золото тонкая минутная", url: "/assets/analog_clock_custom/hands/gold_thin_minute.png", length: 0.78, anchorX: 0.047, anchorY: 0.5, keyBlack: true },
+  { id: "blue_second", label: "Синяя секундная", url: "/assets/analog_clock_custom/hands/blue_second.png", length: 0.86, anchorX: 0.075, anchorY: 0.496, keyBlack: true },
+  { id: "gold_wide_hour", label: "Золото широкая часовая", url: "/assets/analog_clock_custom/hands/gold_wide_hour.png", length: 0.52, anchorX: 0.085, anchorY: 0.5, keyBlack: true },
+  { id: "gold_wide_minute", label: "Золото широкая минутная", url: "/assets/analog_clock_custom/hands/gold_wide_minute.png", length: 0.78, anchorX: 0.061, anchorY: 0.5, keyBlack: true },
+  { id: "gold_wide_second", label: "Золото широкая секундная", url: "/assets/analog_clock_custom/hands/gold_wide_second.png", length: 0.88, anchorX: 0.078, anchorY: 0.491, keyBlack: true },
 ];
+
+const ANALOG_FACE_LAYOUTS = {
+  pentagon_1152_4096: {
+    size: [1152, 4096],
+    clock: { x: 150, y: 980, w: 852, h: 805, cx: 576, cy: 1370, radius: 315 },
+    slots: [
+      { type: "weather", x: 92, y: 118, w: 360, h: 615 },
+      { type: "date", x: 700, y: 118, w: 360, h: 615 },
+      { type: "time", x: 128, y: 2205, w: 896, h: 1090 },
+    ],
+  },
+  pentagon_2160_3840: {
+    size: [2160, 3840],
+    clock: { x: 465, y: 1220, w: 1230, h: 930, cx: 1080, cy: 1660, radius: 430 },
+    slots: [
+      { type: "weather", x: 70, y: 0, w: 850, h: 740 },
+      { type: "date", x: 1240, y: 0, w: 850, h: 740 },
+    ],
+  },
+  pentagon_3840_2160: {
+    size: [3840, 2160],
+    clock: { x: 120, y: 660, w: 1230, h: 910, cx: 735, cy: 1105, radius: 415 },
+    slots: [
+      { type: "weather", x: 120, y: 170, w: 540, h: 450 },
+      { type: "date", x: 780, y: 170, w: 540, h: 450 },
+      { type: "time", x: 120, y: 1690, w: 540, h: 330 },
+      { type: "timezone", x: 780, y: 1690, w: 540, h: 330 },
+    ],
+  },
+  pentagon_4096_1152: {
+    size: [4096, 1152],
+    clock: { x: 130, y: 250, w: 850, h: 645, cx: 555, cy: 565, radius: 280 },
+    slots: [
+      { type: "weather", x: 130, y: 65, w: 330, h: 170 },
+      { type: "date", x: 650, y: 65, w: 330, h: 170 },
+      { type: "timezone", x: 130, y: 910, w: 330, h: 170 },
+      { type: "time", x: 650, y: 910, w: 330, h: 170 },
+    ],
+  },
+  pentagon_4096_1728: {
+    size: [4096, 1728],
+    clock: { x: 105, y: 465, w: 1020, h: 760, cx: 615, cy: 835, radius: 345 },
+    slots: [
+      { type: "weather", x: 110, y: 160, w: 410, h: 260 },
+      { type: "date", x: 715, y: 160, w: 410, h: 260 },
+      { type: "timezone", x: 110, y: 1280, w: 410, h: 260 },
+      { type: "time", x: 715, y: 1280, w: 410, h: 260 },
+    ],
+  },
+  pentagon_1728_4096: {
+    size: [1728, 4096],
+    clock: { x: 190, y: 930, w: 1348, h: 1010, cx: 864, cy: 1415, radius: 460 },
+    slots: [
+      { type: "weather", x: 135, y: 160, w: 620, h: 600 },
+      { type: "date", x: 975, y: 160, w: 620, h: 600 },
+      { type: "time", x: 135, y: 2150, w: 620, h: 470 },
+      { type: "timezone", x: 975, y: 2150, w: 620, h: 470 },
+    ],
+  },
+};
 
 const CUSTOM_CLOCK_ALIASES = {
   hand_gold_1: "gold_thin_hour",
@@ -33,6 +93,55 @@ const byId = (list, id) => {
   const normalizedId = CUSTOM_CLOCK_ALIASES[id] || id;
   return list.find((item) => item.id === normalizedId) || list[0];
 };
+
+const getFaceLayout = (faceId) => {
+  const face = byId(ANALOG_CLOCK_CUSTOM_FACES, faceId);
+  return ANALOG_FACE_LAYOUTS[face?.layout] || ANALOG_FACE_LAYOUTS.pentagon_2160_3840;
+};
+
+export function getAnalogClockPreferredSize(faceId = "face_2", maxSide = 520) {
+  const layout = getFaceLayout(faceId);
+  const [designWidth, designHeight] = layout.size;
+  const scale = maxSide / Math.max(designWidth, designHeight);
+  return {
+    width: Math.round(designWidth * scale),
+    height: Math.round(designHeight * scale),
+  };
+}
+
+function formatClockTime(date, timeZone = undefined) {
+  return new Intl.DateTimeFormat("ru-RU", {
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone,
+  }).format(date);
+}
+
+function formatClockDate(date) {
+  return new Intl.DateTimeFormat("ru-RU", {
+    day: "2-digit",
+    month: "short",
+  }).format(date);
+}
+
+function getWeatherText(weatherData) {
+  if (Array.isArray(weatherData)) {
+    const current = weatherData[0];
+    if (Array.isArray(current)) {
+      return {
+        temp: current[0] || "--°",
+        label: current[1] || "Погода",
+      };
+    }
+  }
+  if (weatherData?.temp || weatherData?.temperature) {
+    return {
+      temp: weatherData.temp || weatherData.temperature,
+      label: weatherData.description || weatherData.status || "Погода",
+    };
+  }
+  return { temp: "+18°", label: "Пасмурно" };
+}
 
 async function loadTextureWithOptionalBlackKey(item) {
   if (!item?.keyBlack) return Assets.load(item.url);
@@ -99,6 +208,10 @@ export default class AnalogClockWidget extends DraggableWidget {
     this.customSecondHandId = options.customSecondHandId || options.analogClockData?.customSecondHandId || "blue_second";
     this.customHandsScale = Number(options.customHandsScale ?? options.analogClockData?.customHandsScale ?? 1);
     this.customSecondHandVisible = options.customSecondHandVisible ?? options.analogClockData?.customSecondHandVisible ?? true;
+    this.customMiniWidgetsEnabled = options.customMiniWidgetsEnabled ?? options.analogClockData?.customMiniWidgetsEnabled ?? true;
+    this.weatherData = null;
+    this.weatherRequested = false;
+    this._lastMiniRenderSecond = null;
 
     // Центр часов
     this.centerX = width / 2;
@@ -115,17 +228,36 @@ export default class AnalogClockWidget extends DraggableWidget {
     this.minuteSprite = new Sprite(Texture.EMPTY);
     this.secondSprite = new Sprite(Texture.EMPTY);
     this.customDialGraphics = new Graphics();
-    this.customFaceMask = new Graphics();
-    this.customFaceMask.renderable = false;
-    this.customContainer.addChild(this.faceSprite, this.customDialGraphics, this.hourSprite, this.minuteSprite, this.secondSprite);
-    this.customContainer.addChild(this.customFaceMask);
-    this.faceSprite.mask = this.customFaceMask;
+    this.customMiniWidgets = new Container();
+    this.customContainer.addChild(
+      this.faceSprite,
+      this.customMiniWidgets,
+      this.customDialGraphics,
+      this.hourSprite,
+      this.minuteSprite,
+      this.secondSprite,
+    );
     this.applyCustomVisibility();
     this.loadCustomAssets();
+    this.loadMiniWidgetData();
 
     // Обновляем часы сразу и устанавливаем интервал
     this.updateClock();
     this._timer = setInterval(() => this.updateClock(), 100);
+  }
+
+  loadMiniWidgetData() {
+    if (this.weatherRequested) return;
+    this.weatherRequested = true;
+    requestWidgetData("weather")
+      .then((data) => {
+        this.weatherData = data;
+        this._lastMiniRenderSecond = null;
+        this.updateClock();
+      })
+      .catch(() => {
+        this.weatherData = null;
+      });
   }
 
   updateClock() {
@@ -172,20 +304,30 @@ export default class AnalogClockWidget extends DraggableWidget {
 
   layoutCustomAssets() {
     if (!this.faceSprite) return;
-    const cx = this.originalWidth / 2;
-    const cy = this.originalHeight / 2;
-    const faceMax = Math.min(this.originalWidth, this.originalHeight) * 0.94;
+    const layout = getFaceLayout(this.customFaceId);
+    const [designWidth, designHeight] = layout.size;
     const faceTexture = this.faceSprite.texture;
+    let scale = Math.min(this.originalWidth / designWidth, this.originalHeight / designHeight);
+    let offsetX = (this.originalWidth - designWidth * scale) / 2;
+    let offsetY = (this.originalHeight - designHeight * scale) / 2;
+
     if (faceTexture && faceTexture !== Texture.EMPTY) {
-      const scale = Math.max(faceMax / faceTexture.width, faceMax / faceTexture.height);
-      this.faceSprite.anchor.set(0.5);
-      this.faceSprite.position.set(cx, cy);
+      scale = Math.min(this.originalWidth / faceTexture.width, this.originalHeight / faceTexture.height);
+      offsetX = (this.originalWidth - faceTexture.width * scale) / 2;
+      offsetY = (this.originalHeight - faceTexture.height * scale) / 2;
+      this.faceSprite.anchor.set(0);
+      this.faceSprite.position.set(offsetX, offsetY);
       this.faceSprite.scale.set(scale);
     }
-    this.customFaceMask.clear();
-    this.customFaceMask.circle(cx, cy, faceMax / 2);
-    this.customFaceMask.fill({ color: 0xffffff, alpha: 1 });
-    this.drawCustomDial(cx, cy, faceMax / 2);
+
+    this._customLayoutTransform = { scale, offsetX, offsetY, layout };
+    const clock = layout.clock;
+    const cx = offsetX + clock.cx * scale;
+    const cy = offsetY + clock.cy * scale;
+    const radius = Math.min(clock.radius * scale, (clock.w * scale) / 2, (clock.h * scale) / 2) * 0.92;
+
+    this.drawCustomDial(cx, cy, radius);
+
     [
       [this.hourSprite, byId(ANALOG_CLOCK_CUSTOM_HANDS, this.customHourHandId), 0.58],
       [this.minuteSprite, byId(ANALOG_CLOCK_CUSTOM_HANDS, this.customMinuteHandId), 0.82],
@@ -195,10 +337,12 @@ export default class AnalogClockWidget extends DraggableWidget {
       if (!texture || texture === Texture.EMPTY) return;
       sprite.anchor.set(config.anchorX ?? 0.1, config.anchorY ?? 0.5);
       sprite.position.set(cx, cy);
-      const targetLength = (faceMax / 2) * (config.length ?? fallbackLength);
-      const visibleLength = texture.width * Math.max(0.35, 1 - (config.anchorX ?? 0.5));
-      const scale = (targetLength / Math.max(1, visibleLength)) * this.customHandsScale;
-      sprite.scale.set(scale);
+      const targetLength = radius * (config.length ?? fallbackLength) * this.customHandsScale;
+      const visibleLength = texture.width * Math.max(0.2, 1 - (config.anchorX ?? 0.5));
+      const widthScale = targetLength / Math.max(1, visibleLength);
+      const heightScale = (clock.h * scale * 0.18) / Math.max(1, texture.height);
+      const handScale = Math.min(widthScale, heightScale);
+      sprite.scale.set(handScale);
     });
     this.secondSprite.visible = this.customSecondHandVisible;
   }
@@ -206,10 +350,11 @@ export default class AnalogClockWidget extends DraggableWidget {
   drawCustomDial(cx, cy, radius) {
     if (!this.customDialGraphics) return;
     const g = this.customDialGraphics;
-    const r = Math.max(16, radius * 0.8);
+    const r = Math.max(16, radius);
     g.clear();
+    g.removeChildren();
     g.circle(cx, cy, r);
-    g.stroke({ width: Math.max(1, r * 0.015), color: 0xffffff, alpha: 0.5 });
+    g.stroke({ width: Math.max(1, r * 0.012), color: 0xd6a64c, alpha: 0.72 });
     for (let i = 0; i < 60; i++) {
       const angle = (i / 60) * Math.PI * 2 - Math.PI / 2;
       const isHour = i % 5 === 0;
@@ -219,17 +364,107 @@ export default class AnalogClockWidget extends DraggableWidget {
       g.lineTo(cx + Math.cos(angle) * outer, cy + Math.sin(angle) * outer);
       g.stroke({
         width: Math.max(1, r * (isHour ? 0.022 : 0.01)),
-        color: isHour ? 0xffffff : 0xd6d6d6,
-        alpha: isHour ? 0.78 : 0.38,
+        color: isHour ? 0xd6a64c : 0x98733a,
+        alpha: isHour ? 0.9 : 0.42,
       });
     }
+    const numberStyle = new TextStyle({
+      fontFamily: "Inter, Arial",
+      fontSize: Math.max(7, r * 0.12),
+      fill: 0xd6a64c,
+      fontWeight: "600",
+    });
+    [12, 3, 6, 9].forEach((num, index) => {
+      const angle = (index / 4) * Math.PI * 2 - Math.PI / 2;
+      const text = new Text(String(num), numberStyle);
+      text.anchor.set(0.5);
+      text.position.set(cx + Math.cos(angle) * r * 0.68, cy + Math.sin(angle) * r * 0.68);
+      g.addChild(text);
+    });
     g.circle(cx, cy, Math.max(3, r * 0.035));
-    g.fill({ color: 0xffffff, alpha: 0.8 });
+    g.fill({ color: 0xd6a64c, alpha: 0.9 });
+  }
+
+  renderCustomMiniWidgets(now, force = false) {
+    if (!this.customMiniWidgets || !this._customLayoutTransform || !this.customMiniWidgetsEnabled) {
+      return;
+    }
+    const secondKey = Math.floor(now.getTime() / 1000);
+    if (!force && this._lastMiniRenderSecond === secondKey) return;
+    this._lastMiniRenderSecond = secondKey;
+
+    const { scale, offsetX, offsetY, layout } = this._customLayoutTransform;
+    this.customMiniWidgets.removeChildren();
+
+    layout.slots.forEach((slot) => {
+      const x = offsetX + slot.x * scale;
+      const y = offsetY + slot.y * scale;
+      const w = slot.w * scale;
+      const h = slot.h * scale;
+      this.drawMiniWidgetSlot(slot.type, x, y, w, h, now);
+    });
+  }
+
+  drawMiniWidgetSlot(type, x, y, w, h, now) {
+    const group = new Container();
+    const pad = Math.max(4, Math.min(w, h) * 0.08);
+    const titleStyle = new TextStyle({
+      fontFamily: "Inter, Arial",
+      fontSize: Math.max(6, Math.min(w, h) * 0.1),
+      fill: 0xaec6ff,
+      fontWeight: "600",
+    });
+    const valueStyle = new TextStyle({
+      fontFamily: "Inter, Arial",
+      fontSize: Math.max(10, Math.min(w, h) * 0.22),
+      fill: 0xffffff,
+      fontWeight: "800",
+    });
+    const subStyle = new TextStyle({
+      fontFamily: "Inter, Arial",
+      fontSize: Math.max(6, Math.min(w, h) * 0.095),
+      fill: 0xd8e5ff,
+      fontWeight: "500",
+    });
+
+    const bg = new Graphics();
+    bg.roundRect(x + pad * 0.25, y + pad * 0.25, w - pad * 0.5, h - pad * 0.5, Math.max(6, Math.min(w, h) * 0.08));
+    bg.fill({ color: 0x061431, alpha: 0.12 });
+    group.addChild(bg);
+
+    const addCentered = (text, style, yy) => {
+      const label = new Text(text, style);
+      label.anchor.set(0.5);
+      label.position.set(x + w / 2, yy);
+      group.addChild(label);
+      return label;
+    };
+
+    if (type === "weather") {
+      const weather = getWeatherText(this.weatherData);
+      addCentered("Погода", titleStyle, y + h * 0.24);
+      addCentered(String(weather.temp), valueStyle, y + h * 0.5);
+      addCentered(weather.label, subStyle, y + h * 0.72);
+    } else if (type === "date") {
+      addCentered(String(now.getDate()).padStart(2, "0"), valueStyle, y + h * 0.42);
+      addCentered(new Intl.DateTimeFormat("ru-RU", { month: "long" }).format(now), subStyle, y + h * 0.64);
+      addCentered(new Intl.DateTimeFormat("ru-RU", { weekday: "short" }).format(now), titleStyle, y + h * 0.22);
+    } else if (type === "timezone") {
+      addCentered("UTC+3", titleStyle, y + h * 0.25);
+      addCentered(formatClockTime(now, "Europe/Moscow"), valueStyle, y + h * 0.52);
+      addCentered("Москва", subStyle, y + h * 0.74);
+    } else {
+      addCentered(formatClockTime(now), valueStyle, y + h * 0.48);
+      addCentered(formatClockDate(now), subStyle, y + h * 0.68);
+    }
+
+    this.customMiniWidgets.addChild(group);
   }
 
   updateCustomClock(now) {
     this.applyCustomVisibility();
     this.layoutCustomAssets();
+    this.renderCustomMiniWidgets(now);
     const seconds = now.getSeconds() + now.getMilliseconds() / 1000;
     const minutes = now.getMinutes() + seconds / 60;
     const hours = (now.getHours() % 12) + minutes / 60;
@@ -241,6 +476,12 @@ export default class AnalogClockWidget extends DraggableWidget {
   setCustomFace(id) {
     this.clockType = 9;
     this.customFaceId = id;
+    const maxSide = Math.max(this._width || this.originalWidth, this._height || this.originalHeight, 320);
+    const preferredSize = getAnalogClockPreferredSize(id, maxSide);
+    this.originalWidth = preferredSize.width;
+    this.originalHeight = preferredSize.height;
+    this._originalAspectRatio = preferredSize.width / preferredSize.height;
+    this.resize(preferredSize.width, preferredSize.height);
     this.applyCustomVisibility();
     this.loadSprite(this.faceSprite, byId(ANALOG_CLOCK_CUSTOM_FACES, id));
     this.updateClock();
@@ -771,6 +1012,7 @@ export default class AnalogClockWidget extends DraggableWidget {
         customSecondHandId: this.customSecondHandId,
         customHandsScale: this.customHandsScale,
         customSecondHandVisible: this.customSecondHandVisible,
+        customMiniWidgetsEnabled: this.customMiniWidgetsEnabled,
       },
     };
   }
