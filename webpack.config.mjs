@@ -1,54 +1,72 @@
 import path from "path";
-
 import CopyPlugin from "copy-webpack-plugin";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import TerserPlugin from "terser-webpack-plugin";
 
 export default (_env, argv) => {
   return {
-    stats: "minimal", // Keep console output easy to read.
-    entry: "./src/main.js", // Your program entry point
-
-    // Your build destination
+    stats: "none", // Полностью отключает вывод статистики
+    entry: "./src/main.js",
+    cache: {
+      type: "filesystem",
+      buildDependencies: {
+        config: [new URL(import.meta.url).pathname],
+      },
+    },
+    
     output: {
       path: path.resolve(process.cwd(), "dist"),
       filename: "bundle.js",
+      chunkFilename: "[name].bundle.js",
       clean: true,
     },
 
-    // Config for your testing server
     devServer: {
       compress: true,
-      allowedHosts: "all", // If you are using WebpackDevServer as your production server, please fix this line!
+      allowedHosts: "all",
       static: false,
       client: {
-        logging: "warn",
-        overlay: {
-          errors: true,
-          warnings: false,
-        },
-        progress: true,
+        logging: "none", // Отключает логи в браузере
+        overlay: false, // Отключает оверлей с ошибками
+        progress: false, // Отключает индикатор прогресса
       },
       port: 5143,
       host: "0.0.0.0",
+      devMiddleware: {
+        writeToDisk: true,
+        stats: "none", // Отключает статистику devServer
+      },
     },
 
-    // Web games are bigger than pages, disable the warnings that our game is too big.
-    performance: { hints: false },
+    performance: { 
+      hints: false, // Отключает предупреждения о размере бандла
+      maxEntrypointSize: 512000,
+      maxAssetSize: 512000
+    },
 
-    // Enable sourcemaps while debugging
-    devtool: argv.mode === "development" ? "eval-source-map" : undefined,
+    // Отключаем sourcemaps в production
+    devtool: argv.mode === "development" ? "eval-source-map" : false,
 
-    // Minify the code when making a final build
     optimization: {
       minimize: argv.mode === "production",
       minimizer: [
         new TerserPlugin({
           terserOptions: {
             ecma: 6,
-            compress: { drop_console: true },
-            output: { comments: false, beautify: false },
+            compress: { 
+              drop_console: true,
+              warnings: false // Отключает предупреждения Terser
+            },
+            mangle: {
+              safari10: true,
+            },
+            output: { 
+              comments: false, 
+              beautify: false 
+            },
+            warnings: false, // Дополнительное отключение предупреждений
           },
+          extractComments: false, // Убирает файл с лицензионными комментариями
         }),
       ],
     },
@@ -61,17 +79,22 @@ export default (_env, argv) => {
     },
 
     plugins: [
-      // Copy our static assets to the final build
       new CopyPlugin({
         patterns: [{ from: "public/" }],
       }),
 
-      // Make an index.html from the template
       new HtmlWebpackPlugin({
         template: "./index.ejs",
         hash: true,
         minify: false,
       }),
+    ],
+
+    // Дополнительные настройки для подавления предупреждений
+    ignoreWarnings: [
+      {
+        module: /node_modules/, // Игнорировать все предупреждения из node_modules
+      },
     ],
   };
 };

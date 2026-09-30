@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель управления видеонаблюдением</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --dark: #1f2937;
+            --light: #f9fafb;
+            --gray: #6b7280;
+            --purple: #8b5cf6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            padding: 30px 0;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .header p {
+            color: var(--gray);
+            margin-top: 8px;
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: 24px;
+            margin-bottom: 30px;
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            height: fit-content;
+        }
+
+        .sidebar h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .control-group {
+            margin-bottom: 24px;
+        }
+
+        .control-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .control-group p {
+            font-size: 12px;
+            color: var(--gray);
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        .select-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .select-wrapper select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+            color: var(--dark);
+            appearance: none;
+            cursor: pointer;
+        }
+
+        .select-wrapper:after {
+            content: "▼";
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--gray);
+            font-size: 12px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 28px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #d1d5db;
+            transition: .3s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background: var(--success);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .video-container {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .video-container h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .video-preview {
+            width: 100%;
+            border-radius: 8px;
+            background: #000;
+            min-height: 480px;
+            object-fit: contain;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .logs-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            grid-column: 1 / -1;
+        }
+
+        .logs-panel h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logs-container {
+            height: 300px;
+            overflow-y: auto;
+            background: #111827;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'JetBrains Mono', 'Fira Code', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+
+        .log-entry {
+            padding: 8px 0;
+            border-bottom: 1px solid #374151;
+            color: #d1d5db;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+
+        .log-time {
+            color: #60a5fa;
+            min-width: 70px;
+        }
+
+        .log-source {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .log-source-system {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .log-source-motion {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .log-source-record {
+            background: #ef4444;
+            color: white;
+        }
+
+        .log-source-storage {
+            background: #8b5cf6;
+            color: white;
+        }
+
+        .log-message {
+            color: #9ca3af;
+            flex: 1;
+        }
+
+        .storage-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .storage-card {
+            background: #f8fafc;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .storage-card h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--dark);
+        }
+
+        .storage-card p {
+            font-size: 12px;
+            color: var(--gray);
+            margin-bottom: 4px;
+        }
+
+        .storage-progress {
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .storage-progress-bar {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .storage-info {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .container {
+                padding: 12px;
+            }
+            
+            .video-preview {
+                min-height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📹 Панель управления видеонаблюдением</h1>
+            <p>Мониторинг и управление системой в реальном времени</p>
+        </div>
+
+        <div class="dashboard">
+            <div class="sidebar">
+                <h2>Управление системой</h2>
+                
+                <div class="control-group">
+                    <label>Состояние камеры</label>
+                    <button class="btn btn-primary" id="cameraToggle" onclick="toggleCamera()">
+                        <span id="cameraIcon">▶️</span>
+                        <span id="cameraText">Запустить камеру</span>
+                    </button>
+                </div>
+
+                <div class="control-group">
+                    <label>Детекция движения</label>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <label class="switch">
+                            <input type="checkbox" id="motionToggle" onchange="toggleMotionDetection()">
+                            <span class="slider"></span>
+                        </label>
+                        <span id="motionStatusText" style="font-size: 14px; color: var(--gray);">Выкл</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>Запись видео</label>
+                    <button class="btn btn-danger" id="recordToggle" onclick="toggleRecording()">
+                        <span id="recordIcon">⏺️</span>
+                        <span id="recordText">Начать запись</span>
+                    </button>
+                </div>
+
+                <div class="control-group">
+                    <label>Качество видео</label>
+                    <div class="select-wrapper">
+                        <select id="qualitySelect" onchange="updateVideoQuality()">
+                            <option value="low">Низкое (480p)</option>
+                            <option value="medium" selected>Среднее (720p)</option>
+                            <option value="high">Высокое (1080p)</option>
+                            <option value="ultra">Ультра (1440p)</option>
+                        </select>
+                    </div>
+                    <p id="qualityInfo">Битрейт: 2.5 Мбит/с</p>
+                </div>
+
+                <div class="control-group">
+                    <label>Хранение записей</label>
+                    <div class="select-wrapper">
+                        <select id="retentionSelect" onchange="updateRetentionPolicy()">
+                            <option value="1">1 день</option>
+                            <option value="2" selected>2 дня</option>
+                            <option value="3">3 дня</option>
+                            <option value="5">5 дней</option>
+                            <option value="7">7 дней</option>
+                            <option value="14">14 дней</option>
+                            <option value="30">30 дней</option>
+                            <option value="forever">Без ограничений</option>
+                        </select>
+                    </div>
+                    <p id="retentionInfo">Старые записи автоматически удаляются</p>
+                </div>
+
+                <div class="control-group">
+                    <label>Очистка хранилища</label>
+                    <button class="btn btn-warning" onclick="cleanupStorage()">
+                        🗑️ Очистить старые записи
+                    </button>
+                    <p>Удаляет записи старше установленного срока</p>
+                </div>
+
+                <div class="control-group">
+                    <label>Прямой эфир</label>
+                    <a href="/video_feed" target="_blank" class="btn btn-success">
+                        📺 Открыть трансляцию
+                    </a>
+                </div>
+            </div>
+
+            <div class="main-content">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statusCamera">Выкл</div>
+                        <div class="stat-label">Камера</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statusClients">0</div>
+                        <div class="stat-label">Подключений</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statusMotion">0</div>
+                        <div class="stat-label">События движения</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statusRecording">Нет</div>
+                        <div class="stat-label">Запись активна</div>
+                    </div>
+                </div>
+
+                <div class="video-container">
+                    <h2>Видеопоток в реальном времени</h2>
+                    <img class="video-preview" id="videoPreview" src="/video_feed" alt="Видеопоток">
+                </div>
+
+                <div class="storage-info">
+                    <div class="storage-card">
+                        <h4>Использование диска</h4>
+                        <p id="storageUsed">Загружено: 0 ГБ / 0 ГБ</p>
+                        <p id="storagePercentage">0% использовано</p>
+                        <div class="storage-progress">
+                            <div class="storage-progress-bar" id="storageProgress" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="storage-card">
+                        <h4>Настройки хранения</h4>
+                        <p id="currentRetention">Срок хранения: 2 дня</p>
+                        <p id="currentQuality">Качество: Среднее (720p)</p>
+                        <p id="filesCount">Записей: 0 файлов</p>
+                    </div>
+                </div>
+
+                <div class="logs-panel">
+                    <h2>
+                        Журнал событий
+                        <div style="display: flex; gap: 8px;">
+                            <button class="btn" onclick="refreshLogs()" style="width: auto; padding: 8px 16px; background: var(--primary); color: white; font-size: 13px;">
+                                🔄 Обновить
+                            </button>
+                            <button class="btn" onclick="clearLogs()" style="width: auto; padding: 8px 16px; background: var(--gray); color: white; font-size: 13px;">
+                                🗑️ Очистить
+                            </button>
+                        </div>
+                    </h2>
+                    <div class="logs-container" id="eventLogs">
+                        <div class="log-entry">
+                            <span class="log-time">[SYSTEM]</span>
+                            <span class="log-source log-source-system">SYS</span>
+                            <span class="log-message">Система инициализирована</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Глобальные переменные состояния
+        let systemState = {
+            camera_active: false,
+            motion_detection: false,
+            recording: false,
+            clients_connected: 0,
+            motion_events: 0,
+            video_quality: 'medium',
+            retention_days: 2,
+            storage_used_gb: 0,
+            storage_total_gb: 100,
+            files_count: 0
+        };
+
+        // Качество видео и битрейт
+        const qualitySettings = {
+            'low': { resolution: '480p', bitrate: '1 Мбит/с', sizePerHour: 0.45 },
+            'medium': { resolution: '720p', bitrate: '2.5 Мбит/с', sizePerHour: 1.1 },
+            'high': { resolution: '1080p', bitrate: '5 Мбит/с', sizePerHour: 2.25 },
+            'ultra': { resolution: '1440p', bitrate: '8 Мбит/с', sizePerHour: 3.6 }
+        };
+
+        // Обновление статуса системы
+        async function updateSystemStatus() {
+            try {
+                const response = await fetch('/api/status');
+                if (response.ok) {
+                    const data = await response.json();
+                    systemState = { ...systemState, ...data };
+                }
+            } catch (error) {
+                console.error('Ошибка при обновлении статуса:', error);
+            }
+
+            // Обновление UI
+            updateUI();
+        }
+
+        // Обновление пользовательского интерфейса
+        function updateUI() {
+            // Статус камеры
+            const cameraStatus = document.getElementById('statusCamera');
+            cameraStatus.textContent = systemState.camera_active ? 'Вкл' : 'Выкл';
+            cameraStatus.style.color = systemState.camera_active ? 'var(--success)' : 'var(--danger)';
+
+            // Кнопка камеры
+            const cameraBtn = document.getElementById('cameraToggle');
+            const cameraIcon = document.getElementById('cameraIcon');
+            const cameraText = document.getElementById('cameraText');
+            if (systemState.camera_active) {
+                cameraBtn.className = 'btn btn-danger';
+                cameraIcon.textContent = '⏹️';
+                cameraText.textContent = 'Остановить камеру';
+            } else {
+                cameraBtn.className = 'btn btn-primary';
+                cameraIcon.textContent = '▶️';
+                cameraText.textContent = 'Запустить камеру';
+            }
+
+            // Детекция движения
+            document.getElementById('motionToggle').checked = systemState.motion_detection;
+            document.getElementById('motionStatusText').textContent = 
+                systemState.motion_detection ? 'Вкл' : 'Выкл';
+            document.getElementById('motionStatusText').style.color = 
+                systemState.motion_detection ? 'var(--success)' : 'var(--gray)';
+
+            // Статистика
+            document.getElementById('statusClients').textContent = systemState.clients_connected;
+            document.getElementById('statusMotion').textContent = systemState.motion_events;
+            
+            // Запись
+            const recordingStatus = document.getElementById('statusRecording');
+            recordingStatus.textContent = systemState.recording ? 'Да' : 'Нет';
+            recordingStatus.style.color = systemState.recording ? 'var(--danger)' : 'var(--gray)';
+
+            // Кнопка записи
+            const recordBtn = document.getElementById('recordToggle');
+            const recordIcon = document.getElementById('recordIcon');
+            const recordText = document.getElementById('recordText');
+            if (systemState.recording) {
+                recordBtn.className = 'btn btn-primary';
+                recordIcon.textContent = '⏸️';
+                recordText.textContent = 'Остановить запись';
+            } else {
+                recordBtn.className = 'btn btn-danger';
+                recordIcon.textContent = '⏺️';
+                recordText.textContent = 'Начать запись';
+            }
+
+            // Хранилище
+            const usedGB = systemState.storage_used_gb.toFixed(2);
+            const totalGB = systemState.storage_total_gb.toFixed(2);
+            const percentage = ((systemState.storage_used_gb / systemState.storage_total_gb) * 100).toFixed(1);
+            
+            document.getElementById('storageUsed').textContent = 
+                `Загружено: ${usedGB} ГБ / ${totalGB} ГБ`;
+            document.getElementById('storagePercentage').textContent = 
+                `${percentage}% использовано`;
+            document.getElementById('storageProgress').style.width = `${percentage}%`;
+            
+            // Настройки хранения
+            document.getElementById('currentRetention').textContent = 
+                `Срок хранения: ${systemState.retention_days} ${getDayWord(systemState.retention_days)}`;
+            document.getElementById('currentQuality').textContent = 
+                `Качество: ${qualitySettings[systemState.video_quality].resolution}`;
+            document.getElementById('filesCount').textContent = 
+                `Записей: ${systemState.files_count} файлов`;
+
+            // Качество видео в селекте
+            document.getElementById('qualitySelect').value = systemState.video_quality;
+            const qualityInfo = qualitySettings[systemState.video_quality];
+            document.getElementById('qualityInfo').textContent = 
+                `Битрейт: ${qualityInfo.bitrate}, ~${qualityInfo.sizePerHour} ГБ/час`;
+
+            // Срок хранения в селекте
+            document.getElementById('retentionSelect').value = systemState.retention_days;
+            document.getElementById('retentionInfo').textContent = 
+                systemState.retention_days === 'forever' ? 
+                'Записи хранятся без ограничений' : 
+                `Записи старше ${systemState.retention_days} ${getDayWord(systemState.retention_days)} автоматически удаляются`;
+        }
+
+        // Управление камерой
+        async function toggleCamera() {
+            try {
+                const endpoint = systemState.camera_active ? 
+                    '/api/camera/stop' : '/api/camera/start';
+                
+                const response = await fetch(endpoint, { method: 'POST' });
+                const data = await response.json();
+                
+                addLog('SYSTEM', data.message);
+                await updateSystemStatus();
+            } catch (error) {
+                console.error('Ошибка при управлении камерой:', error);
+                addLog('SYSTEM', 'Ошибка управления камерой');
+            }
+        }
+
+        // Детекция движения
+        async function toggleMotionDetection() {
+            try {
+                const response = await fetch('/api/motion-detection/toggle', { 
+                    method: 'POST' 
+                });
+                const data = await response.json();
+                
+                const status = data.motion_detection ? 'включена' : 'выключена';
+                addLog('MOTION', `Детекция движения ${status}`);
+                await updateSystemStatus();
+            } catch (error) {
+                console.error('Ошибка при управлении детекцией:', error);
+                addLog('SYSTEM', 'Ошибка управления детекцией движения');
+            }
+        }
+
+        // Управление записью
+        async function toggleRecording() {
+            try {
+                const endpoint = systemState.recording ? 
+                    '/api/recording/stop' : '/api/recording/start';
+                
+                const response = await fetch(endpoint, { method: 'POST' });
+                const data = await response.json();
+                
+                addLog('RECORD', data.message);
+                await updateSystemStatus();
+            } catch (error) {
+                console.error('Ошибка при управлении записью:', error);
+                addLog('SYSTEM', 'Ошибка управления записью');
+            }
+        }
+
+        // Обновление качества видео
+        async function updateVideoQuality() {
+            const quality = document.getElementById('qualitySelect').value;
+            
+            try {
+                const response = await fetch('/api/settings/quality', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ quality: quality })
+                });
+                
+                const data = await response.json();
+                systemState.video_quality = quality;
+                
+                const qualityInfo = qualitySettings[quality];
+                addLog('SYSTEM', `Качество видео изменено на ${qualityInfo.resolution} (${qualityInfo.bitrate})`);
+                
+                updateUI();
+            } catch (error) {
+                console.error('Ошибка при изменении качества:', error);
+                addLog('SYSTEM', 'Ошибка изменения качества видео');
+            }
+        }
+
+        // Обновление политики хранения
+        async function updateRetentionPolicy() {
+            const retention = document.getElementById('retentionSelect').value;
+            const days = retention === 'forever' ? 'forever' : parseInt(retention);
+            
+            try {
+                const response = await fetch('/api/settings/retention', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ retention_days: days })
+                });
+                
+                const data = await response.json();
+                systemState.retention_days = days;
+                
+                if (days === 'forever') {
+                    addLog('STORAGE', 'Политика хранения изменена: без ограничений');
+                } else {
+                    addLog('STORAGE', `Политика хранения изменена: ${days} ${getDayWord(days)}`);
+                }
+                
+                updateUI();
+            } catch (error) {
+                console.error('Ошибка при изменении политики хранения:', error);
+                addLog('SYSTEM', 'Ошибка изменения политики хранения');
+            }
+        }
+
+        // Очистка хранилища
+        async function cleanupStorage() {
+            if (!confirm('Вы уверены, что хотите удалить записи старше установленного срока?')) {
+                return;
+            }
+            
+            try {
+                addLog('SYSTEM', 'Начата очистка старых записей...');
+                
+                const response = await fetch('/api/storage/cleanup', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                addLog('STORAGE', `Очистка завершена. Удалено: ${data.deleted_files} файлов, освобождено: ${data.freed_space_gb.toFixed(2)} ГБ`);
+                
+                await updateSystemStatus();
+            } catch (error) {
+                console.error('Ошибка при очистке хранилища:', error);
+                addLog('SYSTEM', 'Ошибка очистки хранилища');
+            }
+        }
+
+        // Обновление логов
+        async function refreshLogs() {
+            try {
+                const response = await fetch('/api/logs/all');
+                const data = await response.json();
+                
+                const logContainer = document.getElementById('eventLogs');
+                logContainer.innerHTML = '';
+                
+                data.logs.reverse().forEach(log => {
+                    const time = new Date(log.timestamp).toLocaleTimeString('ru-RU');
+                    const logEntry = document.createElement('div');
+                    logEntry.className = 'log-entry';
+                    
+                    let sourceClass = 'log-source-system';
+                    let sourceText = 'SYS';
+                    
+                    if (log.source === 'MOTION') {
+                        sourceClass = 'log-source-motion';
+                        sourceText = 'MOT';
+                    } else if (log.source === 'RECORD') {
+                        sourceClass = 'log-source-record';
+                        sourceText = 'REC';
+                    } else if (log.source === 'STORAGE') {
+                        sourceClass = 'log-source-storage';
+                        sourceText = 'STR';
+                    }
+                    
+                    logEntry.innerHTML = `
+                        <span class="log-time">[${time}]</span>
+                        <span class="log-source ${sourceClass}">${sourceText}</span>
+                        <span class="log-message">${log.message}</span>
+                    `;
+                    logContainer.appendChild(logEntry);
+                });
+                
+                addLog('SYSTEM', 'Журнал событий обновлен');
+            } catch (error) {
+                console.error('Ошибка при обновлении логов:', error);
+                addLog('SYSTEM', 'Ошибка обновления журнала');
+            }
+        }
+
+        // Очистка логов
+        function clearLogs() {
+            if (confirm('Очистить весь журнал событий?')) {
+                const logContainer = document.getElementById('eventLogs');
+                logContainer.innerHTML = '';
+                addLog('SYSTEM', 'Журнал событий очищен');
+            }
+        }
+
+        // Добавление записи в лог
+        function addLog(source, message) {
+            const logContainer = document.getElementById('eventLogs');
+            const time = new Date().toLocaleTimeString('ru-RU');
+            
+            const logEntry = document.createElement('div');
+            logEntry.className = 'log-entry';
+            
+            let sourceClass = 'log-source-system';
+            let sourceText = 'SYS';
+            
+            if (source === 'MOTION') {
+                sourceClass = 'log-source-motion';
+                sourceText = 'MOT';
+            } else if (source === 'RECORD') {
+                sourceClass = 'log-source-record';
+                sourceText = 'REC';
+            } else if (source === 'STORAGE') {
+                sourceClass = 'log-source-storage';
+                sourceText = 'STR';
+            }
+            
+            logEntry.innerHTML = `
+                <span class="log-time">[${time}]</span>
+                <span class="log-source ${sourceClass}">${sourceText}</span>
+                <span class="log-message">${message}</span>
+            `;
+            
+            logContainer.prepend(logEntry);
+            
+            // Ограничиваем количество записей
+            if (logContainer.children.length > 100) {
+                logContainer.removeChild(logContainer.lastChild);
+            }
+        }
+
+        // Вспомогательная функция для правильного склонения дней
+        function getDayWord(days) {
+            if (typeof days === 'string') return '';
+            
+            const lastDigit = days % 10;
+            const lastTwoDigits = days % 100;
+            
+            if (lastTwoDigits >= 11 && lastTwoDigits <= 19) {
+                return 'дней';
+            } else if (lastDigit === 1) {
+                return 'день';
+            } else if (lastDigit >= 2 && lastDigit <= 4) {
+                return 'дня';
+            } else {
+                return 'дней';
+            }
+        }
+
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            updateSystemStatus();
+            refreshLogs();
+            
+            // Автоматическое обновление статуса каждые 2 секунды
+            setInterval(updateSystemStatus, 2000);
+            
+            // Автоматическое обновление видео потока каждые 30 секунд
+            setInterval(() => {
+                const videoPreview = document.getElementById('videoPreview');
+                if (videoPreview) {
+                    videoPreview.src = videoPreview.src.split('?')[0] + '?t=' + new Date().getTime();
+                }
+            }, 30000);
+            
+            addLog('SYSTEM', 'Панель управления инициализирована');
+        });
+
+        // Обработка ошибок сети
+        window.addEventListener('online', () => {
+            addLog('SYSTEM', 'Соединение восстановлено');
+            updateSystemStatus();
+        });
+
+        window.addEventListener('offline', () => {
+            addLog('SYSTEM', 'Потеряно соединение с сервером');
+        });
+    </script>
+</body>
+</html>

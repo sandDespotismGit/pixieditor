@@ -113,20 +113,22 @@ export default class ClockWidget extends DraggableWidget {
       .drawRoundedRect(0, 0, this._width, this._height, this._cornerRadius)
       .endFill();
 
-    // Рамка
-    if (this._borderWidth > 0) {
-      this.bg.lineStyle(
-        this._borderWidth,
-        this._borderColor,
-        this._borderAlpha,
-      );
-      this.bg.drawRoundedRect(
-        0,
-        0,
-        this._width,
-        this._height,
-        this._cornerRadius,
-      );
+    // Рамка: только stroke без заливки поверх виджета.
+    if (this._borderWidth > 0 && this._borderAlpha > 0) {
+      const inset = this._borderWidth / 2;
+      this.bg
+        .roundRect(
+          inset,
+          inset,
+          Math.max(0, this._width - this._borderWidth),
+          Math.max(0, this._height - this._borderWidth),
+          Math.max(0, this._cornerRadius - inset),
+        )
+        .stroke({
+          width: this._borderWidth,
+          color: this._borderColor,
+          alpha: this._borderAlpha,
+        });
     }
   }
 

@@ -1,6 +1,7 @@
 // TrafficWidget.js
-import { Container, Graphics, Text, TextStyle } from "pixi.js";
+import { Container, Graphics, Text, TextStyle, Sprite, Texture } from "pixi.js";
 import DraggableWidget from "../draggable_widget";
+import { requestWidgetData } from "../../batchWidgetData";
 
 export default class TrafficWidget extends DraggableWidget {
   constructor(bounds, width, height, options = {}) {
@@ -20,6 +21,7 @@ export default class TrafficWidget extends DraggableWidget {
     const isTrafficL = width === 377 && height === 115;
     const isTrafficM = width === 246 && height === 115;
     const isTrafficS = width === 115 && height === 115;
+    const isTrafficWithMap = width === 246 && height === 246
 
     super(bounds, content, options);
     // Сохраняем исходные размеры для масштабирования
@@ -29,6 +31,7 @@ export default class TrafficWidget extends DraggableWidget {
     content.addChild(this.contentContainer);
     this._width = width;
     this._height = height;
+    
     // Создаем соответствующий тип виджета
     if (isTrafficL) {
       createTrafficLContent(this.contentContainer, width, height);
@@ -39,6 +42,9 @@ export default class TrafficWidget extends DraggableWidget {
     } else if (isTrafficS) {
       createTrafficSContent(this.contentContainer, width, height);
       this.type = "TRAFFICS";
+    } else if(isTrafficWithMap) {
+      createTrafficWithMapContent(this.contentContainer, width, height)
+      this.type = "TRAFFICMAP"
     }
 
     this._width = width;
@@ -68,56 +74,128 @@ export default class TrafficWidget extends DraggableWidget {
       0: 0x4df30c,
     };
 
-    // Обновляем трафик сразу и устанавливаем интервал
-    this.updateTraffic();
+    // Загружаем данные с сервера и устанавливаем интервал
+    this.fetchTrafficData();
     this._timer = setInterval(
-      () => this.updateTraffic(),
-      options.updateInterval ?? 1800000,
+      () => this.fetchTrafficData(),
+      options.updateInterval ?? 1800000, // 30 минут по умолчанию
     );
   }
 
-  updateTraffic() {
-    const trafficValue = this.getRandomTraffic();
+  async fetchTrafficData() {
+    try {
+      const data = await requestWidgetData("traffic");
+      
+      // Обновляем значение трафика
+      this.updateTrafficValue(data);
+      
+    } catch (error) {
+      console.error("Ошибка загрузки данных трафика:", error);
+    }
+  }
 
+  updateTrafficValue(data) {
+    // Парсим значение balls
+    const trafficValue = parseInt(data.balls);
+    const isValid = !isNaN(trafficValue) && trafficValue >= 0 && trafficValue <= 10;
+    
+    if (!isValid) {
+      console.warn("Получено некорректное значение трафика:", data.balls);
+      return;
+    }
+
+    // Обновляем текст значения
     if (this.contentContainer.trafficValueText) {
       this.contentContainer.trafficValueText.text = trafficValue.toString();
     }
 
+    // Получаем цвет для текущего значения
+    const color = this.trafficColors[trafficValue] || this.trafficColors[0];
+
     // Для виджетов с бордером (L и M)
     if (this.contentContainer.trafficBorder) {
-      const color = this.trafficColors[trafficValue] || this.trafficColors[0];
       this.contentContainer.trafficBorder.clear();
       this.contentContainer.trafficBorder.circle(0, 0, 27);
       this.contentContainer.trafficBorder.stroke({ width: 6, color: color });
     }
 
-    // Для виджета с заливкой (S)
+    // Для виджета с заливкой (S и MAP)
     if (this.contentContainer.trafficCircle) {
-      const color = this.trafficColors[trafficValue] || this.trafficColors[0];
       this.contentContainer.trafficCircle.clear();
-      this.contentContainer.trafficCircle.circle(0, 0, 45);
+      this.contentContainer.trafficCircle.circle(0, 0, 
+        this.type === "TRAFFICMAP" ? 30 : 45 // Разный радиус для разных типов
+      );
       this.contentContainer.trafficCircle.fill({ color: color });
+    }
+
+    // Для виджета с картой дополнительно обрабатываем изображение
+    if (this.type === "TRAFFICMAP" && data.img) {
+      this.updateMapImage(data.img);
     }
   }
 
-  getRandomTraffic() {
-    return Math.floor(Math.random() * 10) + 1;
+  async updateMapImage(base64Image) {
+    try {
+      const content = this.contentContainer;
+      
+      // Создаем изображение
+      const img = new Image();
+      img.src = `data:image/png;base64,${base64Image}`;
+      
+      // Ждем загрузки изображения
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+      
+      // Удаляем старый спрайт если есть
+      if (content.mapSprite) {
+        content.mapContainer.removeChild(content.mapSprite);
+        content.mapSprite.destroy();
+      }
+      
+      // Создаем новый спрайт
+      const texture = Texture.from(img);
+      const sprite = new Sprite(texture);
+      
+      // Растягиваем на весь контейнер
+      sprite.width = this._width;
+      sprite.height = this._height;
+      sprite.x = 0;
+      sprite.y = 0;
+      
+      content.mapContainer.addChild(sprite);
+      content.mapSprite = sprite;
+      
+    } catch (error) {
+      console.error("Ошибка обновления изображения карты:", error);
+    }
   }
+
   onResize(width, height) {
     this._width = width;
     this._height = height;
 
     // Рассчитываем масштаб
-    const scaleX = width / this.originalWidth;
-    const scaleY = height / this.originalHeight;
-    console.log(scaleX, scaleY, "scale", this.content, this.contentContainer);
+    const scale = Math.min(
+      width / this.originalWidth,
+      height / this.originalHeight,
+    );
 
-    // Масштабируем контейнер с контентом
-    this.contentContainer.scale.set(scaleX, scaleY);
+    // Масштабируем контент пропорционально, чтобы текст не искажался
+    this.contentContainer.scale.set(scale);
+    this.contentContainer.x = (width - this.originalWidth * scale) / 2;
+    this.contentContainer.y = (height - this.originalHeight * scale) / 2;
 
     // Перерисовываем фон
     this._redrawBackground();
+    
+    // Обновляем маску для виджета с картой
+    if (this.type === "TRAFFICMAP" && this.contentContainer.updateMask) {
+      this.contentContainer.updateMask(width, height);
+    }
   }
+
   // === API для управления стилем ===
   _redrawBackground() {
     this.bg.clear();
@@ -128,20 +206,22 @@ export default class TrafficWidget extends DraggableWidget {
       .drawRoundedRect(0, 0, this._width, this._height, this._cornerRadius)
       .endFill();
 
-    // Рамка
-    if (this._borderWidth > 0) {
-      this.bg.lineStyle(
-        this._borderWidth,
-        this._borderColor,
-        this._borderAlpha,
-      );
-      this.bg.drawRoundedRect(
-        0,
-        0,
-        this._width,
-        this._height,
-        this._cornerRadius,
-      );
+    // Рамка: только stroke без заливки поверх виджета.
+    if (this._borderWidth > 0 && this._borderAlpha > 0) {
+      const inset = this._borderWidth / 2;
+      this.bg
+        .roundRect(
+          inset,
+          inset,
+          Math.max(0, this._width - this._borderWidth),
+          Math.max(0, this._height - this._borderWidth),
+          Math.max(0, this._cornerRadius - inset),
+        )
+        .stroke({
+          width: this._borderWidth,
+          color: this._borderColor,
+          alpha: this._borderAlpha,
+        });
     }
   }
 
@@ -154,6 +234,7 @@ export default class TrafficWidget extends DraggableWidget {
     this._backgroundAlpha = alpha;
     this._redrawBackground();
   }
+
   setCornerRadius(radius) {
     this._cornerRadius = radius;
     this._redrawBackground();
@@ -201,10 +282,10 @@ function createTrafficLContent(content, width, height) {
   const circleContainer = new Container();
   circleContainer.x = 0;
 
-  // Графика для бордера круга (НОВЫЙ API)
+  // Графика для бордера круга
   const trafficBorder = new Graphics();
   trafficBorder.circle(0, 0, 27);
-  trafficBorder.stroke({ width: 6, color: 0xffffff }); // Начальный цвет
+  trafficBorder.stroke({ width: 6, color: 0xffffff });
   circleContainer.addChild(trafficBorder);
 
   // Текст значения
@@ -253,10 +334,10 @@ function createTrafficMContent(content, width, height) {
   const circleContainer = new Container();
   circleContainer.x = 60;
 
-  // Графика для бордера круга (НОВЫЙ API)
+  // Графика для бордера круга
   const trafficBorder = new Graphics();
   trafficBorder.circle(0, 0, 27);
-  trafficBorder.stroke({ width: 6, color: 0xffffff }); // Начальный цвет
+  trafficBorder.stroke({ width: 6, color: 0xffffff });
   circleContainer.addChild(trafficBorder);
 
   // Текст значения
@@ -288,10 +369,10 @@ function createTrafficSContent(content, width, height) {
   container.x = width / 2;
   container.y = height / 2;
 
-  // Графика для заполненного круга (НОВЫЙ API)
+  // Графика для заполненного круга
   const trafficCircle = new Graphics();
   trafficCircle.circle(0, 0, 45);
-  trafficCircle.fill({ color: 0xffffff }); // Начальный цвет
+  trafficCircle.fill({ color: 0xffffff });
   container.addChild(trafficCircle);
 
   // Текст значения
@@ -306,4 +387,66 @@ function createTrafficSContent(content, width, height) {
   // Сохраняем ссылки
   content.trafficValueText = trafficValueText;
   content.trafficCircle = trafficCircle;
+}
+
+function createTrafficWithMapContent(content, width, height) {
+  console.log("Создание виджета с картой", { width, height });
+  
+  const styleText = new TextStyle({
+    fontFamily: "Rubik",
+    fontSize: 48,
+    fill: 0xffffff,
+    fontWeight: 500,
+    resolution: 2,
+  });
+
+  // Создаем маску для скругления углов всего виджета
+  const widgetMask = new Graphics();
+  widgetMask.beginFill(0xffffff);
+  widgetMask.drawRoundedRect(0, 0, width, height, 16);
+  widgetMask.endFill();
+  content.addChild(widgetMask);
+  
+  // Применяем маску ко всему контенту виджета
+  content.mask = widgetMask;
+
+  // Контейнер для карты
+  const mapContainer = new Container();
+  content.addChild(mapContainer);
+
+  // Контейнер для круга с пробками (поверх карты)
+  const circleContainer = new Container();
+  circleContainer.x = 30 + 20;
+  circleContainer.y = 30 + 20;
+  content.addChild(circleContainer);
+
+  // Графика для заполненного круга
+  const trafficCircle = new Graphics();
+  trafficCircle.circle(0, 0, 30);
+  trafficCircle.fill({ color: 0xffffff });
+  circleContainer.addChild(trafficCircle);
+
+  // Текст значения
+  const trafficValueText = new Text("0", styleText);
+  trafficValueText.anchor.set(0.5);
+  trafficValueText.x = 0;
+  trafficValueText.y = 0;
+  circleContainer.addChild(trafficValueText);
+
+  // Сохраняем ссылки
+  content.trafficValueText = trafficValueText;
+  content.trafficCircle = trafficCircle;
+  content.mapContainer = mapContainer;
+  content.mapSprite = null;
+  content.widgetMask = widgetMask;
+
+  // Функция для обновления маски при изменении размеров
+  content.updateMask = function(newWidth, newHeight) {
+    widgetMask.clear();
+    widgetMask.beginFill(0xffffff);
+    widgetMask.drawRoundedRect(0, 0, newWidth, newHeight, 16);
+    widgetMask.endFill();
+  };
+
+  return content;
 }

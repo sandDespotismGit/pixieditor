@@ -2,6 +2,7 @@
 import { Container, Graphics, Text, TextStyle, Sprite } from "pixi.js";
 import DraggableWidget from "../draggable_widget";
 import * as PIXI from "pixi.js";
+import { requestWidgetData } from "../../batchWidgetData";
 
 export default class MetalsWidget extends DraggableWidget {
   constructor(bounds, width, height, options = {}) {
@@ -54,8 +55,8 @@ export default class MetalsWidget extends DraggableWidget {
     this.isFullVersion = isFullVersion;
 
     // URL API для металлов
-    this.metalsApiUrl = "https://admin.i-panel.pro:8088/metal";
-    this.iconsBaseUrl = "http://212.41.9.251:8000/static/";
+    this.metalsApiUrl = "https://admin.i-panel.pro:8787/api/parse/metals";
+    this.iconsBaseUrl = "https://admin.i-panel.pro:8787/static/";
 
     // Загружаем данные сразу и устанавливаем интервал
     this.loadMetals();
@@ -67,18 +68,7 @@ export default class MetalsWidget extends DraggableWidget {
 
   async loadMetals() {
     try {
-      const response = await fetch(this.metalsApiUrl, {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
+      const result = await requestWidgetData("metals");
       this.updateMetals(result);
     } catch (error) {
       console.error("Error loading metals data:", error);
@@ -103,7 +93,27 @@ export default class MetalsWidget extends DraggableWidget {
         ];
 
     metals.forEach((metal) => {
-      if (metalsData.data && metalsData.data[metal.index]) {
+      if (metalsData && metalsData[metal.name]) {
+        const metalResult = metalsData[metal.name];
+        const newPrice = metalResult.price || "---,--";
+        const percentage = metalResult.percent || "0.00%";
+        const priceChange = metalResult.change || "0.00";
+        if (this.contentContainer[`${metal.prefix}PriceText`]) {
+          this.contentContainer[`${metal.prefix}PriceText`].text = newPrice;
+        }
+
+        if (this.contentContainer[`${metal.prefix}DivideText`]) {
+          this.contentContainer[`${metal.prefix}DivideText`].text = priceChange;
+        }
+
+        if (this.contentContainer[`${metal.prefix}PercText`]) {
+          this.contentContainer[`${metal.prefix}PercText`].text = percentage;
+        }
+
+        if (this.contentContainer[`${metal.prefix}Icon`]) {
+          this.contentContainer[`${metal.prefix}Icon`].visible = false;
+        }
+      } else if (metalsData.data && metalsData.data[metal.index]) {
         const metalResult = metalsData.data[metal.index].split("\t");
 
         if (metalResult.length >= 4) {
@@ -193,11 +203,15 @@ export default class MetalsWidget extends DraggableWidget {
     this._height = height;
 
     // Рассчитываем масштаб
-    const scaleX = width / this.originalWidth;
-    const scaleY = height / this.originalHeight;
+    const scale = Math.min(
+      width / this.originalWidth,
+      height / this.originalHeight,
+    );
 
-    // Масштабируем контейнер с контентом
-    this.contentContainer.scale.set(scaleX, scaleY);
+    // Масштабируем контент пропорционально, чтобы текст не искажался
+    this.contentContainer.scale.set(scale);
+    this.contentContainer.x = (width - this.originalWidth * scale) / 2;
+    this.contentContainer.y = (height - this.originalHeight * scale) / 2;
 
     // Перерисовываем фон
     this._redrawBackground();
@@ -213,20 +227,22 @@ export default class MetalsWidget extends DraggableWidget {
       .drawRoundedRect(0, 0, this._width, this._height, this._cornerRadius)
       .endFill();
 
-    // Рамка
-    if (this._borderWidth > 0) {
-      this.bg.lineStyle(
-        this._borderWidth,
-        this._borderColor,
-        this._borderAlpha,
-      );
-      this.bg.drawRoundedRect(
-        0,
-        0,
-        this._width,
-        this._height,
-        this._cornerRadius,
-      );
+    // Рамка: только stroke без заливки поверх виджета.
+    if (this._borderWidth > 0 && this._borderAlpha > 0) {
+      const inset = this._borderWidth / 2;
+      this.bg
+        .roundRect(
+          inset,
+          inset,
+          Math.max(0, this._width - this._borderWidth),
+          Math.max(0, this._height - this._borderWidth),
+          Math.max(0, this._cornerRadius - inset),
+        )
+        .stroke({
+          width: this._borderWidth,
+          color: this._borderColor,
+          alpha: this._borderAlpha,
+        });
     }
   }
 

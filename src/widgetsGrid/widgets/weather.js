@@ -2,6 +2,7 @@
 import { Container, Graphics, Text, TextStyle, Sprite } from "pixi.js";
 import * as PIXI from "pixi.js"; // Для модульной системы
 import DraggableWidget from "../draggable_widget";
+import { requestWidgetData } from "../../batchWidgetData";
 
 export default class WeatherWidget extends DraggableWidget {
   constructor(bounds, width, height, options = {}) {
@@ -29,6 +30,9 @@ export default class WeatherWidget extends DraggableWidget {
     this.originalHeight = height;
     this.contentContainer = new Container();
     content.addChild(this.contentContainer);
+    this.contentMask = new Graphics();
+    content.addChild(this.contentMask);
+    this.contentContainer.mask = this.contentMask;
     this._width = width;
     this._height = height;
     // Создаем соответствующий тип виджета
@@ -61,22 +65,25 @@ export default class WeatherWidget extends DraggableWidget {
 
     // URL для получения погоды
     this.weatherApiUrl =
-      options.weatherApiUrl || "http://212.41.9.251:8000/get_weather";
+      options.weatherApiUrl ||
+      "https://admin.i-panel.pro:8787/api/parse/get_weather";
 
     // Маппинг погодных условий на иконки
     this.weatherIcons = {
-      Ясно: "http://212.41.9.251:8000/static/weather_clear.svg",
-      Облачно: "http://212.41.9.251:8000/static/weather_cloudy.svg",
+      Ясно: "https://admin.i-panel.pro:8787/static/weather_clear.svg",
+      Облачно: "https://admin.i-panel.pro:8787/static/weather_cloudy.svg",
       "Переменная облачность":
-        "http://212.41.9.251:8000/static/weather_p_cloudy.svg",
-      "Местами дождь": "http://212.41.9.251:8000/static/weather_rain.svg",
+        "https://admin.i-panel.pro:8787/static/weather_p_cloudy.svg",
+      "Местами дождь": "https://admin.i-panel.pro:8787/static/weather_rain.svg",
       "Местами грозы":
-        "http://212.41.9.251:8000/static/weather_thunderstorm.svg",
+        "https://admin.i-panel.pro:8787/static/weather_thunderstorm.svg",
       "Местами легкий дождь с грозой":
-        "http://212.41.9.251:8000/static/weather_rain.svg",
-      "Моросящий дождь": "http://212.41.9.251:8000/static/weather_rain.svg",
-      "Небольшой дождь": "http://212.41.9.251:8000/static/weather_rain.svg",
+        "https://admin.i-panel.pro:8787/static/weather_rain.svg",
+      "Моросящий дождь": "https://admin.i-panel.pro:8787/static/weather_rain.svg",
+      "Небольшой дождь": "https://admin.i-panel.pro:8787/static/weather_rain.svg",
     };
+
+    this._redrawBackground();
 
     // Загружаем погоду сразу и устанавливаем интервал
     this.loadWeather();
@@ -88,18 +95,7 @@ export default class WeatherWidget extends DraggableWidget {
 
   async loadWeather() {
     try {
-      const response = await fetch(this.weatherApiUrl, {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
+      const result = await requestWidgetData("weather");
       this.updateWeather(result);
     } catch (error) {
       console.error("Error loading weather:", error);
@@ -117,6 +113,11 @@ export default class WeatherWidget extends DraggableWidget {
 
     if (this.contentContainer.statusText) {
       this.contentContainer.statusText.text = currentWeather[1];
+      fitTextToBox(
+        this.contentContainer.statusText,
+        this.contentContainer.statusMaxWidth || this.originalWidth - 60,
+        this.contentContainer.statusMaxHeight || 42,
+      );
     }
 
     if (this.contentContainer.currentIcon && currentWeather[1]) {
@@ -145,6 +146,10 @@ export default class WeatherWidget extends DraggableWidget {
 
   async loadIcon(sprite, url) {
     try {
+      if (!url || url.includes("212.41.9.251:8000")) {
+        sprite.texture = PIXI.Texture.EMPTY;
+        return;
+      }
       const texture = await PIXI.Assets.load(url);
       sprite.texture = texture;
     } catch (error) {
@@ -158,6 +163,11 @@ export default class WeatherWidget extends DraggableWidget {
     }
     if (this.contentContainer.statusText) {
       this.contentContainer.statusText.text = "Нет данных";
+      fitTextToBox(
+        this.contentContainer.statusText,
+        this.contentContainer.statusMaxWidth || this.originalWidth - 60,
+        this.contentContainer.statusMaxHeight || 42,
+      );
     }
   }
   onResize(width, height) {
@@ -165,12 +175,15 @@ export default class WeatherWidget extends DraggableWidget {
     this._height = height;
 
     // Рассчитываем масштаб
-    const scaleX = width / this.originalWidth;
-    const scaleY = height / this.originalHeight;
-    console.log(scaleX, scaleY, "scale", this.content, this.contentContainer);
+    const scale = Math.min(
+      width / this.originalWidth,
+      height / this.originalHeight,
+    );
 
-    // Масштабируем контейнер с контентом
-    this.contentContainer.scale.set(scaleX, scaleY);
+    // Масштабируем контент пропорционально, чтобы текст не искажался
+    this.contentContainer.scale.set(scale);
+    this.contentContainer.x = (width - this.originalWidth * scale) / 2;
+    this.contentContainer.y = (height - this.originalHeight * scale) / 2;
 
     // Перерисовываем фон
     this._redrawBackground();
@@ -185,20 +198,28 @@ export default class WeatherWidget extends DraggableWidget {
       .drawRoundedRect(0, 0, this._width, this._height, this._cornerRadius)
       .endFill();
 
-    // Рамка
-    if (this._borderWidth > 0) {
-      this.bg.lineStyle(
-        this._borderWidth,
-        this._borderColor,
-        this._borderAlpha,
-      );
-      this.bg.drawRoundedRect(
-        0,
-        0,
-        this._width,
-        this._height,
-        this._cornerRadius,
-      );
+    this.contentMask
+      .clear()
+      .beginFill(0xffffff, 1)
+      .drawRoundedRect(0, 0, this._width, this._height, this._cornerRadius)
+      .endFill();
+
+    // Рамка: только stroke без заливки поверх виджета.
+    if (this._borderWidth > 0 && this._borderAlpha > 0) {
+      const inset = this._borderWidth / 2;
+      this.bg
+        .roundRect(
+          inset,
+          inset,
+          Math.max(0, this._width - this._borderWidth),
+          Math.max(0, this._height - this._borderWidth),
+          Math.max(0, this._cornerRadius - inset),
+        )
+        .stroke({
+          width: this._borderWidth,
+          color: this._borderColor,
+          alpha: this._borderAlpha,
+        });
     }
   }
 
@@ -234,6 +255,23 @@ export default class WeatherWidget extends DraggableWidget {
 }
 
 // Вспомогательные функции для создания контента (остаются без изменений)
+function fitTextToBox(text, maxWidth, maxHeight, minFontSize = 12) {
+  if (!text?.style || !maxWidth || !maxHeight) return;
+  const baseFontSize = text._baseFontSize || Number(text.style.fontSize) || 24;
+  text._baseFontSize = baseFontSize;
+  text.style.wordWrap = true;
+  text.style.wordWrapWidth = maxWidth;
+  text.style.breakWords = true;
+  text.style.align = text.style.align || "left";
+  text.style.fontSize = baseFontSize;
+  while (
+    (text.width > maxWidth || text.height > maxHeight) &&
+    Number(text.style.fontSize) > minFontSize
+  ) {
+    text.style.fontSize = Number(text.style.fontSize) - 1;
+  }
+}
+
 function createWeatherXLContent(content, width, height) {
   // Стили для температуры
   const styleTemp = new TextStyle({
@@ -275,6 +313,7 @@ function createWeatherXLContent(content, width, height) {
   const statusText = new Text("Загрузка...", styleStatus);
   statusText.x = 0;
   statusText.y = 80;
+  fitTextToBox(statusText, width - 190, 58, 14);
   currentWeatherContainer.addChild(statusText);
 
   // Иконка погоды
@@ -322,6 +361,8 @@ function createWeatherXLContent(content, width, height) {
   // Сохраняем ссылки для обновления
   content.currentTempText = tempText;
   content.statusText = statusText;
+  content.statusMaxWidth = width - 190;
+  content.statusMaxHeight = 58;
   content.currentIcon = weatherIcon;
   content.timeIcons = timeIcons;
 }
@@ -370,6 +411,9 @@ function createWeatherMContent(content, width, height) {
     fill: 0x737373,
     fontWeight: 300,
     resolution: 2,
+    wordWrap: true,
+    wordWrapWidth: width - 60,
+    breakWords: true,
   });
 
   const container = new Container();
@@ -387,6 +431,7 @@ function createWeatherMContent(content, width, height) {
   const statusText = new Text("Загрузка...", styleStatus);
   statusText.x = 0;
   statusText.y = 80;
+  fitTextToBox(statusText, width - 60, 48, 12);
   container.addChild(statusText);
 
   // Температура
@@ -399,6 +444,8 @@ function createWeatherMContent(content, width, height) {
 
   content.currentTempText = tempText;
   content.statusText = statusText;
+  content.statusMaxWidth = width - 60;
+  content.statusMaxHeight = 48;
   content.currentIcon = weatherIcon;
 }
 

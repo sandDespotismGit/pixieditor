@@ -313,12 +313,15 @@ export default class CalendarWidget extends DraggableWidget {
     this._height = height;
 
     // Рассчитываем масштаб
-    const scaleX = width / this.originalWidth;
-    const scaleY = height / this.originalHeight;
-    console.log(scaleX, scaleY, "scale", this.content, this.contentContainer);
+    const scale = Math.min(
+      width / this.originalWidth,
+      height / this.originalHeight,
+    );
 
-    // Масштабируем контейнер с контентом
-    this.contentContainer.scale.set(scaleX, scaleY);
+    // Масштабируем контент пропорционально, чтобы текст не искажался
+    this.contentContainer.scale.set(scale);
+    this.contentContainer.x = (width - this.originalWidth * scale) / 2;
+    this.contentContainer.y = (height - this.originalHeight * scale) / 2;
 
     // Перерисовываем фон
     this._redrawBackground();

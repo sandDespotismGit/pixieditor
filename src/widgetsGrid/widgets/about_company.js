@@ -3,6 +3,30 @@ import { Container, Graphics, Text, TextStyle, Sprite } from "pixi.js";
 import DraggableWidget from "../draggable_widget";
 import * as PIXI from "pixi.js"; // Для модульной системы
 
+function getCurrentPanelIdentifier(fallback = "") {
+  const params =
+    typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search)
+      : new URLSearchParams();
+  return String(
+    (typeof window !== "undefined" && window.__ipanelFabricNumber) ||
+      (typeof window !== "undefined" && window.__ipanelPanelFabricNumber) ||
+      params.get("fabric_number") ||
+      params.get("fabric") ||
+      params.get("panel_fabric") ||
+      params.get("panel_id") ||
+      fallback ||
+      "",
+  ).trim();
+}
+
+function buildPanelQrUrl(panelIdentifier = "") {
+  const identifier = getCurrentPanelIdentifier(panelIdentifier);
+  return `https://admin.i-panel.pro:8787/api/panels/qr/${encodeURIComponent(
+    identifier || "unknown",
+  )}.png`;
+}
+
 export default class CompanyWidget extends DraggableWidget {
   constructor(bounds, width, height, options = {}) {
     const content = new Container();
@@ -21,21 +45,37 @@ export default class CompanyWidget extends DraggableWidget {
     const isCompanyInfo = options.type === "info";
     const isCompanyLogos = options.type === "logos";
     const isCompanySimpleLogos = options.type === "simple-logos";
+    const isCompanyQrOnly = options.type === "qr-only";
 
     super(bounds, content, options);
     // Сохраните исходные размеры для расчета масштаба
     this.originalWidth = width;
     this.originalHeight = height;
 
+    // Сохраняем текстовые элементы для последующего изменения
+    this.textElements = {};
+
+    this._fontFamily = options.fontFamily || "Rubik";
+    this._textColor = options.textColor ?? 0xffffff;
+    this._panelFabricNumber = options.panelFabricNumber || "";
+    this._autoPanelQr = options.autoPanelQr === true;
+
     if (isCompanyInfo) {
-      createCompanyInfoContent(content, width, height);
+      createCompanyInfoContent(content, width, height, this.textElements);
       this.type = "info";
+      this.setCompanyName(options.companyName || "Meteor");
+      this.setPhoneNumber(options.phoneNumber || "+7 (925) 533-22-33");
+      this.setFontFamily(this._fontFamily);
+      this.setTextColor(this._textColor);
     } else if (isCompanyLogos) {
       createCompanyLogosContent(content, width, height);
       this.type = "logos";
     } else if (isCompanySimpleLogos) {
       createCompanySimpleLogosContent(content, width, height);
-      this.type = "simplelogos";
+      this.type = "simple-logos";
+    } else if (isCompanyQrOnly) {
+      createCompanyQrOnlyContent(content, width, height);
+      this.type = "qr-only";
     }
 
     this._width = width;
@@ -52,7 +92,7 @@ export default class CompanyWidget extends DraggableWidget {
     this._borderWidth = options.borderWidth ?? 0;
 
     // Загружаем изображения если это логотипы
-    if (isCompanyLogos || isCompanySimpleLogos) {
+    if (isCompanyLogos || isCompanySimpleLogos || isCompanyQrOnly) {
       this.loadLogos();
     }
 
@@ -62,10 +102,10 @@ export default class CompanyWidget extends DraggableWidget {
 
   async loadLogos() {
     const logoUrls = {
-      qr: "http://212.41.9.251:8000/static/light_qr.svg",
-      ipanel: "http://212.41.9.251:8000/static/light_ipanel.svg",
-      liftbrand: "http://212.41.9.251:8000/static/light_liftbrand.svg",
-      videovision: "http://212.41.9.251:8000/static/light_videovision.svg",
+      qr: buildPanelQrUrl(this._panelFabricNumber),
+      ipanel: "https://admin.i-panel.pro:8787/static/light_ipanel.svg",
+      liftbrand: "https://admin.i-panel.pro:8787/static/light_liftbrand.svg",
+      videovision: "https://admin.i-panel.pro:8787/static/light_videovision.svg",
     };
 
     try {
@@ -86,6 +126,7 @@ export default class CompanyWidget extends DraggableWidget {
       if (this.content.qrLogo) {
         const qrTexture = await PIXI.Assets.load(logoUrls.qr);
         this.content.qrLogo.texture = qrTexture;
+        this._resizeQrLogo();
       }
 
       if (this.content.videovisionLogo) {
@@ -108,9 +149,31 @@ export default class CompanyWidget extends DraggableWidget {
     }
   }
 
+  _resizeQrLogo() {
+    const qrLogo = this.content?.qrLogo;
+    if (!qrLogo) return;
+
+    const width = this._width || this.originalWidth;
+    const height = this._height || this.originalHeight;
+    const role = this.content.qrLogoRole || this.type;
+
+    let size;
+    if (role === "qr-only") {
+      size = Math.max(36, Math.min(width, height) * 0.72);
+    } else if (role === "simple-logos") {
+      size = Math.max(28, Math.min(height * 0.58, width * 0.16, 78));
+    } else {
+      size = Math.max(28, Math.min(height * 0.58, width * 0.16, 72));
+    }
+
+    qrLogo.width = size;
+    qrLogo.height = size;
+  }
+
   destroy(options) {
     super.destroy(options);
   }
+
   // === API для управления стилем ===
   _redrawBackground() {
     this.bg.clear();
@@ -121,25 +184,34 @@ export default class CompanyWidget extends DraggableWidget {
       .drawRoundedRect(0, 0, this._width, this._height, this._cornerRadius)
       .endFill();
 
-    // Рамка (если есть толщина)
-    if (this._borderWidth > 0) {
-      this.bg.fill(this._borderWidth, this._borderColor, this._borderAlpha);
-      this.bg.drawRoundedRect(
-        0,
-        0,
-        this._width,
-        this._height,
-        this._cornerRadius,
-      );
+    // Рамка: только stroke без заливки поверх виджета.
+    if (this._borderWidth > 0 && this._borderAlpha > 0) {
+      const inset = this._borderWidth / 2;
+      this.bg
+        .roundRect(
+          inset,
+          inset,
+          Math.max(0, this._width - this._borderWidth),
+          Math.max(0, this._height - this._borderWidth),
+          Math.max(0, this._cornerRadius - inset),
+        )
+        .stroke({
+          width: this._borderWidth,
+          color: this._borderColor,
+          alpha: this._borderAlpha,
+        });
     }
   }
+
   onResize(width, height) {
     this._width = width;
     this._height = height;
 
     // Рассчитываем коэффициенты масштабирования
-    const scaleX = width / this.originalWidth;
-    const scaleY = height / this.originalHeight;
+    const scale = Math.min(
+      width / this.originalWidth,
+      height / this.originalHeight,
+    );
 
     // Находим основной контейнер с контентом (логотипы, текст)
     // Это последний добавленный child в this.content
@@ -148,7 +220,7 @@ export default class CompanyWidget extends DraggableWidget {
 
     // Применяем масштаб ко всему внутреннему контенту
     if (mainContentContainer) {
-      mainContentContainer.scale.set(scaleX, scaleY);
+      mainContentContainer.scale.set(scale);
       // Центрируем контент после масштабирования
       mainContentContainer.x = this._width / 2;
       mainContentContainer.y = this._height / 2;
@@ -156,6 +228,97 @@ export default class CompanyWidget extends DraggableWidget {
 
     // Перерисовываем фон
     this._redrawBackground();
+    this._resizeQrLogo();
+  }
+
+  // === МЕТОДЫ ДЛЯ ИЗМЕНЕНИЯ ТЕКСТА ===
+
+  /**
+   * Устанавливает название компании
+   * @param {string} companyName - Название компании
+   */
+  setCompanyName(companyName) {
+    if (this.textElements.companyValue) {
+      this.textElements.companyValue.text = companyName;
+    }
+  }
+
+  /**
+   * Получает текущее название компании
+   * @returns {string} Название компании
+   */
+  getCompanyName() {
+    return this.textElements.companyValue ? this.textElements.companyValue.text : '';
+  }
+
+  /**
+   * Устанавливает номер телефона поддержки
+   * @param {string} phoneNumber - Номер телефона
+   */
+  setPhoneNumber(phoneNumber) {
+    if (this.textElements.phoneValue) {
+      this.textElements.phoneValue.text = phoneNumber;
+    }
+  }
+
+  /**
+   * Получает текущий номер телефона
+   * @returns {string} Номер телефона
+   */
+  getPhoneNumber() {
+    return this.textElements.phoneValue ? this.textElements.phoneValue.text : '';
+  }
+
+  /**
+   * Устанавливает оба текста сразу
+   * @param {string} companyName - Название компании
+   * @param {string} phoneNumber - Номер телефона
+   */
+  setTexts(companyName, phoneNumber) {
+    this.setCompanyName(companyName);
+    this.setPhoneNumber(phoneNumber);
+  }
+
+  /**
+   * Получает оба текста
+   * @returns {object} Объект с companyName и phoneNumber
+   */
+  getTexts() {
+    return {
+      companyName: this.getCompanyName(),
+      phoneNumber: this.getPhoneNumber(),
+    };
+  }
+
+  setTextColor(color) {
+    this._textColor = color;
+    Object.values(this.textElements).forEach((text) => {
+      if (text?.style) text.style.fill = color;
+    });
+  }
+
+  setFontFamily(fontFamily) {
+    this._fontFamily = fontFamily;
+    Object.values(this.textElements).forEach((text) => {
+      if (text?.style) text.style.fontFamily = fontFamily;
+    });
+  }
+
+  getFontFamily() {
+    return this._fontFamily;
+  }
+
+  getSceneData() {
+    return {
+      ...super.getSceneData(),
+      type: this.type,
+      autoPanelQr: this._autoPanelQr,
+      panelFabricNumber: this._panelFabricNumber,
+      companyName: this.getCompanyName(),
+      phoneNumber: this.getPhoneNumber(),
+      textColor: this._textColor,
+      fontFamily: this._fontFamily,
+    };
   }
 
   setColor(color) {
@@ -171,6 +334,13 @@ export default class CompanyWidget extends DraggableWidget {
   setCornerRadius(radius) {
     this._cornerRadius = radius;
     this._redrawBackground();
+  }
+
+  setPanelFabricNumber(panelFabricNumber) {
+    this._panelFabricNumber = String(panelFabricNumber || "").trim();
+    if (this.content?.qrLogo) {
+      this.loadLogos();
+    }
   }
 
   setBackgroundColor(color) {
@@ -206,7 +376,7 @@ export default class CompanyWidget extends DraggableWidget {
 }
 
 // Вспомогательные функции для создания контента
-function createCompanyInfoContent(content, width, height) {
+function createCompanyInfoContent(content, width, height, textElements) {
   const styleLabel = new TextStyle({
     fontFamily: "Rubik",
     fontSize: 18,
@@ -258,6 +428,10 @@ function createCompanyInfoContent(content, width, height) {
   container.addChild(companyContainer);
   container.addChild(phoneContainer);
   content.addChild(container);
+
+  // Сохраняем ссылки на текстовые элементы
+  textElements.companyValue = companyValue;
+  textElements.phoneValue = phoneValue;
 }
 
 function createCompanyLogosContent(content, width, height) {
@@ -302,6 +476,7 @@ function createCompanyLogosContent(content, width, height) {
 
   // Сохраняем ссылки для загрузки текстур
   content.qrLogo = qrLogo;
+  content.qrLogoRole = "logos";
   content.ipanelLogo = ipanelLogo;
   content.liftbrandLogo = liftbrandLogo;
   content.videovisionLogo = videovisionLogo;
@@ -336,6 +511,22 @@ function createCompanySimpleLogosContent(content, width, height) {
 
   // Сохраняем ссылки для загрузки текстур
   content.qrLogo = qrLogo;
+  content.qrLogoRole = "simple-logos";
   content.simpleIpanelLogo = ipanelLogo;
   content.simpleLiftbrandLogo = liftbrandLogo;
+}
+
+function createCompanyQrOnlyContent(content, width, height) {
+  const container = new Container();
+  container.x = width / 2;
+  container.y = height / 2;
+
+  const qrLogo = Sprite.from(PIXI.Texture.EMPTY);
+  qrLogo.anchor.set(0.5);
+  container.addChild(qrLogo);
+
+  content.addChild(container);
+  content.qrLogo = qrLogo;
+  content.qrOnlyLogo = qrLogo;
+  content.qrLogoRole = "qr-only";
 }

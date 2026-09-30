@@ -1,361 +1,1920 @@
-<!doctype html>
-<html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Конструктор градиентов</title>
-    <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+lass HTMLGradientBuilder {
+    constructor(editor) {
+      this.editor = editor;
+      this.app = app;
+      this.currentGradient = {
+        type: "linear",
+        colorStops: [
+          { offset: 0, color: "#ff0000" },
+          { offset: 1, color: "#0000ff" },
+        ],
+        angle: 90,
+        shape: "ellipse",
+        size: "farthest-corner",
+        position: "center",
+        repeating: false,
+        blendMode: "normal",
+        opacity: 1,
+      };
+
+      this.animations = {
+        enabled: true,
+        type: "move",
+        speed: 1,
+        direction: "right",
+        intensity: 0.5,
+        easing: "linear",
+        loop: true,
+        duration: 5,
+        playState: "running",
+      };
+
+      this.presets = {
+        static: [
+          {
+            name: "🌅 Закат",
+            type: "linear",
+            colorStops: [
+              { offset: 0, color: "#ff6b35" },
+              { offset: 0.5, color: "#f0134d" },
+              { offset: 1, color: "#8a2be2" },
+            ],
+            angle: 135,
+            repeating: false,
+          },
+          {
+            name: "🌊 Океан",
+            type: "linear",
+            colorStops: [
+              { offset: 0, color: "#00b4db" },
+              { offset: 0.5, color: "#0083b0" },
+              { offset: 1, color: "#004466" },
+            ],
+            angle: 45,
+            repeating: false,
+          },
+          {
+            name: "🌿 Лес",
+            type: "linear",
+            colorStops: [
+              { offset: 0, color: "#2e8b57" },
+              { offset: 0.5, color: "#3cb371" },
+              { offset: 1, color: "#98fb98" },
+            ],
+            angle: 180,
+            repeating: false,
+          },
+          {
+            name: "🔥 Огненный",
+            type: "linear",
+            colorStops: [
+              { offset: 0, color: "#ff0000" },
+              { offset: 0.5, color: "#ffff00" },
+              { offset: 1, color: "#ff4500" },
+            ],
+            angle: 90,
+            repeating: false,
+          },
+          {
+            name: "☀️ Солнечный",
+            type: "radial",
+            colorStops: [
+              { offset: 0, color: "#ffff00" },
+              { offset: 0.7, color: "#ffa500" },
+              { offset: 1, color: "#ff4500" },
+            ],
+            center: { x: 0.5, y: 0.5 },
+            shape: "circle",
+            size: "closest-side",
+          },
+          {
+            name: "❄️ Ледяной",
+            type: "radial",
+            colorStops: [
+              { offset: 0, color: "#00ffff" },
+              { offset: 0.5, color: "#0000ff" },
+              { offset: 1, color: "#00008b" },
+            ],
+            center: { x: 0.3, y: 0.3 },
+            shape: "circle",
+            size: "farthest-corner",
+          },
+          {
+            name: "🌈 Радуга",
+            type: "linear",
+            colorStops: [
+              { offset: 0, color: "#ff0000" },
+              { offset: 0.17, color: "#ff7f00" },
+              { offset: 0.33, color: "#ffff00" },
+              { offset: 0.5, color: "#00ff00" },
+              { offset: 0.67, color: "#0000ff" },
+              { offset: 0.83, color: "#4b0082" },
+              { offset: 1, color: "#9400d3" },
+            ],
+            angle: 90,
+            repeating: false,
+          },
+        ],
+        animated: [
+          {
+            name: "🌈 Движущаяся радуга",
+            type: "linear",
+            colorStops: [
+              { offset: 0, color: "#ff0000" },
+              { offset: 0.2, color: "#ffff00" },
+              { offset: 0.4, color: "#00ff00" },
+              { offset: 0.6, color: "#00ffff" },
+              { offset: 0.8, color: "#0000ff" },
+              { offset: 1, color: "#ff00ff" },
+            ],
+            angle: 90,
+            repeating: true,
+            animation: {
+              enabled: true,
+              type: "move",
+              speed: 1.5,
+              direction: "right",
+              intensity: 0.8,
+              easing: "ease-in-out",
+              duration: 4,
+            },
+          },
+          {
+            name: "🌀 Вихрь",
+            type: "linear",
+            colorStops: [
+              { offset: 0, color: "#667eea" },
+              { offset: 0.5, color: "#764ba2" },
+              { offset: 1, color: "#667eea" },
+            ],
+            angle: 0,
+            repeating: true,
+            animation: {
+              enabled: true,
+              type: "move",
+              speed: 2,
+              direction: "right",
+              intensity: 1,
+              easing: "linear",
+              duration: 3,
+            },
+          },
+          {
+            name: "🌊 Волны",
+            type: "linear",
+            colorStops: [
+              { offset: 0, color: "#00b4db" },
+              { offset: 0.3, color: "#0083b0" },
+              { offset: 0.6, color: "#00b4db" },
+              { offset: 1, color: "#0083b0" },
+            ],
+            angle: 90,
+            repeating: true,
+            animation: {
+              enabled: true,
+              type: "wave",
+              speed: 1,
+              intensity: 0.5,
+              easing: "ease-in-out",
+              duration: 5,
+              frequency: 2,
+            },
+          },
+        ],
+        repeating: [
+          {
+            name: "📏 Полоски",
+            type: "linear",
+            colorStops: [
+              { offset: 0, color: "#000000" },
+              { offset: 0.1, color: "#000000" },
+              { offset: 0.1, color: "#ffffff" },
+              { offset: 0.2, color: "#ffffff" },
+            ],
+            angle: 45,
+            repeating: true,
+            animation: {
+              enabled: true,
+              type: "move",
+              speed: 0.5,
+              direction: "right",
+            },
+          },
+        ],
+      };
+
+      this.currentColorTarget = null;
+      this.selectedColor = "#000000";
+      this.colorPalette = [
+        "#000000",
+        "#333333",
+        "#666666",
+        "#999999",
+        "#cccccc",
+        "#ffffff",
+        "#ff0000",
+        "#ff3333",
+        "#ff6666",
+        "#ff9999",
+        "#ffcccc",
+        "#cc0000",
+        "#990000",
+        "#660000",
+        "#330000",
+        "#ff6600",
+        "#ff9933",
+        "#ffcc66",
+        "#ffff99",
+        "#ffcc00",
+        "#ffff00",
+        "#ffff33",
+        "#ffff66",
+        "#ffff99",
+        "#ffffcc",
+        "#00ff00",
+        "#33ff33",
+        "#66ff66",
+        "#99ff99",
+        "#ccffcc",
+        "#00cc00",
+        "#009900",
+        "#006600",
+        "#003300",
+        "#00ffff",
+        "#33ffff",
+        "#66ffff",
+        "#99ffff",
+        "#ccffff",
+        "#0000ff",
+        "#3333ff",
+        "#6666ff",
+        "#9999ff",
+        "#ccccff",
+        "#0000cc",
+        "#000099",
+        "#000066",
+        "#000033",
+      ];
+
+      // HTML элемент для градиента
+      this.gradientElement = null;
+      this.animationFrame = null;
+      this.animationTime = 0;
+      this.animationStartTime = null;
+
+      // Контейнер для позиционирования
+      this.gradientContainer = null;
+
+      // Отложенная инициализация
+      this.initialized = false;
+
+      // История изменений
+      this.history = [];
+      this.historyIndex = -1;
+      this.maxHistory = 20;
+
+      // Эффекты
+      this.effects = {
+        blur: 0,
+        brightness: 100,
+        contrast: 100,
+        saturation: 100,
+        hue: 0,
+      };
+
+      // Анимации
+      this.animationTypes = {
+        move: {
+          name: "Движение",
+          description: "Плавное перемещение градиента",
+        },
+        pulse: {
+          name: "Пульсация",
+          description: "Ритмичное изменение размера/яркости",
+        },
+        wave: {
+          name: "Волна",
+          description: "Волнообразное искажение градиента",
+        },
+        twinkle: {
+          name: "Мерцание",
+          description: "Случайные вспышки света",
+        },
+        "color-cycle": {
+          name: "Цикл цветов",
+          description: "Плавная смена цветов",
+        },
+        rotate: {
+          name: "Вращение",
+          description: "Вращение градиента вокруг центра",
+        },
+        aurora: {
+          name: "Северное сияние",
+          description: "Плавные волнообразные движения",
+        },
+        zoom: {
+          name: "Увеличение",
+          description: "Плавное увеличение/уменьшение",
+        },
+      };
+
+      // Флаг активного градиента
+      this.gradientActive = false;
+    }
+
+    // Основной метод инициализации
+    init() {
+      if (this.initialized) return;
+
+      console.log("🚀 Инициализация HTML Конструктора градиентов...");
+
+      try {
+        this.createModal();
+        this.createColorPickerModal();
+        this.setupEventListeners();
+        this.addDefaultColorStops();
+        this.loadPresets();
+        this.createGradientContainer();
+        this.createGradientElement();
+        this.applyGradient();
+        this.setupTransformEvents();
+        this.setupKeyboardShortcuts();
+
+        this.initialized = true;
+        console.log("✅ HTML Конструктор градиентов инициализирован");
+      } catch (error) {
+        console.error(
+          "❌ Ошибка инициализации конструктора градиентов:",
+          error
+        );
+      }
+    }
+
+    // Подписка на события трансформации
+    setupTransformEvents() {
+      if (!this.app || !this.app.ticker) {
+        console.warn(
+          "⚠️ App или ticker не доступен, повторная попытка через 500ms"
+        );
+        setTimeout(() => this.setupTransformEvents(), 500);
+        return;
       }
 
-      body {
-        background: #f5f7fa;
-        color: #333;
-        padding: 20px;
-        line-height: 1.6;
+      // Сохраняем контекст
+      const self = this;
+
+      // Функция для обновления позиции
+      const updatePosition = () => {
+        if (self.gradientElement) {
+          self.updateGradientElementPosition();
+        }
+      };
+
+      // Добавляем в ticker
+      this.app.ticker.add(updatePosition);
+
+      // Также обновляем при ресайзе окна
+      window.addEventListener("resize", updatePosition);
+
+      console.log("✅ Подписка на события трансформации установлена");
+    }
+
+    // Создание модального окна
+    createModal() {
+      // Проверяем, существует ли уже модальное окно
+      if (document.getElementById("gradient-modal")) {
+        return;
       }
 
-      .container {
-        max-width: 1000px;
-        margin: 0 auto;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-        padding: 25px;
+      const controlsWidget = document.getElementById("background-controls");
+
+      if (!controlsWidget) {
+        console.warn("Background controls widget not found");
+        return;
       }
 
-      h1 {
-        text-align: center;
-        margin-bottom: 25px;
-        color: #2c3e50;
-      }
+      // Создаем кнопку для открытия модалки
+      const button = document.createElement("button");
+      button.id = "gradient-builder-btn";
+      button.innerHTML = "🎨 Конструктор градиентов (HTML)";
+      button.style.cssText = `
+            padding: 10px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            width: 100%;
+        `;
 
-      .gradient-preview {
-        height: 200px;
-        border-radius: 8px;
-        margin-bottom: 25px;
-        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-        border: 1px solid #ddd;
-      }
+      button.addEventListener("mouseenter", () => {
+        button.style.transform = "translateY(-2px)";
+        button.style.boxShadow = "0 4px 12px rgba(102, 126, 234, 0.4)";
+      });
 
-      .controls {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-      }
+      button.addEventListener("mouseleave", () => {
+        button.style.transform = "translateY(0)";
+        button.style.boxShadow = "0 2px 8px rgba(102, 126, 234, 0.3)";
+      });
 
-      .color-controls {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
-      }
+      button.addEventListener("click", () => {
+        this.openModal();
+      });
 
-      .gradient-controls {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
-      }
+      controlsWidget.appendChild(button);
 
-      h2 {
-        margin-bottom: 15px;
-        font-size: 1.2rem;
-        color: #2c3e50;
-      }
+      // Создаем модальное окно
+      const modal = document.createElement("div");
+      modal.id = "gradient-modal";
+      modal.style.cssText = `
+            display: none;
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            width: 380px;
+            max-height: 85vh;
+            background: #1e1e2e;
+            border-radius: 16px;
+            padding: 0;
+            z-index: 10000;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            border: 1px solid #2d2d3d;
+            overflow: hidden;
+        `;
 
-      .color-stops {
-        margin-bottom: 20px;
-      }
+      modal.innerHTML = `
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; border-bottom: 1px solid #2d2d3d;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="margin: 0; font-size: 18px; font-weight: 600;">🎨 HTML Конструктор градиентов</h3>
+                    <button id="close-gradient-modal" style="background: rgba(255,255,255,0.2); border: none; color: white; font-size: 24px; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s ease;">×</button>
+                </div>
+            </div>
 
-      .color-stop {
-        display: flex;
-        align-items: center;
-        margin-bottom: 10px;
-        gap: 10px;
-      }
+            <div style="padding: 20px; overflow-y: auto; max-height: calc(85vh - 80px);">
+                <!-- Вкладки -->
+                <div class="tabs" style="display: flex; background: #2d2d3d; border-radius: 8px; padding: 4px; margin-bottom: 16px;">
+                    <button class="tab-btn active" data-tab="basic" style="flex: 1; padding: 8px 12px; background: #667eea; border: none; color: white; border-radius: 6px; cursor: pointer; font-size: 12px;">Основные</button>
+                    <button class="tab-btn" data-tab="animation" style="flex: 1; padding: 8px 12px; background: none; border: none; color: #a0a0b0; border-radius: 6px; cursor: pointer; font-size: 12px;">Анимация</button>
+                    <button class="tab-btn" data-tab="effects" style="flex: 1; padding: 8px 12px; background: none; border: none; color: #a0a0b0; border-radius: 6px; cursor: pointer; font-size: 12px;">Эффекты</button>
+                </div>
 
-      input[type="color"] {
-        width: 40px;
-        height: 40px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-      }
+                <!-- Контент вкладок -->
+                <div id="tab-content">
+                    <!-- Вкладка Основные -->
+                    <div id="basic-tab" class="tab-content active">
+                        <div class="section" style="margin-bottom: 20px;">
+                            <label class="section-label" style="display: block; margin-bottom: 8px; font-weight: 600; color: white; font-size: 14px;">Тип градиента</label>
+                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                                <button class="gradient-type-btn active" data-type="linear" style="padding: 12px 8px; background: #2d2d3d; border: 1px solid #3d3d4d; border-radius: 8px; color: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                                    <span>📏</span>
+                                    <div style="font-size: 11px;">Линейный</div>
+                                </button>
+                                <button class="gradient-type-btn" data-type="radial" style="padding: 12px 8px; background: #2d2d3d; border: 1px solid #3d3d4d; border-radius: 8px; color: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                                    <span>🔴</span>
+                                    <div style="font-size: 11px;">Радиальный</div>
+                                </button>
+                                <button class="gradient-type-btn" data-type="conic" style="padding: 12px 8px; background: #2d2d3d; border: 1px solid #3d3d4d; border-radius: 8px; color: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s ease;">
+                                    <span>🌀</span>
+                                    <div style="font-size: 11px;">Конический</div>
+                                </button>
+                            </div>
+                        </div>
 
-      input[type="range"] {
-        flex: 1;
-        height: 6px;
-        background: #ddd;
-        border-radius: 3px;
-        outline: none;
-      }
+                        <!-- Настройки типа градиента -->
+                        <div id="gradient-settings">
+                            <!-- Линейные настройки -->
+                            <div id="linear-settings" class="gradient-settings" style="background: #2d2d3d; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                                <label class="section-label" style="display: block; margin-bottom: 8px; font-weight: 600; color: white; font-size: 14px;">Направление</label>
+                                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px;">
+                                    <button class="direction-btn active" data-angle="0" style="padding: 10px; background: #667eea; color: white; border: 1px solid #667eea; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; font-size: 14px;">→</button>
+                                    <button class="direction-btn" data-angle="90" style="padding: 10px; background: #2d2d3d; color: white; border: 1px solid #3d3d4d; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; font-size: 14px;">↑</button>
+                                    <button class="direction-btn" data-angle="180" style="padding: 10px; background: #2d2d3d; color: white; border: 1px solid #3d3d4d; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; font-size: 14px;">←</button>
+                                    <button class="direction-btn" data-angle="270" style="padding: 10px; background: #2d2d3d; color: white; border: 1px solid #3d3d4d; border-radius: 6px; cursor: pointer; transition: all 0.3s ease; font-size: 14px;">↓</button>
+                                </div>
+                                
+                                <div class="param-group" style="margin-bottom: 12px;">
+                                    <label class="param-label" style="display: block; margin-bottom: 6px; font-size: 12px; color: #a0a0b0; font-weight: 500;">Угол: <span id="angle-value">90°</span></label>
+                                    <input type="range" id="gradient-angle" min="0" max="360" step="1" value="90" class="styled-slider" style="width: 100%; height: 6px; border-radius: 3px; background: #3d3d4d; outline: none; -webkit-appearance: none;">
+                                </div>
+                            </div>
 
-      input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 18px;
-        height: 18px;
-        background: #4caf50;
-        border-radius: 50%;
-        cursor: pointer;
-      }
+                            <!-- Радиальные настройки -->
+                            <div id="radial-settings" class="gradient-settings" style="display: none; background: #2d2d3d; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                                <div class="param-group" style="margin-bottom: 12px;">
+                                    <label class="param-label" style="display: block; margin-bottom: 6px; font-size: 12px; color: #a0a0b0; font-weight: 500;">Положение центра</label>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                        <div>
+                                            <div style="font-size: 11px; margin-bottom: 4px; color: #a0a0b0;">X: <span id="center-x-value">50%</span></div>
+                                            <input type="range" id="radial-center-x" min="0" max="100" step="1" value="50" class="styled-slider" style="width: 100%; height: 6px; border-radius: 3px; background: #3d3d4d; outline: none; -webkit-appearance: none;">
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 11px; margin-bottom: 4px; color: #a0a0b0;">Y: <span id="center-y-value">50%</span></div>
+                                            <input type="range" id="radial-center-y" min="0" max="100" step="1" value="50" class="styled-slider" style="width: 100%; height: 6px; border-radius: 3px; background: #3d3d4d; outline: none; -webkit-appearance: none;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
-      .position-value {
-        width: 40px;
-        text-align: center;
-        font-weight: bold;
-      }
+                            <!-- Конические настройки -->
+                            <div id="conic-settings" class="gradient-settings" style="display: none; background: #2d2d3d; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+                                <div class="param-group" style="margin-bottom: 12px;">
+                                    <label class="param-label" style="display: block; margin-bottom: 6px; font-size: 12px; color: #a0a0b0; font-weight: 500;">Начальный угол: <span id="conic-angle-value">0°</span></label>
+                                    <input type="range" id="conic-angle" min="0" max="360" step="1" value="0" class="styled-slider" style="width: 100%; height: 6px; border-radius: 3px; background: #3d3d4d; outline: none; -webkit-appearance: none;">
+                                </div>
+                            </div>
+                        </div>
 
-      .buttons {
-        display: flex;
-        gap: 10px;
-        margin-top: 15px;
-      }
+                        <!-- Цветовые остановки -->
+                        <div class="section" style="margin-bottom: 20px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <label class="section-label" style="display: block; font-weight: 600; color: white; font-size: 14px;">Цвета градиента</label>
+                                <button id="distribute-colors" class="small-btn" style="padding: 6px 12px; background: #2d2d3d; border: 1px solid #3d3d4d; border-radius: 4px; color: white; cursor: pointer; font-size: 11px; transition: all 0.3s ease;">↔ Распределить</button>
+                            </div>
+                            <div id="color-stops-container" class="color-stops-container" style="margin-bottom: 12px; max-height: 200px; overflow-y: auto; padding-right: 4px;"></div>
+                            <button id="add-color-stop" type="button" class="add-button" style="width: 100%; padding: 12px; background: #2d2d3d; color: white; border: 2px dashed #3d3d4d; border-radius: 8px; cursor: pointer; transition: all 0.3s ease; font-size: 13px; font-weight: 500;">
+                                + Добавить цвет
+                            </button>
+                        </div>
+                    </div>
 
-      button {
-        padding: 10px 15px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-weight: 600;
-        transition: all 0.2s ease;
-      }
+                    <!-- Вкладка Анимация -->
+                    <div id="animation-tab" class="tab-content" style="display: none;">
+                        <div class="section" style="margin-bottom: 20px;">
+                            <label class="section-label" style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: white; font-size: 14px;">
+                                <input type="checkbox" id="animation-enabled" checked>
+                                🎬 Включить анимацию
+                            </label>
+                        </div>
 
-      #add-color {
-        background: #4caf50;
-        color: white;
-      }
+                        <div id="animation-controls">
+                            <div class="section" style="margin-bottom: 20px;">
+                                <label class="section-label" style="display: block; margin-bottom: 8px; font-weight: 600; color: white; font-size: 14px;">Тип анимации</label>
+                                <select id="animation-type" class="styled-select" style="width: 100%; padding: 10px 12px; border-radius: 8px; background: #2d2d3d; color: white; border: 1px solid #3d3d4d; font-size: 13px; margin-bottom: 12px;">
+                                    <option value="move">Движение</option>
+                                    <option value="pulse">Пульсация</option>
+                                    <option value="wave">Волна</option>
+                                    <option value="color-cycle">Цикл цветов</option>
+                                    <option value="rotate">Вращение</option>
+                                </select>
+                                <div id="animation-description" style="font-size: 11px; color: #a0a0b0; margin-top: 4px;">Плавное перемещение градиента</div>
+                            </div>
 
-      #remove-color {
-        background: #f44336;
-        color: white;
-      }
+                            <div class="param-group" style="margin-bottom: 12px;">
+                                <label class="param-label" style="display: block; margin-bottom: 6px; font-size: 12px; color: #a0a0b0; font-weight: 500;">Скорость: <span id="speed-value">1x</span></label>
+                                <input type="range" id="animation-speed" min="0.1" max="5" step="0.1" value="1" class="styled-slider" style="width: 100%; height: 6px; border-radius: 3px; background: #3d3d4d; outline: none; -webkit-appearance: none;">
+                            </div>
 
-      #copy-css {
-        background: #2196f3;
-        color: white;
-      }
+                            <div class="param-group" style="margin-bottom: 12px;">
+                                <label class="param-label" style="display: block; margin-bottom: 6px; font-size: 12px; color: #a0a0b0; font-weight: 500;">Интенсивность: <span id="intensity-value">50%</span></label>
+                                <input type="range" id="animation-intensity" min="0" max="100" step="1" value="50" class="styled-slider" style="width: 100%; height: 6px; border-radius: 3px; background: #3d3d4d; outline: none; -webkit-appearance: none;">
+                            </div>
 
-      button:hover {
-        opacity: 0.9;
-        transform: translateY(-2px);
-      }
+                            <div class="section" style="margin-bottom: 20px;">
+                                <label class="section-label" style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: white; font-size: 14px;">
+                                    <input type="checkbox" id="animation-loop" checked>
+                                    🔁 Бесконечный цикл
+                                </label>
+                            </div>
+                        </div>
+                    </div>
 
-      select {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        margin-bottom: 15px;
-      }
+                    <!-- Вкладка Эффекты -->
+                    <div id="effects-tab" class="tab-content" style="display: none;">
+                        <div class="section" style="margin-bottom: 20px;">
+                            <label class="section-label" style="display: block; margin-bottom: 8px; font-weight: 600; color: white; font-size: 14px;">Непрозрачность: <span id="opacity-value">100%</span></label>
+                            <input type="range" id="gradient-opacity" min="0" max="100" step="1" value="100" class="styled-slider" style="width: 100%; height: 6px; border-radius: 3px; background: #3d3d4d; outline: none; -webkit-appearance: none;">
+                        </div>
 
-      .css-output {
-        margin-top: 25px;
-        padding: 15px;
-        background: #2c3e50;
-        color: #fff;
-        border-radius: 6px;
-        font-family: monospace;
-        white-space: pre-wrap;
-        overflow-x: auto;
-      }
+                        <div class="section" style="margin-bottom: 20px;">
+                            <label class="section-label" style="display: block; margin-bottom: 8px; font-weight: 600; color: white; font-size: 14px;">CSS Фильтры</label>
+                            
+                            <div class="param-group" style="margin-bottom: 12px;">
+                                <label class="param-label" style="display: block; margin-bottom: 6px; font-size: 12px; color: #a0a0b0; font-weight: 500;">Размытие: <span id="blur-value">0px</span></label>
+                                <input type="range" id="blur-filter" min="0" max="20" step="0.5" value="0" class="styled-slider" style="width: 100%; height: 6px; border-radius: 3px; background: #3d3d4d; outline: none; -webkit-appearance: none;">
+                            </div>
 
-      .css-output h3 {
-        margin-bottom: 10px;
-        color: #fff;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <h1>Конструктор градиентов</h1>
+                            <div class="param-group" style="margin-bottom: 12px;">
+                                <label class="param-label" style="display: block; margin-bottom: 6px; font-size: 12px; color: #a0a0b0; font-weight: 500;">Яркость: <span id="brightness-value">100%</span></label>
+                                <input type="range" id="brightness-filter" min="0" max="200" step="1" value="100" class="styled-slider" style="width: 100%; height: 6px; border-radius: 3px; background: #3d3d4d; outline: none; -webkit-appearance: none;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-      <div class="gradient-preview" id="gradient-preview"></div>
+                <!-- Пресеты -->
+                <div class="section" style="margin-bottom: 20px;">
+                    <label class="section-label" style="display: block; margin-bottom: 8px; font-weight: 600; color: white; font-size: 14px;">🎨 Пресеты</label>
+                    <div id="presets-container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;"></div>
+                </div>
 
-      <div class="controls">
-        <div class="color-controls">
-          <h2>Управление цветами</h2>
-          <div class="color-stops" id="color-stops">
-            <!-- Color stops will be added here dynamically -->
-          </div>
+                <!-- Предпросмотр -->
+                <div class="section" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #2d2d3d;">
+                    <label class="section-label" style="display: block; margin-bottom: 8px; font-weight: 600; color: white; font-size: 14px;">Предпросмотр</label>
+                    <div id="gradient-preview" style="width: 100%; height: 80px; border-radius: 8px; margin-bottom: 8px; border: 1px solid #2d2d3d; overflow: hidden;"></div>
+                </div>
 
-          <div class="buttons">
-            <button id="add-color">Добавить цвет</button>
-            <button id="remove-color">Удалить цвет</button>
-          </div>
-        </div>
+                <!-- Кнопки действий -->
+                <div style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button id="remove-gradient" class="action-button secondary" style="padding: 12px 16px; background: #ff4757; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; font-size: 13px;">
+                        🗑️ Удалить градиент
+                    </button>
+                    <button id="reset-gradient" class="action-button secondary" style="padding: 12px 16px; background: #2d2d3d; color: white; border: 1px solid #3d3d4d; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; font-size: 13px;">
+                        🔄 Сбросить
+                    </button>
+                    <button id="copy-gradient" class="action-button" style="padding: 12px 16px; background: #2d2d3d; color: white; border: 1px solid #3d3d4d; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; font-size: 13px;">
+                        📋 Копировать CSS
+                    </button>
+                    <button id="apply-gradient" class="action-button primary" style="padding: 12px 16px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 500; transition: all 0.3s ease; font-size: 13px;">
+                        ✅ Применить
+                    </button>
+                </div>
+            </div>
+        `;
 
-        <div class="gradient-controls">
-          <h2>Настройки градиента</h2>
-          <label for="gradient-type">Тип градиента:</label>
-          <select id="gradient-type">
-            <option value="linear">Линейный</option>
-            <option value="radial">Радиальный</option>
-          </select>
+      document.body.appendChild(modal);
 
-          <label for="gradient-angle">Угол (для линейного градиента):</label>
-          <input
-            type="range"
-            id="gradient-angle"
-            min="0"
-            max="360"
-            value="90"
-          />
-          <div class="angle-value">Угол: <span id="angle-value">90</span>°</div>
+      // Добавляем стили для ползунков
+      this.addSliderStyles();
+    }
 
-          <div class="buttons">
-            <button id="copy-css">Скопировать CSS</button>
-          </div>
-        </div>
-      </div>
+    // Добавляем стили для ползунков
+    addSliderStyles() {
+      const style = document.createElement("style");
+      style.textContent = `
+            .styled-slider::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                background: #667eea;
+                cursor: pointer;
+                border: 2px solid white;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            
+            .styled-slider::-moz-range-thumb {
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                background: #667eea;
+                cursor: pointer;
+                border: 2px solid white;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+            
+            .gradient-type-btn:hover, .direction-btn:hover, .small-btn:hover, .action-button:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            }
+            
+            .gradient-type-btn.active {
+                background: #667eea !important;
+                border-color: #667eea !important;
+                color: white !important;
+            }
+            
+            .direction-btn.active {
+                background: #667eea !important;
+                border-color: #667eea !important;
+            }
+            
+            .action-button.primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 16px rgba(102, 126, 234, 0.5);
+            }
+            
+            .action-button.secondary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+            }
+            
+            #remove-gradient:hover {
+                background: #ff6b81 !important;
+                box-shadow: 0 6px 16px rgba(255, 71, 87, 0.4);
+            }
+            
+            .tab-btn.active {
+                background: #667eea !important;
+                color: white !important;
+            }
+            
+            .tab-btn:hover {
+                background: #3d3d4d !important;
+            }
+        `;
+      document.head.appendChild(style);
+    }
 
-      <div class="css-output">
-        <h3>CSS код:</h3>
-        <code id="css-code"></code>
-      </div>
-    </div>
+    // Открытие модального окна
+    openModal() {
+      document.getElementById("gradient-modal").style.display = "block";
+      this.updatePreview();
+    }
 
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const gradientPreview = document.getElementById("gradient-preview");
-        const colorStopsContainer = document.getElementById("color-stops");
-        const addColorBtn = document.getElementById("add-color");
-        const removeColorBtn = document.getElementById("remove-color");
-        const copyCssBtn = document.getElementById("copy-css");
-        const gradientType = document.getElementById("gradient-type");
-        const gradientAngle = document.getElementById("gradient-angle");
-        const angleValue = document.getElementById("angle-value");
-        const cssCode = document.getElementById("css-code");
+    // Закрытие модального окна
+    closeModal() {
+      document.getElementById("gradient-modal").style.display = "none";
+    }
 
-        let colorStops = [
-          { color: "#ff0000", position: 0 },
-          { color: "#0000ff", position: 100 },
-        ];
-
-        // Инициализация
-        renderColorStops();
-        updateGradient();
-
-        // Добавление обработчиков событий
-        addColorBtn.addEventListener("click", addColorStop);
-        removeColorBtn.addEventListener("click", removeColorStop);
-        copyCssBtn.addEventListener("click", copyCssToClipboard);
-        gradientType.addEventListener("change", updateGradient);
-        gradientAngle.addEventListener("input", function () {
-          angleValue.textContent = this.value;
-          updateGradient();
-        });
-
-        // Функции
-        function renderColorStops() {
-          colorStopsContainer.innerHTML = "";
-
-          colorStops.forEach((stop, index) => {
-            const colorStopElement = document.createElement("div");
-            colorStopElement.className = "color-stop";
-
-            colorStopElement.innerHTML = `
-                        <input type="color" value="${stop.color}" data-index="${index}" class="color-picker">
-                        <input type="range" min="0" max="100" value="${stop.position}" data-index="${index}" class="position-slider">
-                        <span class="position-value">${stop.position}%</span>
-                    `;
-
-            colorStopsContainer.appendChild(colorStopElement);
-          });
-
-          // Добавляем обработчики для новых элементов
-          document.querySelectorAll(".color-picker").forEach((picker) => {
-            picker.addEventListener("input", function () {
-              const index = parseInt(this.dataset.index);
-              colorStops[index].color = this.value;
-              updateGradient();
-            });
-          });
-
-          document.querySelectorAll(".position-slider").forEach((slider) => {
-            slider.addEventListener("input", function () {
-              const index = parseInt(this.dataset.index);
-              const value = parseInt(this.value);
-              colorStops[index].position = value;
-              this.nextElementSibling.textContent = `${value}%`;
-              updateGradient();
-            });
-          });
+    // Настройка обработчиков событий
+    setupEventListeners() {
+      // Открытие/закрытие модалки
+      document.addEventListener("click", (e) => {
+        if (e.target.id === "close-gradient-modal") {
+          this.closeModal();
         }
 
-        function addColorStop() {
-          if (colorStops.length >= 5) {
-            alert("Максимальное количество цветов - 5");
-            return;
-          }
-
-          // Находим промежуточную позицию для нового цвета
-          let newPosition = 50;
-          if (colorStops.length > 1) {
-            const lastPosition = colorStops[colorStops.length - 2].position;
-            newPosition = lastPosition + Math.floor((100 - lastPosition) / 2);
-          }
-
-          // Добавляем новый цвет (зеленый по умолчанию)
-          colorStops.splice(colorStops.length - 1, 0, {
-            color: "#00ff00",
-            position: newPosition,
-          });
-
-          renderColorStops();
-          updateGradient();
+        if (e.target.id === "add-color-stop") {
+          this.addColorStop();
         }
 
-        function removeColorStop() {
-          if (colorStops.length <= 2) {
-            alert("Минимальное количество цветов - 2");
-            return;
-          }
-
-          colorStops.splice(colorStops.length - 2, 1);
-          renderColorStops();
-          updateGradient();
+        if (e.target.id === "apply-gradient") {
+          this.applyGradient();
         }
 
-        function updateGradient() {
-          // Сортируем цвета по позиции
-          const sortedStops = [...colorStops].sort(
-            (a, b) => a.position - b.position
-          );
+        if (e.target.id === "reset-gradient") {
+          this.resetGradient();
+        }
 
-          // Формируем строку градиента
-          const gradientString = sortedStops
-            .map((stop) => `${stop.color} ${stop.position}%`)
-            .join(", ");
+        if (e.target.id === "remove-gradient") {
+          this.removeGradient();
+        }
 
-          // Применяем градиент в зависимости от типа
-          if (gradientType.value === "linear") {
-            gradientPreview.style.background = `linear-gradient(${gradientAngle.value}deg, ${gradientString})`;
-            cssCode.textContent = `background: linear-gradient(${gradientAngle.value}deg, ${gradientString});`;
-          } else {
-            gradientPreview.style.background = `radial-gradient(circle, ${gradientString})`;
-            cssCode.textContent = `background: radial-gradient(circle, ${gradientString});`;
+        if (e.target.id === "copy-gradient") {
+          this.copyCSS();
+        }
+
+        if (e.target.id === "distribute-colors") {
+          this.distributeColorStops();
+        }
+
+        // Удаление цветовой остановки
+        if (e.target.classList.contains("remove-stop")) {
+          const index = parseInt(e.target.dataset.index);
+          if (this.currentGradient.colorStops.length > 2) {
+            this.currentGradient.colorStops.splice(index, 1);
+            this.recreateColorStopElements();
+            this.applyGradient();
           }
         }
 
-        function copyCssToClipboard() {
-          const textArea = document.createElement("textarea");
-          textArea.value = cssCode.textContent;
-          document.body.appendChild(textArea);
-          textArea.select();
-          document.execCommand("copy");
-          document.body.removeChild(textArea);
+        // Клик по превью цвета
+        if (
+          e.target.classList.contains("color-preview") ||
+          e.target.closest(".color-preview")
+        ) {
+          const preview = e.target.classList.contains("color-preview")
+            ? e.target
+            : e.target.closest(".color-preview");
+          const index = parseInt(preview.dataset.index);
+          this.openColorPicker(index);
+        }
 
-          // Визуальное подтверждение копирования
-          const originalText = copyCssBtn.textContent;
-          copyCssBtn.textContent = "Скопировано!";
-          setTimeout(() => {
-            copyCssBtn.textContent = originalText;
-          }, 2000);
+        // Кнопки вкладок
+        if (e.target.classList.contains("tab-btn")) {
+          this.switchTab(e.target.dataset.tab);
+        }
+
+        // Кнопки типа градиента
+        if (e.target.classList.contains("gradient-type-btn")) {
+          document
+            .querySelectorAll(".gradient-type-btn")
+            .forEach((btn) => btn.classList.remove("active"));
+          e.target.classList.add("active");
+          this.currentGradient.type = e.target.dataset.type;
+          this.toggleGradientType();
+          this.applyGradient();
+        }
+
+        // Кнопки направления
+        if (e.target.classList.contains("direction-btn")) {
+          const angle = parseInt(e.target.dataset.angle);
+          this.updateGradientAngle(angle);
+        }
+
+        // Пресеты
+        if (e.target.classList.contains("preset-btn")) {
+          const presetName = e.target.textContent;
+          const preset = this.findPresetByName(presetName);
+          if (preset) {
+            this.applyPreset(preset);
+          }
         }
       });
-    </script>
-  </body>
-</html>
+
+      // Обработчики для ползунков
+      const setupSlider = (id, callback) => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.addEventListener("input", (e) => {
+            callback(e.target.value);
+          });
+        }
+      };
+
+      // Основные настройки
+      setupSlider("gradient-angle", (value) => {
+        this.currentGradient.angle = parseInt(value);
+        document.getElementById("angle-value").textContent = value + "°";
+        this.applyGradient();
+      });
+
+      setupSlider("gradient-opacity", (value) => {
+        this.currentGradient.opacity = parseInt(value) / 100;
+        document.getElementById("opacity-value").textContent = value + "%";
+        this.applyGradient();
+      });
+
+      // Радиальные настройки
+      setupSlider("radial-center-x", (value) => {
+        if (!this.currentGradient.center)
+          this.currentGradient.center = { x: 0.5, y: 0.5 };
+        this.currentGradient.center.x = parseInt(value) / 100;
+        document.getElementById("center-x-value").textContent = value + "%";
+        this.applyGradient();
+      });
+
+      setupSlider("radial-center-y", (value) => {
+        if (!this.currentGradient.center)
+          this.currentGradient.center = { x: 0.5, y: 0.5 };
+        this.currentGradient.center.y = parseInt(value) / 100;
+        document.getElementById("center-y-value").textContent = value + "%";
+        this.applyGradient();
+      });
+
+      // Анимация
+      const animationEnabled = document.getElementById("animation-enabled");
+      if (animationEnabled) {
+        animationEnabled.addEventListener("change", (e) => {
+          this.animations.enabled = e.target.checked;
+          this.updateAnimation();
+        });
+      }
+
+      setupSlider("animation-speed", (value) => {
+        this.animations.speed = parseFloat(value);
+        document.getElementById("speed-value").textContent = value + "x";
+        this.updateAnimation();
+      });
+
+      setupSlider("animation-intensity", (value) => {
+        this.animations.intensity = parseInt(value) / 100;
+        document.getElementById("intensity-value").textContent = value + "%";
+        this.updateAnimation();
+      });
+
+      const animationType = document.getElementById("animation-type");
+      if (animationType) {
+        animationType.addEventListener("change", (e) => {
+          this.animations.type = e.target.value;
+          this.updateAnimationDescription();
+          this.updateAnimation();
+        });
+      }
+
+      const animationLoop = document.getElementById("animation-loop");
+      if (animationLoop) {
+        animationLoop.addEventListener("change", (e) => {
+          this.animations.loop = e.target.checked;
+          this.updateAnimation();
+        });
+      }
+
+      // Эффекты
+      setupSlider("blur-filter", (value) => {
+        this.effects.blur = parseFloat(value);
+        document.getElementById("blur-value").textContent = value + "px";
+        this.applyGradient();
+      });
+
+      setupSlider("brightness-filter", (value) => {
+        this.effects.brightness = parseInt(value);
+        document.getElementById("brightness-value").textContent = value + "%";
+        this.applyGradient();
+      });
+
+      // Делегирование для смещения цветовых остановок
+      document.addEventListener("input", (e) => {
+        if (e.target.classList.contains("offset-slider")) {
+          const index = parseInt(e.target.dataset.index);
+          const value = parseFloat(e.target.value);
+          this.updateColorStopOffset(index, value);
+        }
+
+        if (e.target.classList.contains("offset-input")) {
+          const index = parseInt(e.target.dataset.index);
+          let value = parseFloat(e.target.value);
+          if (isNaN(value)) value = 0;
+          value = Math.max(0, Math.min(1, value));
+          this.updateColorStopOffset(index, value);
+
+          // Синхронизация слайдера
+          const slider = document.querySelector(
+            `.offset-slider[data-index="${index}"]`
+          );
+          if (slider) {
+            slider.value = value;
+          }
+        }
+      });
+    }
+
+    // Удаление градиента
+    removeGradient() {
+      this.stopAnimation();
+
+      if (this.gradientElement) {
+        this.gradientElement.remove();
+        this.gradientElement = null;
+      }
+
+      if (this.gradientContainer) {
+        this.gradientContainer.remove();
+        this.gradientContainer = null;
+      }
+
+      // Восстанавливаем непрозрачность редактора
+      if (this.editor && this.editor.setOuterFrameAlpha) {
+        this.editor.setOuterFrameAlpha(1);
+      }
+
+      // Очищаем предпросмотр
+      const preview = document.getElementById("gradient-preview");
+      if (preview) {
+        preview.style.background = "transparent";
+      }
+
+      this.gradientActive = false;
+      console.log("✅ Градиент удален, редактор восстановлен");
+    }
+
+    // Переключение вкладок
+    switchTab(tabName) {
+      // Скрываем все вкладки
+      document.querySelectorAll(".tab-content").forEach((tab) => {
+        tab.style.display = "none";
+        tab.classList.remove("active");
+      });
+
+      // Показываем выбранную вкладку
+      const tabContent = document.getElementById(`${tabName}-tab`);
+      if (tabContent) {
+        tabContent.style.display = "block";
+        tabContent.classList.add("active");
+      }
+
+      // Обновляем активную кнопку вкладки
+      document.querySelectorAll(".tab-btn").forEach((btn) => {
+        btn.classList.remove("active");
+        if (btn.dataset.tab === tabName) {
+          btn.classList.add("active");
+        }
+      });
+    }
+
+    // Обновление угла градиента
+    updateGradientAngle(angle) {
+      this.currentGradient.angle = angle;
+
+      // Обновляем активную кнопку направления
+      document.querySelectorAll(".direction-btn").forEach((btn) => {
+        btn.classList.remove("active");
+        if (parseInt(btn.dataset.angle) === angle % 360) {
+          btn.classList.add("active");
+        }
+      });
+
+      // Обновляем слайдер угла
+      document.getElementById("gradient-angle").value = angle;
+      document.getElementById("angle-value").textContent = angle + "°";
+
+      this.applyGradient();
+    }
+
+    // Переключение типа градиента
+    toggleGradientType() {
+      const linearControls = document.getElementById("linear-settings");
+      const radialControls = document.getElementById("radial-settings");
+      const conicControls = document.getElementById("conic-settings");
+
+      // Показываем нужные контролы
+      if (linearControls && radialControls && conicControls) {
+        linearControls.style.display =
+          this.currentGradient.type === "linear" ? "block" : "none";
+        radialControls.style.display =
+          this.currentGradient.type === "radial" ? "block" : "none";
+        conicControls.style.display =
+          this.currentGradient.type === "conic" ? "block" : "none";
+      }
+    }
+
+    // Создание модалки выбора цвета
+    createColorPickerModal() {
+      const modal = document.createElement("div");
+      modal.id = "gradient-color-picker-modal";
+      modal.style.cssText = `
+            display: none;
+            position: fixed;
+            z-index: 10001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+        `;
+
+      modal.innerHTML = `
+            <div style="width: 320px; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1e1e2e; border: 1px solid #2d2d3d; border-radius: 12px; padding: 0; box-shadow: 0 20px 60px rgba(0,0,0,0.5);">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #2d2d3d; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h5 style="margin: 0; color: white; font-size: 16px; font-weight: 600;">🎨 Выбор цвета</h5>
+                    <button type="button" id="color-picker-close" style="background: rgba(255,255,255,0.2); border: none; color: white; font-size: 24px; cursor: pointer; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">×</button>
+                </div>
+                <div style="padding: 20px;">
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: white; font-size: 13px;">Палитра цветов</label>
+                        <div id="gradient-color-palette" style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; margin-bottom: 16px; padding: 8px; background: #2d2d3d; border-radius: 8px;"></div>
+                    </div>
+                    
+                    <div style="margin-bottom: 16px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: white; font-size: 13px;">HEX код цвета</label>
+                        <div style="display: flex; gap: 8px;">
+                            <input type="text" id="gradient-custom-color-input" placeholder="#000000" style="flex: 1; padding: 10px 12px; background: #2d2d3d; border: 1px solid #3d3d4d; border-radius: 6px; color: white; font-size: 13px;">
+                            <input type="color" id="gradient-color-picker" style="width: 40px; height: 40px; border-radius: 6px; border: 1px solid #3d3d4d;">
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 600; color: white; font-size: 13px;">Предпросмотр</label>
+                        <div id="gradient-color-preview" style="width: 100%; height: 60px; border-radius: 8px; border: 2px solid #3d3d4d; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.5); background: #000000;">
+                            Выбранный цвет
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <button id="gradient-confirm-color" style="padding: 12px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.3s ease;">Применить цвет</button>
+                        <button id="gradient-cancel-color" style="padding: 12px; background: #2d2d3d; color: white; border: 1px solid #3d3d4d; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.3s ease;">Отмена</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+      document.body.appendChild(modal);
+      this.initColorPickerModal();
+    }
+
+    // Инициализация модалки выбора цвета
+    initColorPickerModal() {
+      // Инициализация палитры цветов
+      const paletteContainer = document.getElementById(
+        "gradient-color-palette"
+      );
+      if (paletteContainer) {
+        paletteContainer.innerHTML = "";
+        this.colorPalette.forEach((color) => {
+          const swatch = document.createElement("div");
+          swatch.className = "color-swatch";
+          swatch.style.cssText = `
+                    width: 32px;
+                    height: 32px;
+                    border-radius: 6px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    border: 2px solid transparent;
+                    background-color: ${color};
+                `;
+          swatch.setAttribute("data-color", color);
+          swatch.addEventListener("click", () => {
+            this.selectColorFromPalette(color);
+          });
+          paletteContainer.appendChild(swatch);
+        });
+      }
+
+      // Обработчики событий
+      document
+        .getElementById("gradient-color-picker")
+        .addEventListener("input", (e) => {
+          this.selectColorFromPalette(e.target.value);
+        });
+
+      document
+        .getElementById("gradient-custom-color-input")
+        .addEventListener("input", (e) => {
+          const color = e.target.value;
+          if (/^#[0-9A-F]{6}$/i.test(color)) {
+            this.selectColorFromPalette(color);
+          }
+        });
+
+      document
+        .getElementById("gradient-confirm-color")
+        .addEventListener("click", () => {
+          this.applySelectedColor();
+        });
+
+      document
+        .getElementById("gradient-cancel-color")
+        .addEventListener("click", () => {
+          this.closeColorPickerModal();
+        });
+
+      document
+        .getElementById("color-picker-close")
+        .addEventListener("click", () => {
+          this.closeColorPickerModal();
+        });
+
+      // Закрытие по клику вне модалки
+      document
+        .getElementById("gradient-color-picker-modal")
+        .addEventListener("click", (e) => {
+          if (e.target.id === "gradient-color-picker-modal") {
+            this.closeColorPickerModal();
+          }
+        });
+
+      // Закрытие по ESC
+      document.addEventListener("keydown", (e) => {
+        if (
+          e.key === "Escape" &&
+          document.getElementById("gradient-color-picker-modal").style
+            .display === "block"
+        ) {
+          this.closeColorPickerModal();
+        }
+      });
+    }
+
+    // Открытие выбора цвета
+    openColorPicker(targetIndex) {
+      this.currentColorTarget = targetIndex;
+      const currentColor = this.currentGradient.colorStops[targetIndex].color;
+      this.selectedColor = currentColor;
+
+      const preview = document.getElementById("gradient-color-preview");
+      if (preview) {
+        preview.style.backgroundColor = currentColor;
+        const rgb = this.hexToRgb(currentColor) || { r: 255, g: 255, b: 255 };
+        const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+        preview.style.color = brightness > 125 ? "#000" : "#fff";
+      }
+
+      document.getElementById("gradient-custom-color-input").value =
+        currentColor;
+      document.getElementById("gradient-color-picker").value = currentColor;
+
+      // Подсветка текущего цвета в палитре
+      document
+        .querySelectorAll("#gradient-color-palette .color-swatch")
+        .forEach((swatch) => {
+          swatch.style.borderColor = "transparent";
+          if (swatch.getAttribute("data-color") === currentColor) {
+            swatch.style.borderColor = "#667eea";
+            swatch.style.transform = "scale(1.1)";
+          }
+        });
+
+      document.getElementById("gradient-color-picker-modal").style.display =
+        "block";
+    }
+
+    // Выбор цвета из палитры
+    selectColorFromPalette(color) {
+      this.selectedColor = color;
+      const preview = document.getElementById("gradient-color-preview");
+      if (preview) {
+        preview.style.backgroundColor = color;
+        const rgb = this.hexToRgb(color) || { r: 255, g: 255, b: 255 };
+        const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+        preview.style.color = brightness > 125 ? "#000" : "#fff";
+      }
+
+      document.getElementById("gradient-custom-color-input").value = color;
+      document.getElementById("gradient-color-picker").value = color;
+
+      // Подсветка выбранного цвета
+      document
+        .querySelectorAll("#gradient-color-palette .color-swatch")
+        .forEach((swatch) => {
+          swatch.style.borderColor = "transparent";
+          swatch.style.transform = "scale(1)";
+          if (swatch.getAttribute("data-color") === color) {
+            swatch.style.borderColor = "#667eea";
+            swatch.style.transform = "scale(1.1)";
+          }
+        });
+    }
+
+    // Применение выбранного цвета
+    applySelectedColor() {
+      if (this.currentColorTarget !== null) {
+        this.currentGradient.colorStops[this.currentColorTarget].color =
+          this.selectedColor;
+
+        // Обновляем превью цвета
+        const previewElement = document.querySelector(
+          `.color-preview[data-index="${this.currentColorTarget}"]`
+        );
+        if (previewElement) {
+          previewElement.style.backgroundColor = this.selectedColor;
+          previewElement.querySelector("span").textContent = this.selectedColor;
+        }
+
+        this.applyGradient();
+      }
+
+      this.closeColorPickerModal();
+    }
+
+    // Закрытие модалки выбора цвета
+    closeColorPickerModal() {
+      document.getElementById("gradient-color-picker-modal").style.display =
+        "none";
+    }
+
+    // Конвертация HEX в RGB
+    hexToRgb(hex) {
+      const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return result
+        ? {
+            r: parseInt(result[1], 16),
+            g: parseInt(result[2], 16),
+            b: parseInt(result[3], 16),
+          }
+        : null;
+    }
+
+    // Конвертация RGB в HEX
+    rgbToHex(r, g, b) {
+      return (
+        "#" +
+        [r, g, b]
+          .map((x) => {
+            const hex = parseInt(x).toString(16);
+            return hex.length === 1 ? "0" + hex : hex;
+          })
+          .join("")
+      );
+    }
+
+    // Добавление цветовых остановок по умолчанию
+    addDefaultColorStops() {
+      this.recreateColorStopElements();
+    }
+
+    // Создание элементов цветовых остановок
+    recreateColorStopElements() {
+      const container = document.getElementById("color-stops-container");
+      if (!container) return;
+
+      container.innerHTML = "";
+
+      // Сортируем остановки по offset
+      this.currentGradient.colorStops.sort((a, b) => a.offset - b.offset);
+
+      // Пересоздаем элементы
+      this.currentGradient.colorStops.forEach((stop, index) => {
+        this.addColorStopElement(stop.offset, stop.color, index);
+      });
+    }
+
+    // Добавление элемента цветовой остановки
+    addColorStopElement(offset, color, index) {
+      const container = document.getElementById("color-stops-container");
+      if (!container) return;
+
+      const stopElement = document.createElement("div");
+      stopElement.className = "color-stop";
+      stopElement.style.cssText = `
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding: 12px;
+            background: #2d2d3d;
+            border-radius: 8px;
+            border: 1px solid #3d3d4d;
+            transition: all 0.3s ease;
+        `;
+
+      stopElement.innerHTML = `
+            <div class="color-input-wrapper" style="position: relative; width: 36px; height: 36px;">
+                <input type="color" value="${color}" data-index="${index}" style="position: absolute; opacity: 0; pointer-events: none;">
+                <div class="color-preview" data-index="${index}" style="width: 36px; height: 36px; border: 1px solid #3d3d4d; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 500; position: relative; overflow: hidden; background-color: ${color};">
+                    <span>${color}</span>
+                </div>
+            </div>
+            <input type="range" min="0" max="1" step="0.01" value="${offset}" class="offset-slider" data-index="${index}" style="flex: 1; height: 6px; border-radius: 3px; background: #3d3d4d; outline: none;">
+            <input type="number" min="0" max="1" step="0.01" value="${offset.toFixed(2)}" class="offset-input" data-index="${index}" style="width: 60px; padding: 6px; background: #1e1e2e; color: white; border: 1px solid #3d3d4d; border-radius: 4px; text-align: center; font-size: 12px;">
+            <button type="button" class="remove-stop" data-index="${index}" style="background: #ff4757; color: white; border: none; border-radius: 4px; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; transition: all 0.3s ease;">×</button>
+        `;
+
+      container.appendChild(stopElement);
+    }
+
+    // Добавление новой цветовой остановки
+    addColorStop() {
+      const newStop = {
+        offset: 0.5,
+        color: this.generateRandomColor(),
+      };
+      this.currentGradient.colorStops.push(newStop);
+      this.currentGradient.colorStops.sort((a, b) => a.offset - b.offset);
+      this.recreateColorStopElements();
+      this.applyGradient();
+    }
+
+    // Генерация случайного цвета
+    generateRandomColor() {
+      const letters = "0123456789ABCDEF";
+      let color = "#";
+      for (let i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+      }
+      return color;
+    }
+
+    // Равномерное распределение цветовых остановок
+    distributeColorStops() {
+      const stops = this.currentGradient.colorStops;
+      if (stops.length < 3) return;
+
+      stops.sort((a, b) => a.offset - b.offset);
+
+      // Распределяем равномерно
+      for (let i = 0; i < stops.length; i++) {
+        stops[i].offset = i / (stops.length - 1);
+      }
+
+      this.recreateColorStopElements();
+      this.applyGradient();
+    }
+
+    // Обновление смещения цветовой остановки
+    updateColorStopOffset(index, value) {
+      if (this.currentGradient.colorStops[index]) {
+        this.currentGradient.colorStops[index].offset = value;
+        this.applyGradient();
+      }
+    }
+
+    // Загрузка пресетов
+    loadPresets() {
+      const container = document.getElementById("presets-container");
+      if (!container) return;
+
+      container.innerHTML = "";
+
+      // Объединяем все пресеты
+      const allPresets = [
+        ...this.presets.static,
+        ...this.presets.animated,
+        ...this.presets.repeating,
+      ];
+
+      // Ограничиваем количество пресетов для отображения
+      const displayPresets = allPresets.slice(0, 6);
+
+      displayPresets.forEach((preset) => {
+        const presetBtn = document.createElement("button");
+        presetBtn.className = "preset-btn";
+        presetBtn.textContent = preset.name;
+        presetBtn.style.cssText = `
+                padding: 10px;
+                background: #2d2d3d;
+                color: white;
+                border: 1px solid #3d3d4d;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 11px;
+                text-align: center;
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+            `;
+
+        // Устанавливаем градиент как фон
+        const gradientString = this.getCSSGradientString(preset);
+        presetBtn.style.background = gradientString;
+
+        presetBtn.addEventListener("click", () => {
+          this.applyPreset(preset);
+        });
+
+        container.appendChild(presetBtn);
+      });
+    }
+
+    // Получение CSS строки градиента для пресета
+    getCSSGradientString(preset) {
+      if (preset.type === "radial") {
+        const centerX = (preset.center?.x || 0.5) * 100;
+        const centerY = (preset.center?.y || 0.5) * 100;
+        return `radial-gradient(circle at ${centerX}% ${centerY}%, ${preset.colorStops.map((stop) => `${stop.color} ${stop.offset * 100}%`).join(", ")})`;
+      } else {
+        const angle = preset.angle || 90;
+        return `linear-gradient(${angle}deg, ${preset.colorStops.map((stop) => `${stop.color} ${stop.offset * 100}%`).join(", ")})`;
+      }
+    }
+
+    // Поиск пресета по имени
+    findPresetByName(name) {
+      for (const category of ["static", "animated", "repeating"]) {
+        const preset = this.presets[category].find((p) => p.name === name);
+        if (preset) return preset;
+      }
+      return null;
+    }
+
+    // Применение пресета
+    applyPreset(preset) {
+      this.currentGradient.type = preset.type;
+      this.currentGradient.colorStops = JSON.parse(
+        JSON.stringify(preset.colorStops)
+      );
+
+      if (preset.type === "linear" && preset.angle !== undefined) {
+        this.updateGradientAngle(preset.angle);
+      } else if (preset.type === "radial" && preset.center) {
+        this.currentGradient.center = { ...preset.center };
+      }
+
+      // Применяем анимации если есть
+      if (preset.animation) {
+        this.animations = { ...this.animations, ...preset.animation };
+        document.getElementById("animation-enabled").checked =
+          this.animations.enabled;
+        document.getElementById("animation-type").value = this.animations.type;
+        document.getElementById("animation-speed").value =
+          this.animations.speed;
+        document.getElementById("animation-intensity").value =
+          this.animations.intensity * 100;
+
+        document.getElementById("speed-value").textContent =
+          this.animations.speed + "x";
+        document.getElementById("intensity-value").textContent =
+          Math.round(this.animations.intensity * 100) + "%";
+      }
+
+      this.recreateColorStopElements();
+      this.toggleGradientType();
+      this.applyGradient();
+      this.updatePreview();
+    }
+
+    // Обновление описания анимации
+    updateAnimationDescription() {
+      const type = this.animations.type;
+      const description = document.getElementById("animation-description");
+      if (description && this.animationTypes[type]) {
+        description.textContent = this.animationTypes[type].description;
+      }
+    }
+
+    // Создание контейнера для градиента
+    createGradientContainer() {
+      if (this.gradientContainer) {
+        this.gradientContainer.remove();
+      }
+
+      this.gradientContainer = document.createElement("div");
+      this.gradientContainer.id = "editor-gradient-container";
+      this.gradientContainer.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+            opacity: 0.2;
+        `;
+
+      // Вставляем в pixi-container
+      const pixiContainer = document.getElementById("pixi-container");
+      if (pixiContainer) {
+        pixiContainer.appendChild(this.gradientContainer);
+        console.log("AAAAAAA");
+      } else {
+        document.body.appendChild(this.gradientContainer);
+        console.log("BBBBBBB");
+      }
+    }
+
+    // Создание элемента градиента
+    createGradientElement() {
+      if (this.gradientElement) {
+        this.gradientElement.remove();
+      }
+
+      this.gradientElement = document.createElement("div");
+      this.gradientElement.id = "editor-gradient-overlay";
+      this.gradientElement.style.cssText = `
+            position: absolute;
+            pointer-events: none;
+            z-index: 1;
+            border-radius: 0;
+            overflow: hidden;
+            will-change: transform, background, filter;
+        `;
+
+      if (this.gradientContainer) {
+        this.gradientContainer.appendChild(this.gradientElement);
+      }
+
+      this.updateGradientElementPosition();
+    }
+
+    // Обновление позиции элемента градиента
+    updateGradientElementPosition() {
+      if (!this.gradientElement || !this.editor || !this.app) return;
+
+      try {
+        const editor = this.editor;
+
+        // Получаем глобальную позицию innerContainer
+        const globalPos = editor.innerContainer.getGlobalPosition();
+
+        // Получаем размеры рабочей области с учетом масштаба
+        const editorWidth = editor.getWidth() * editor.scale;
+        const editorHeight = editor.getHeight() * editor.scale;
+
+        // Получаем позицию и размеры canvas
+        const canvas = this.app.canvas;
+        const canvasRect = canvas.getBoundingClientRect();
+
+        // Рассчитываем абсолютную позицию
+        const absoluteX = canvasRect.left + globalPos.x - window.pageXOffset;
+        const absoluteY = canvasRect.top + globalPos.y - window.pageYOffset;
+
+        // Устанавливаем позицию и размеры
+        this.gradientElement.style.left = `${absoluteX - 400}px`;
+        this.gradientElement.style.top = `${absoluteY - 60}px`;
+        this.gradientElement.style.width = `${editorWidth}px`;
+        this.gradientElement.style.height = `${editorHeight}px`;
+      } catch (error) {
+        console.error("Ошибка при обновлении позиции градиента:", error);
+      }
+    }
+
+    // Применение градиента
+    applyGradient() {
+      if (!this.gradientContainer) {
+        this.createGradientContainer();
+      }
+
+      if (!this.gradientElement) {
+        this.createGradientElement();
+      }
+
+      const gradientString = this.generateCSSGradient();
+      const filters = this.generateCSSFilters();
+
+      // Применяем градиент
+      this.gradientElement.style.background = gradientString;
+      this.gradientElement.style.backgroundSize = "100% 100%";
+      this.gradientElement.style.backgroundRepeat = "no-repeat";
+      this.gradientElement.style.opacity = this.currentGradient.opacity;
+
+      // Применяем фильтры
+      if (filters) {
+        this.gradientElement.style.filter = filters;
+      }
+
+      // Обновляем позицию
+      this.updateGradientElementPosition();
+
+      // Обновляем анимацию
+      this.updateAnimation();
+
+      // Обновляем предпросмотр
+      this.updatePreview();
+
+      // Делаем внешнюю рамку редактора прозрачной
+      if (this.editor && this.editor.setOuterFrameAlpha) {
+        this.editor.setOuterFrameAlpha(0);
+      }
+
+      this.gradientActive = true;
+
+      console.log(
+        "✅ Градиент применен:",
+        gradientString.substring(0, 50) + "..."
+      );
+    }
+
+    // Генерация CSS градиента
+    generateCSSGradient() {
+      if (this.currentGradient.type === "radial") {
+        const centerX = (this.currentGradient.center?.x || 0.5) * 100;
+        const centerY = (this.currentGradient.center?.y || 0.5) * 100;
+        return `radial-gradient(circle at ${centerX}% ${centerY}%, ${this.currentGradient.colorStops.map((stop) => `${stop.color} ${stop.offset * 100}%`).join(", ")})`;
+      } else if (this.currentGradient.type === "conic") {
+        const centerX = (this.currentGradient.center?.x || 0.5) * 100;
+        const centerY = (this.currentGradient.center?.y || 0.5) * 100;
+        return `conic-gradient(from 0deg at ${centerX}% ${centerY}%, ${this.currentGradient.colorStops.map((stop) => `${stop.color} ${stop.offset * 100}%`).join(", ")})`;
+      } else {
+        const angle = this.currentGradient.angle || 90;
+        return `linear-gradient(${angle}deg, ${this.currentGradient.colorStops.map((stop) => `${stop.color} ${stop.offset * 100}%`).join(", ")})`;
+      }
+    }
+
+    // Генерация CSS фильтров
+    generateCSSFilters() {
+      const filters = [];
+
+      if (this.effects.blur > 0) {
+        filters.push(`blur(${this.effects.blur}px)`);
+      }
+      if (this.effects.brightness !== 100) {
+        filters.push(`brightness(${this.effects.brightness}%)`);
+      }
+      if (this.effects.contrast !== 100) {
+        filters.push(`contrast(${this.effects.contrast}%)`);
+      }
+      if (this.effects.saturation !== 100) {
+        filters.push(`saturate(${this.effects.saturation}%)`);
+      }
+      if (this.effects.hue !== 0) {
+        filters.push(`hue-rotate(${this.effects.hue}deg)`);
+      }
+
+      return filters.join(" ");
+    }
+
+    // Обновление анимации
+    updateAnimation() {
+      // Останавливаем предыдущую анимацию
+      if (this.animationFrame) {
+        cancelAnimationFrame(this.animationFrame);
+        this.animationFrame = null;
+      }
+
+      if (!this.animations.enabled || !this.gradientElement) return;
+
+      this.animationStartTime = performance.now();
+      this.animationTime = 0;
+
+      const animate = (currentTime) => {
+        if (!this.animationStartTime) this.animationStartTime = currentTime;
+
+        const elapsed = (currentTime - this.animationStartTime) / 1000;
+        this.animationTime = elapsed * this.animations.speed;
+
+        if (this.animations.type === "move") {
+          this.applyMoveAnimation();
+        } else if (this.animations.type === "pulse") {
+          this.applyPulseAnimation();
+        } else if (this.animations.type === "wave") {
+          this.applyWaveAnimation();
+        } else if (this.animations.type === "color-cycle") {
+          this.applyColorCycleAnimation();
+        } else if (this.animations.type === "rotate") {
+          this.applyRotateAnimation();
+        }
+
+        // Продолжаем анимацию если включен цикл
+        if (this.animations.loop) {
+          this.animationFrame = requestAnimationFrame(animate);
+        }
+      };
+
+      this.animationFrame = requestAnimationFrame(animate);
+    }
+
+    // Анимация движения
+    applyMoveAnimation() {
+      const offset = ((this.animationTime * 50) % 200) - 100; // От -100% до 100%
+      this.gradientElement.style.backgroundPosition = `${offset}% 50%`;
+    }
+
+    // Анимация пульсации
+    applyPulseAnimation() {
+      const pulse =
+        Math.sin(this.animationTime * 2) * this.animations.intensity * 0.3 + 1;
+      this.gradientElement.style.transform = `scale(${pulse})`;
+    }
+
+    // Анимация волны
+    applyWaveAnimation() {
+      const config = this.getGradientConfig();
+      const waveStops = config.colorStops.map((stop) => {
+        const waveEffect =
+          Math.sin(stop.offset * Math.PI * 4 + this.animationTime) *
+          this.animations.intensity *
+          0.1;
+        const offset = stop.offset + waveEffect;
+        return `${stop.color} ${Math.max(0, Math.min(100, offset * 100))}%`;
+      });
+
+      if (config.type === "linear") {
+        const angle = config.angle || 90;
+        this.gradientElement.style.background = `linear-gradient(${angle}deg, ${waveStops.join(", ")})`;
+      }
+    }
+
+    // Анимация цикла цветов
+    applyColorCycleAnimation() {
+      const hueShift = (this.animationTime * 360) % 360;
+      this.gradientElement.style.filter = `hue-rotate(${hueShift}deg) ${this.generateCSSFilters()}`;
+    }
+
+    // Анимация вращения
+    applyRotateAnimation() {
+      const rotation = (this.animationTime * 180) % 360;
+      this.gradientElement.style.transform = `rotate(${rotation}deg)`;
+    }
+
+    // Получение конфигурации градиента
+    getGradientConfig() {
+      return {
+        type: this.currentGradient.type,
+        colorStops: [...this.currentGradient.colorStops],
+        angle: this.currentGradient.angle || 90,
+        center: this.currentGradient.center || { x: 0.5, y: 0.5 },
+      };
+    }
+
+    // Обновление предпросмотра
+    updatePreview() {
+      const preview = document.getElementById("gradient-preview");
+      if (!preview) return;
+
+      const gradientString = this.generateCSSGradient();
+      preview.style.background = gradientString;
+    }
+
+    // Копирование CSS кода
+    copyCSS() {
+      const gradientString = this.generateCSSGradient();
+      const css = `.gradient {\n    background: ${gradientString};\n    background-size: 100% 100%;\n    background-repeat: no-repeat;\n    opacity: ${this.currentGradient.opacity};\n}`;
+
+      navigator.clipboard
+        .writeText(css)
+        .then(() => {
+          alert("✅ CSS код скопирован в буфер обмена!");
+        })
+        .catch((err) => {
+          console.error("Ошибка копирования:", err);
+          prompt("Скопируйте CSS код:", css);
+        });
+    }
+
+    // Сброс градиента
+    resetGradient() {
+      this.currentGradient = {
+        type: "linear",
+        colorStops: [
+          { offset: 0, color: "#ff0000" },
+          { offset: 1, color: "#0000ff" },
+        ],
+        angle: 90,
+        shape: "ellipse",
+        size: "farthest-corner",
+        position: "center",
+        repeating: false,
+        blendMode: "normal",
+        opacity: 1,
+      };
+
+      this.animations = {
+        enabled: true,
+        type: "move",
+        speed: 1,
+        direction: "right",
+        intensity: 0.5,
+        easing: "linear",
+        loop: true,
+        duration: 5,
+        playState: "running",
+      };
+
+      this.effects = {
+        blur: 0,
+        brightness: 100,
+        contrast: 100,
+        saturation: 100,
+        hue: 0,
+      };
+
+      // Обновляем UI
+      document.getElementById("gradient-angle").value = 90;
+      document.getElementById("angle-value").textContent = "90°";
+      document.getElementById("gradient-opacity").value = 100;
+      document.getElementById("opacity-value").textContent = "100%";
+      document.getElementById("animation-enabled").checked = true;
+      document.getElementById("animation-speed").value = 1;
+      document.getElementById("animation-intensity").value = 50;
+      document.getElementById("animation-type").value = "move";
+      document.getElementById("animation-loop").checked = true;
+      document.getElementById("speed-value").textContent = "1x";
+      document.getElementById("intensity-value").textContent = "50%";
+      document.getElementById("blur-filter").value = 0;
+      document.getElementById("brightness-filter").value = 100;
+      document.getElementById("blur-value").textContent = "0px";
+      document.getElementById("brightness-value").textContent = "100%";
+
+      this.updateGradientAngle(90);
+      this.recreateColorStopElements();
+      this.toggleGradientType();
+      this.applyGradient();
+
+      // Останавливаем анимацию
+      this.stopAnimation();
+    }
+
+    // Остановка анимации
+    stopAnimation() {
+      if (this.animationFrame) {
+        cancelAnimationFrame(this.animationFrame);
+        this.animationFrame = null;
+      }
+      this.animations.playState = "paused";
+    }
+
+    // Создание модалок (заглушка)
+    createLayerModal() {
+      // Заглушка - можно реализовать позже
+    }
+
+    createExportModal() {
+      // Заглушка - можно реализовать позже
+    }
+
+    // Настройка горячих клавиш
+    setupKeyboardShortcuts() {
+      document.addEventListener("keydown", (e) => {
+        // Ctrl+Z для отмены
+        if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+          // Можно добавить функционал отмены
+          e.preventDefault();
+        }
+        // Ctrl+C для копирования CSS
+        if ((e.ctrlKey || e.metaKey) && e.key === "c" && e.altKey) {
+          this.copyCSS();
+          e.preventDefault();
+        }
+      });
+    }
+
+    // Очистка
+    destroy() {
+      this.removeGradient();
+
+      // Удаляем модалки
+      const modals = ["gradient-modal", "gradient-color-picker-modal"];
+      modals.forEach((id) => {
+        const modal = document.getElementById(id);
+        if (modal) modal.remove();
+      });
+
+      // Удаляем кнопку
+      const button = document.getElementById("gradient-builder-btn");
+      if (button) button.remove();
+
+      console.log("🗑️ Конструктор градиентов уничтожен");
+    }
+  }
+  // После создания всех виджетов и настройки редактора
+  // Добавьте этот код:
+
+  // Создаем и инициализируем конструктор градиентов
+  const gradientBuilder = new HTMLGradientBuilder(editor);
+  gradientBuilder.init();
+
+  // Для глобального доступа (если нужно)
+  window.gradientBuilder = gradientBuilder;
+
+  // Также добавьте обработчик для кнопки, если она уже существует
+  document.addEventListener("DOMContentLoaded", function () {
+    const gradientBtn = document.getElementById("gradient-builder-btn");
+    if (gradientBtn) {
+      gradientBtn.addEventListener("click", function () {
+        console.log("Кнопка конструктора градиентов нажата");
+        if (gradientBuilder && gradientBuilder.initialized) {
+          gradientBuilder.openModal();
+        } else {
+          console.warn("Конструктор градиентов не инициализирован");
+          // Попробуем инициализировать снова
+          gradientBuilder.init();
+          gradientBuilder.openModal();
+        }
+      });
+    }
+  });
+
+  // Также добавьте отложенную инициализацию для безопасности
+  setTimeout(() => {
+    if (!gradientBuilder.initialized) {
+      console.log("Повторная попытка инициализации конструктора градиентов...");
+      gradientBuilder.init();
+    }
+  }, 1000);

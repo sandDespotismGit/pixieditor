@@ -1,6 +1,7 @@
 import { Container, Graphics, Text, TextStyle, Sprite } from "pixi.js";
 import DraggableWidget from "../draggable_widget";
 import * as PIXI from "pixi.js";
+import { requestWidgetData } from "../../batchWidgetData";
 
 export default class NewsWidget extends DraggableWidget {
   constructor(bounds, width, height, options = {}) {
@@ -35,28 +36,26 @@ export default class NewsWidget extends DraggableWidget {
     this.bg = bg;
 
     // URL API для новостей
-    this.newsApiUrl = "https://admin.i-panel.pro:8088/rbc_news";
+    this.newsApiUrl = "https://admin.i-panel.pro:8787/api/parse/news";
 
     // Переменные для хранения данных
     this.news = [];
-    this.currentIndex = 0;
+    this.currentIndex = -1;
     this.textColor = options.textColor ?? 0xffffff;
+    this._fontFamily = options.fontFamily || "Rubik";
 
     // Создаем элементы интерфейса
     this.createUI();
 
-    // Загружаем новости с задержкой как в оригинале
-    setTimeout(() => {
-      this.loadNews();
-      this._updateTimer = setInterval(
-        () => this.loadNews(),
-        options.updateInterval ?? 300000,
-      );
-      this._changeTimer = setInterval(
-        () => this.changeNews(),
-        options.changeInterval ?? 30000,
-      );
-    }, 5000);
+    this.loadNews();
+    this._updateTimer = setInterval(
+      () => this.loadNews(),
+      options.updateInterval ?? 300000,
+    );
+    this._changeTimer = setInterval(
+      () => this.changeNews(),
+      options.changeInterval ?? 30000,
+    );
   }
 
   createUI() {
@@ -69,7 +68,7 @@ export default class NewsWidget extends DraggableWidget {
     this.titleText = new Text(
       "------",
       new TextStyle({
-        fontFamily: "Rubik",
+        fontFamily: this._fontFamily,
         fontSize: 20,
         fontWeight: "400",
         fill: this.textColor,
@@ -118,7 +117,7 @@ export default class NewsWidget extends DraggableWidget {
     this.categoryText = new Text(
       "------",
       new TextStyle({
-        fontFamily: "Rubik",
+        fontFamily: this._fontFamily,
         fontSize: 18,
         fontWeight: "300",
         fill: this.textColor,
@@ -144,15 +143,24 @@ export default class NewsWidget extends DraggableWidget {
     console.log("Current news item:", newsItem); // Для отладки
 
     // Обновляем текст
-    this.titleText.text = newsItem.title || "------";
-    this.categoryText.text = newsItem.category;
+    this.titleText.text = newsItem.title || newsItem.heading || "------";
+    this.categoryText.text = newsItem.category || "Новости";
 
     // Обновляем изображения
-    const mainImageUrl = this.isValidImageUrl(newsItem.image)
-      ? newsItem.image
-      : "https://s1.1zoom.me/b5050/336/371426-svetik_3840x2400.jpg";
+    const mainImageUrl = [
+      newsItem.image,
+      newsItem.image_url,
+      newsItem.imageUrl,
+      newsItem.urlToImage,
+      newsItem.thumbnail,
+      newsItem.picture,
+    ].find((url) => this.isValidImageUrl(url));
 
-    this.loadImage(this.mainImage, mainImageUrl);
+    if (mainImageUrl) {
+      this.loadImage(this.mainImage, mainImageUrl, newsItem);
+    } else {
+      this.mainImage.texture = PIXI.Texture.EMPTY;
+    }
 
     // Загружаем QR код если он есть
     if (newsItem.qr_code) {
@@ -161,6 +169,12 @@ export default class NewsWidget extends DraggableWidget {
         newsItem.qr_code.substring(0, 50) + "...",
       ); // Для отладки
       this.loadQRCode(this.qrImage, newsItem.qr_code);
+    } else if (newsItem.qr_url || newsItem.link) {
+      this.loadQRUrl(
+        this.qrImage,
+        newsItem.qr_url ||
+          `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(newsItem.link)}`,
+      );
     } else {
       console.log("No QR code data");
       this.qrImage.texture = PIXI.Texture.EMPTY;
@@ -177,7 +191,7 @@ export default class NewsWidget extends DraggableWidget {
     );
   }
 
-  async loadImage(sprite, url) {
+  async loadImage(sprite, url, newsItem = null) {
     try {
       const texture = await PIXI.Assets.load(url);
       sprite.texture = texture;
@@ -189,6 +203,13 @@ export default class NewsWidget extends DraggableWidget {
     } catch (error) {
       console.error("Error loading image:", error);
       sprite.texture = PIXI.Texture.EMPTY;
+      if (newsItem?.qr_url || newsItem?.link) {
+        this.loadQRUrl(
+          this.qrImage,
+          newsItem.qr_url ||
+            `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(newsItem.link)}`,
+        );
+      }
     }
   }
 
@@ -231,6 +252,18 @@ export default class NewsWidget extends DraggableWidget {
     }
   }
 
+  async loadQRUrl(sprite, url) {
+    try {
+      const texture = await PIXI.Assets.load(url);
+      sprite.texture = texture;
+      sprite.visible = true;
+    } catch (error) {
+      console.error("Error loading QR url:", error);
+      sprite.texture = PIXI.Texture.EMPTY;
+      sprite.visible = false;
+    }
+  }
+
   async tryAlternativeQRLoad(sprite, qrBase64) {
     try {
       // Альтернативный метод: создаем изображение через DOM
@@ -263,19 +296,8 @@ export default class NewsWidget extends DraggableWidget {
 
   loadNews = async () => {
     try {
-      const response = await fetch(this.newsApiUrl, {
-        method: "GET",
-        headers: {
-          accept: "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      this.news = result;
+      const result = await requestWidgetData("news");
+      this.news = Array.isArray(result) ? result : [];
       console.log("News loaded:", this.news);
 
       // Если новости загружены, показываем первую
@@ -296,16 +318,44 @@ export default class NewsWidget extends DraggableWidget {
     this._width = width;
     this._height = height;
 
-    // Рассчитываем масштаб
-    const scaleX = width / this.originalWidth;
-    const scaleY = height / this.originalHeight;
-    console.log(scaleX, scaleY, "scale", this.content, this.contentContainer);
-
-    // Масштабируем контейнер с контентом
-    this.contentContainer.scale.set(scaleX, scaleY);
+    this.layoutContent();
 
     // Перерисовываем фон
     this._redrawBackground();
+  }
+
+  layoutContent() {
+    const baseW = this.originalWidth || this._width;
+    const baseH = this.originalHeight || this._height;
+    const scale = Math.min(this._width / baseW, this._height / baseH);
+    this.contentContainer.scale.set(scale);
+    this.contentContainer.x = (this._width - baseW * scale) / 2;
+    this.contentContainer.y = (this._height - baseH * scale) / 2;
+  }
+
+  setTextColor(color) {
+    this.textColor = color;
+    [this.titleText, this.categoryText].forEach((text) => {
+      if (text?.style) text.style.fill = color;
+    });
+  }
+
+  setFontFamily(fontFamily) {
+    this._fontFamily = fontFamily;
+    [this.titleText, this.categoryText].forEach((text) => {
+      if (text?.style) text.style.fontFamily = fontFamily;
+    });
+  }
+
+  getFontFamily() {
+    return this._fontFamily;
+  }
+
+  getSceneData() {
+    return {
+      textColor: this.textColor,
+      fontFamily: this._fontFamily,
+    };
   }
   // === API для управления стилем ===
   _redrawBackground() {
@@ -317,20 +367,22 @@ export default class NewsWidget extends DraggableWidget {
       .drawRoundedRect(0, 0, this._width, this._height, this._cornerRadius)
       .endFill();
 
-    // Рамка
-    if (this._borderWidth > 0) {
-      this.bg.lineStyle(
-        this._borderWidth,
-        this._borderColor,
-        this._borderAlpha,
-      );
-      this.bg.drawRoundedRect(
-        0,
-        0,
-        this._width,
-        this._height,
-        this._cornerRadius,
-      );
+    // Рамка: только stroke без заливки поверх виджета.
+    if (this._borderWidth > 0 && this._borderAlpha > 0) {
+      const inset = this._borderWidth / 2;
+      this.bg
+        .roundRect(
+          inset,
+          inset,
+          Math.max(0, this._width - this._borderWidth),
+          Math.max(0, this._height - this._borderWidth),
+          Math.max(0, this._cornerRadius - inset),
+        )
+        .stroke({
+          width: this._borderWidth,
+          color: this._borderColor,
+          alpha: this._borderAlpha,
+        });
     }
   }
 
