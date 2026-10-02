@@ -1430,25 +1430,6 @@ export default class RealTimeInspector {
     highlightWrap.style.cssText = "display:grid;gap:10px;";
     section.appendChild(highlightWrap);
 
-    const previewControls = document.createElement("div");
-    previewControls.style.cssText =
-      "display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;";
-    previewControls.innerHTML = `
-      <button class="btn-modern audio-preview-play" type="button">▶ Слушать</button>
-      <button class="btn-modern audio-preview-pause" type="button">Ⅱ Пауза</button>
-      <button class="btn-modern audio-preview-next" type="button">› Далее</button>
-    `;
-    previewControls
-      .querySelector(".audio-preview-play")
-      .addEventListener("click", () => widget.play?.());
-    previewControls
-      .querySelector(".audio-preview-pause")
-      .addEventListener("click", () => widget.pause?.());
-    previewControls
-      .querySelector(".audio-preview-next")
-      .addEventListener("click", () => widget.nextTrack?.());
-    highlightWrap.appendChild(previewControls);
-
     const playerGroup = this.createInputGroup(
       "Источник",
       [
@@ -2889,7 +2870,7 @@ export default class RealTimeInspector {
     if (hasPlayMethod) {
       videoButtons.appendChild(
         createVideoButton(
-          "▶ Со звуком",
+          "▶️ Воспроизвести",
           () => {
             const targetWidget = widget.play
               ? widget
