@@ -2,7 +2,10 @@
 import { Container, Graphics, Texture, Sprite, Text, Assets } from "pixi.js";
 import DraggableWidget from "../draggable_widget";
 import { requestWidgetData } from "../../batchWidgetData";
-import { createWidgetFillGradient, normalizeWidgetGradient } from "../widgetGradient";
+import {
+  createWidgetFillGradient,
+  normalizeWidgetGradient,
+} from "../widgetGradient";
 
 export default class VideoWidget extends DraggableWidget {
   // В конструкторе VideoWidget измените эту часть:
@@ -36,6 +39,33 @@ export default class VideoWidget extends DraggableWidget {
     warningContainer.zIndex = 1000;
     content.addChild(warningContainer);
 
+    const previewControls = new Container();
+    previewControls.zIndex = 1100;
+    previewControls.visible = options.editorPreviewControls ?? false;
+
+    const playPreviewControl = new Container();
+    const playPreviewBg = new Graphics();
+    const playPreviewIcon = new Text("▶", {
+      fontFamily: "Arial",
+      fontSize: 18,
+      fontWeight: "700",
+      fill: 0xffffff,
+    });
+    playPreviewControl.addChild(playPreviewBg, playPreviewIcon);
+
+    const soundPreviewControl = new Container();
+    const soundPreviewBg = new Graphics();
+    const soundPreviewIcon = new Text("×", {
+      fontFamily: "Arial",
+      fontSize: 18,
+      fontWeight: "700",
+      fill: 0xffffff,
+    });
+    soundPreviewControl.addChild(soundPreviewBg, soundPreviewIcon);
+    previewControls.addChild(playPreviewControl, soundPreviewControl);
+    content.sortableChildren = true;
+    content.addChild(previewControls);
+
     // Передаем размеры через content в super()
     super(bounds, content, options);
 
@@ -48,7 +78,16 @@ export default class VideoWidget extends DraggableWidget {
     this.mediaContainer = mediaContainer;
     this.mediaMask = mediaMask;
     this.warningContainer = warningContainer;
+    this.previewControls = previewControls;
+    this.playPreviewControl = playPreviewControl;
+    this.playPreviewBg = playPreviewBg;
+    this.playPreviewIcon = playPreviewIcon;
+    this.soundPreviewControl = soundPreviewControl;
+    this.soundPreviewBg = soundPreviewBg;
+    this.soundPreviewIcon = soundPreviewIcon;
+    this._editorPreviewControls = options.editorPreviewControls ?? false;
     this.content = content;
+    this.addChild(previewControls);
 
     // Для хранения placeholder
     this.placeholderContainer = null;
@@ -57,11 +96,14 @@ export default class VideoWidget extends DraggableWidget {
     this._backgroundColor = options.backgroundColor ?? 0x000000;
     this._backgroundAlpha = options.backgroundAlpha ?? 1;
     this._cornerRadius = options.cornerRadius ?? 16;
-    this._backgroundGradient = normalizeWidgetGradient(options.backgroundGradient);
+    this._backgroundGradient = normalizeWidgetGradient(
+      options.backgroundGradient,
+    );
     this._panelId = options.panelId ?? null;
     this._baseUrl = options.baseUrl || "https://admin.i-panel.pro:8787";
     this._apiUrl = `${this._baseUrl}/api/new_file`;
     this._playlistLoop = true;
+    this._muted = options.muted ?? true;
     this._currentIndex = 0;
     this._playlist = [];
     this._imageDisplayTime = options.imageDisplayTime ?? 5;
@@ -116,6 +158,9 @@ export default class VideoWidget extends DraggableWidget {
 
     // Переопределяем метод resize для дискретного изменения размера
     this.onResize = this.handleDiscreteResize.bind(this);
+
+    this._setupPreviewControls();
+    this._layoutPreviewControls();
 
     // Загружаем медиа при создании
     setTimeout(() => {
@@ -278,84 +323,90 @@ export default class VideoWidget extends DraggableWidget {
   }
 
   // Добавьте этот метод в VideoWidget
-updateBounds(bounds) {
-  if (this._isDestroyed) return;
-  
-  this.bounds = bounds;
-  
-  // Проверяем, не выходит ли виджет за новые границы
-  this._clampToBounds();
-  
-  // Если нужно, обновляем позицию
-  if (this.updateSelection) {
+  updateBounds(bounds) {
+    if (this._isDestroyed) return;
+
+    this.bounds = bounds;
+
+    // Проверяем, не выходит ли виджет за новые границы
+    this._clampToBounds();
+
+    // Если нужно, обновляем позицию
+    if (this.updateSelection) {
+      this.updateSelection();
+    }
+  }
+
+  resize(width, height) {
+    if (this._isDestroyed) return;
+
+    // Округляем до кратного 10
+    const step = 10;
+    let newWidth = Math.round(Math.max(20, width) / step) * step;
+    let newHeight = Math.round(Math.max(20, height) / step) * step;
+
+    if (this.options.proportionedScaling && this._originalAspectRatio) {
+      const newAspectRatio = newWidth / newHeight;
+
+      if (newAspectRatio > this._originalAspectRatio) {
+        newHeight =
+          Math.round(newWidth / this._originalAspectRatio / step) * step;
+      } else {
+        newWidth =
+          Math.round((newHeight * this._originalAspectRatio) / step) * step;
+      }
+    }
+
+    // Дополнительная проверка: размер не может быть больше границ редактора
+    if (this.bounds) {
+      const maxWidth = this.bounds.width;
+      const maxHeight = this.bounds.height;
+
+      if (newWidth > maxWidth) {
+        newWidth = maxWidth;
+        console.log(
+          `⚠️ Ширина ограничена: ${width} -> ${newWidth} (макс: ${maxWidth})`,
+        );
+      }
+      if (newHeight > maxHeight) {
+        newHeight = maxHeight;
+        console.log(
+          `⚠️ Высота ограничена: ${height} -> ${newHeight} (макс: ${maxHeight})`,
+        );
+      }
+    }
+
+    this._width = Math.max(20, newWidth);
+    this._height = Math.max(20, newHeight);
+
+    // Проверяем и корректируем позицию
+    this._clampToBounds();
+
     this.updateSelection();
-  }
-}
 
-resize(width, height) {
-  if (this._isDestroyed) return;
-  
-  // Округляем до кратного 10
-  const step = 10;
-  let newWidth = Math.round(Math.max(20, width) / step) * step;
-  let newHeight = Math.round(Math.max(20, height) / step) * step;
-
-  if (this.options.proportionedScaling && this._originalAspectRatio) {
-    const newAspectRatio = newWidth / newHeight;
-
-    if (newAspectRatio > this._originalAspectRatio) {
-      newHeight = Math.round(newWidth / this._originalAspectRatio / step) * step;
-    } else {
-      newWidth = Math.round((newHeight * this._originalAspectRatio) / step) * step;
+    if (this.onResize) {
+      this.onResize(this._width, this._height);
     }
-  }
 
-  // Дополнительная проверка: размер не может быть больше границ редактора
-  if (this.bounds) {
-    const maxWidth = this.bounds.width;
-    const maxHeight = this.bounds.height;
-    
-    if (newWidth > maxWidth) {
-      newWidth = maxWidth;
-      console.log(`⚠️ Ширина ограничена: ${width} -> ${newWidth} (макс: ${maxWidth})`);
+    if (this.showGuides) {
+      this.updateGuideLines();
     }
-    if (newHeight > maxHeight) {
-      newHeight = maxHeight;
-      console.log(`⚠️ Высота ограничена: ${height} -> ${newHeight} (макс: ${maxHeight})`);
+
+    // Обновляем медиа контент
+    this._updateMediaSize();
+
+    // Обновляем placeholder если есть
+    if (this.placeholderContainer) {
+      this._updatePlaceholder();
     }
+
+    // Еще одна проверка после обновления
+    setTimeout(() => {
+      if (!this._isDestroyed) {
+        this._ensureFullyVisible();
+      }
+    }, 10);
   }
-
-  this._width = Math.max(20, newWidth);
-  this._height = Math.max(20, newHeight);
-
-  // Проверяем и корректируем позицию
-  this._clampToBounds();
-
-  this.updateSelection();
-
-  if (this.onResize) {
-    this.onResize(this._width, this._height);
-  }
-
-  if (this.showGuides) {
-    this.updateGuideLines();
-  }
-
-  // Обновляем медиа контент
-  this._updateMediaSize();
-
-  // Обновляем placeholder если есть
-  if (this.placeholderContainer) {
-    this._updatePlaceholder();
-  }
-  
-  // Еще одна проверка после обновления
-  setTimeout(() => {
-    if (!this._isDestroyed) {
-      this._ensureFullyVisible();
-    }
-  }, 10);
-}
 
   // Обновление размера медиа контента
   _updateMediaSize() {
@@ -376,12 +427,83 @@ resize(width, height) {
 
     // Перерисовываем фон
     this._redrawBackground();
+    this._layoutPreviewControls();
+  }
+
+  _setupPreviewControls() {
+    const stopEvent = (event) => event.stopPropagation?.();
+    [this.playPreviewControl, this.soundPreviewControl].forEach((control) => {
+      control.eventMode = "static";
+      control.cursor = "pointer";
+      control.on("pointerdown", stopEvent);
+      control.on("pointerup", stopEvent);
+    });
+    this.playPreviewControl.on("pointertap", (event) => {
+      stopEvent(event);
+      this.togglePlayback();
+    });
+    this.soundPreviewControl.on("pointertap", (event) => {
+      stopEvent(event);
+      this.toggleMuted();
+    });
+    this._updatePreviewControls();
+  }
+
+  _layoutPreviewControls() {
+    if (!this.previewControls) return;
+    const size = Math.max(
+      30,
+      Math.min(44, Math.min(this._width, this._height) * 0.13),
+    );
+    const gap = Math.max(6, size * 0.18);
+    const padding = Math.max(10, size * 0.28);
+
+    const drawButton = (control, background, icon, x) => {
+      background
+        .clear()
+        .roundRect(0, 0, size, size, Math.min(10, size * 0.24))
+        .fill({ color: 0x05070a, alpha: 0.76 })
+        .stroke({ color: 0xffffff, alpha: 0.24, width: 1 });
+      icon.style.fontSize = size * 0.46;
+      icon.anchor.set(0.5);
+      icon.position.set(size / 2, size / 2 - 1);
+      control.position.set(x, 0);
+    };
+
+    drawButton(
+      this.playPreviewControl,
+      this.playPreviewBg,
+      this.playPreviewIcon,
+      0,
+    );
+    drawButton(
+      this.soundPreviewControl,
+      this.soundPreviewBg,
+      this.soundPreviewIcon,
+      size + gap,
+    );
+    this.previewControls.position.set(padding, padding);
+  }
+
+  _updatePreviewControls() {
+    if (this.playPreviewIcon) {
+      this.playPreviewIcon.text = this.isPlaying ? "Ⅱ" : "▶";
+    }
+    if (this.soundPreviewIcon) {
+      this.soundPreviewIcon.text = this._muted ? "×" : "♪";
+    }
   }
 
   _redrawMediaMask() {
     if (!this.mediaMask) return;
     this.mediaMask.clear();
-    this.mediaMask.roundRect(0, 0, this._width, this._height, this._cornerRadius);
+    this.mediaMask.roundRect(
+      0,
+      0,
+      this._width,
+      this._height,
+      this._cornerRadius,
+    );
     this.mediaMask.fill({ color: 0xffffff, alpha: 1 });
   }
 
@@ -399,7 +521,14 @@ resize(width, height) {
         baseUrl: this._baseUrl,
         panelId: this._panelId,
       });
-      const sortedArray = data.sort((a, b) => a.position - b.position);
+      const files = Array.isArray(data)
+        ? data
+        : Array.isArray(data?.files)
+          ? data.files
+          : [];
+      const sortedArray = [...files].sort(
+        (a, b) => (a.position || 0) - (b.position || 0),
+      );
       this._processApiResponse(sortedArray);
 
       if (this._playlist.length > 0) {
@@ -564,8 +693,13 @@ resize(width, height) {
           type: "video",
           url: encodedPath,
           resolution: file?.resolution || file?.metadata?.resolution || "",
-          width: file?.width || file?.video_width || file?.metadata?.width || null,
-          height: file?.height || file?.video_height || file?.metadata?.height || null,
+          width:
+            file?.width || file?.video_width || file?.metadata?.width || null,
+          height:
+            file?.height ||
+            file?.video_height ||
+            file?.metadata?.height ||
+            null,
           time_view: file?.time_view,
           multiplexer: file?.count_play,
           player_number: file?.player_number,
@@ -576,8 +710,13 @@ resize(width, height) {
           type: "image",
           url: encodedPath,
           resolution: file?.resolution || file?.metadata?.resolution || "",
-          width: file?.width || file?.image_width || file?.metadata?.width || null,
-          height: file?.height || file?.image_height || file?.metadata?.height || null,
+          width:
+            file?.width || file?.image_width || file?.metadata?.width || null,
+          height:
+            file?.height ||
+            file?.image_height ||
+            file?.metadata?.height ||
+            null,
           time_view: file?.time_view,
           multiplexer: file?.count_play,
           player_number: file?.player_number,
@@ -599,9 +738,9 @@ resize(width, height) {
       const itemPlayerNumber = Number(item.player_number);
       const widgetPlayerNumber = Number(this._playerNumber);
       return (
-        Number.isFinite(itemPlayerNumber) &&
         Number.isFinite(widgetPlayerNumber) &&
-        itemPlayerNumber === widgetPlayerNumber
+        (itemPlayerNumber === widgetPlayerNumber ||
+          (!item.player_number && widgetPlayerNumber === 1))
       );
     });
 
@@ -881,7 +1020,7 @@ resize(width, height) {
 
   _isVideoFile(filePath) {
     if (typeof filePath !== "string") return false;
-    const lowerPath = filePath.toLowerCase();
+    const lowerPath = filePath.split(/[?#]/)[0].toLowerCase();
     return (
       lowerPath.endsWith(".mp4") ||
       lowerPath.endsWith(".webm") ||
@@ -891,7 +1030,7 @@ resize(width, height) {
 
   _isImageFile(filePath) {
     if (typeof filePath !== "string") return false;
-    const lowerPath = filePath.toLowerCase();
+    const lowerPath = filePath.split(/[?#]/)[0].toLowerCase();
     return (
       lowerPath.endsWith(".jpg") ||
       lowerPath.endsWith(".jpeg") ||
@@ -917,10 +1056,11 @@ resize(width, height) {
       promise: null,
     };
 
-    entry.promise = window.fetch(url, {
-      cache: "force-cache",
-      signal: controller.signal,
-    })
+    entry.promise = window
+      .fetch(url, {
+        cache: "force-cache",
+        signal: controller.signal,
+      })
       .then((response) => {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.blob();
@@ -1033,11 +1173,11 @@ resize(width, height) {
 
       this.videoElement = document.createElement("video");
 
-      this.videoElement.muted = true;
+      this.videoElement.muted = this._muted;
       this.videoElement.playsInline = true;
       this.videoElement.setAttribute("playsinline", "");
       this.videoElement.setAttribute("webkit-playsinline", "");
-      this.videoElement.setAttribute("muted", "muted");
+      if (this._muted) this.videoElement.setAttribute("muted", "muted");
       this.videoElement.crossOrigin = "anonymous";
       this.videoElement.preload = "auto";
       this.videoElement.loop = false;
@@ -1046,7 +1186,7 @@ resize(width, height) {
         if (this.videoElement && this.videoElement.readyState < 2) {
           this._handleMediaError(new Error("Таймаут загрузки"));
         }
-      }, 15000);
+      }, 45000);
 
       const onLoaded = () => {
         clearTimeout(loadTimeout);
@@ -1109,7 +1249,9 @@ resize(width, height) {
       currentMedia.width = videoWidth;
       currentMedia.height = videoHeight;
       currentMedia.resolution = `${videoWidth}×${videoHeight}`;
-      const originalMedia = this._playlist.find((item) => item.url === currentMedia.url);
+      const originalMedia = this._playlist.find(
+        (item) => item.url === currentMedia.url,
+      );
       if (originalMedia) {
         originalMedia.width = videoWidth;
         originalMedia.height = videoHeight;
@@ -1261,15 +1403,12 @@ resize(width, height) {
     warning.addChild(ratioText);
 
     // Ближайшее стандартное соотношение
-    const expectedText = new Text(
-      `Размер виджета: ${expectedStandard}`,
-      {
-        fontFamily: "Arial",
-        fontSize: Math.min(16, this._width * 0.035),
-        fill: 0x000000,
-        align: "center",
-      },
-    );
+    const expectedText = new Text(`Размер виджета: ${expectedStandard}`, {
+      fontFamily: "Arial",
+      fontSize: Math.min(16, this._width * 0.035),
+      fill: 0x000000,
+      align: "center",
+    });
     expectedText.x = this._width / 2 - expectedText.width / 2;
     expectedText.y = ratioText.y + ratioText.height + 15;
     warning.addChild(expectedText);
@@ -1524,7 +1663,7 @@ resize(width, height) {
       return;
     }
 
-    this.videoElement.muted = true;
+    this.videoElement.muted = this._muted;
 
     const playPromise = this.videoElement.play();
 
@@ -1533,6 +1672,7 @@ resize(width, height) {
         .then(() => {
           if (!this._isDestroyed) {
             this.isPlaying = true;
+            this._updatePreviewControls();
             this._startTextureUpdate();
 
             if (this._videoPlayDuration) {
@@ -1543,11 +1683,13 @@ resize(width, height) {
         .catch((error) => {
           if (!this._isDestroyed) {
             if (error.name === "NotAllowedError") {
+              this._muted = true;
+              this.videoElement.muted = true;
+              this.videoElement.setAttribute("muted", "muted");
+              this._updatePreviewControls();
               setTimeout(() => {
-                if (!this._isDestroyed) {
-                  this._tryPlayVideo();
-                }
-              }, 500);
+                if (!this._isDestroyed) this._tryPlayVideo();
+              }, 100);
             } else {
               this._handleMediaError(error);
             }
@@ -1560,6 +1702,7 @@ resize(width, height) {
     if (this._isDestroyed) return;
 
     this.isPlaying = false;
+    this._updatePreviewControls();
     this._stopTextureUpdate();
 
     if (this._videoPlayTimer) {
@@ -1699,9 +1842,11 @@ resize(width, height) {
       previous.imageTexture;
 
     if (previous.videoElement && previous.videoEventHandlers) {
-      Object.entries(previous.videoEventHandlers).forEach(([event, handler]) => {
-        previous.videoElement.removeEventListener(event, handler);
-      });
+      Object.entries(previous.videoEventHandlers).forEach(
+        ([event, handler]) => {
+          previous.videoElement.removeEventListener(event, handler);
+        },
+      );
     }
 
     if (hasCurrentMedia) {
@@ -1721,8 +1866,10 @@ resize(width, height) {
   _cleanupPreviousMedia() {
     const previous = this._previousMedia;
     if (!previous) return;
-    if (previous.videoSprite?.parent) previous.videoSprite.parent.removeChild(previous.videoSprite);
-    if (previous.imageSprite?.parent) previous.imageSprite.parent.removeChild(previous.imageSprite);
+    if (previous.videoSprite?.parent)
+      previous.videoSprite.parent.removeChild(previous.videoSprite);
+    if (previous.imageSprite?.parent)
+      previous.imageSprite.parent.removeChild(previous.imageSprite);
     previous.videoSprite?.destroy?.();
     previous.imageSprite?.destroy?.();
     previous.videoTexture?.destroy?.();
@@ -1736,8 +1883,10 @@ resize(width, height) {
   }
 
   _cleanupPendingMedia() {
-    if (this.videoSprite?.parent) this.videoSprite.parent.removeChild(this.videoSprite);
-    if (this.imageSprite?.parent) this.imageSprite.parent.removeChild(this.imageSprite);
+    if (this.videoSprite?.parent)
+      this.videoSprite.parent.removeChild(this.videoSprite);
+    if (this.imageSprite?.parent)
+      this.imageSprite.parent.removeChild(this.imageSprite);
     this.videoSprite?.destroy?.();
     this.imageSprite?.destroy?.();
     this.videoTexture?.destroy?.();
@@ -2017,7 +2166,30 @@ resize(width, height) {
       this.videoElement.pause();
       this.isPlaying = false;
       this._stopTextureUpdate();
+      this._updatePreviewControls();
     }
+  }
+
+  togglePlayback() {
+    if (this.videoElement && this.isPlaying && !this.videoElement.paused) {
+      this.pause();
+    } else {
+      this.play();
+    }
+  }
+
+  toggleMuted() {
+    this._muted = !this._muted;
+    if (this.videoElement) {
+      this.videoElement.muted = this._muted;
+      if (this._muted) {
+        this.videoElement.setAttribute("muted", "muted");
+      } else {
+        this.videoElement.removeAttribute("muted");
+        if (this.videoElement.paused) this.play();
+      }
+    }
+    this._updatePreviewControls();
   }
 
   reload() {
@@ -2036,7 +2208,8 @@ resize(width, height) {
   // Установка номера проигрывателя
   setPlayerNumber(number) {
     const normalized = Number(number);
-    this._playerNumber = Number.isFinite(normalized) && normalized > 0 ? normalized : 1;
+    this._playerNumber =
+      Number.isFinite(normalized) && normalized > 0 ? normalized : 1;
 
     // Если виджет уже загружен, перезагружаем
     if (this._playlist && this._playlist.length > 0) {
@@ -2046,6 +2219,7 @@ resize(width, height) {
 
   select() {
     super.select();
+    this.previewControls.visible = this._editorPreviewControls;
 
     // Уведомляем о выборе ВСЕХ видеовиджетов (не только этого)
     this.notifySelectionChanged();
@@ -2063,6 +2237,7 @@ resize(width, height) {
   // Метод для снятия выделения
   deselect() {
     super.deselect();
+    this.previewControls.visible = false;
 
     // Уведомляем об изменении выделения
     this.notifySelectionChanged();
@@ -2355,7 +2530,8 @@ resize(width, height) {
       currentPlayerNumber: originalMedia?.player_number || null,
       isParametrized: currentMedia.isParametrized || false,
       currentAspectRatio: this._currentAspectRatio,
-      currentResolution: currentMedia.resolution ||
+      currentResolution:
+        currentMedia.resolution ||
         (currentMedia.width && currentMedia.height
           ? `${currentMedia.width}×${currentMedia.height}`
           : ""),
