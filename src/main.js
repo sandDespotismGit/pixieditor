@@ -6147,7 +6147,6 @@ async function loadEditorFonts() {
       panelId: panelId,
       playerNumber: 1,
       imageDisplayTime: 10,
-      editorPreviewControls: true,
     });
 
     // Добавляем виджет

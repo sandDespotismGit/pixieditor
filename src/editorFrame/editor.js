@@ -1534,7 +1534,6 @@ export default class EditorFrame {
                   ) || w.panelId,
                 playerNumber: w.playerNumber ?? w.player_number ?? 1,
                 imageDisplayTime: w.imageDisplayTime,
-                editorPreviewControls: true,
                 backgroundColor: w.bgColor,
                 backgroundAlpha: w.bgAlpha,
                 cornerRadius: w.cornerRadius,

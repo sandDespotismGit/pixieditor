@@ -1,4 +1,4 @@
-import { Container, Graphics, Rectangle, Text } from "pixi.js";
+import { Container, Graphics, Text } from "pixi.js";
 import DraggableWidget from "../draggable_widget";
 import { requestWidgetData } from "../../batchWidgetData";
 
@@ -36,36 +36,7 @@ export default class AudioPlayerWidget extends DraggableWidget {
       fontWeight: "500",
       fill: 0x94a3b8,
     });
-    const playControl = new Container();
-    const playControlBg = new Graphics();
-    const playControlIcon = new Text("▶", {
-      fontFamily: "Arial",
-      fontSize: 18,
-      fontWeight: "700",
-      fill: 0xffffff,
-    });
-    playControl.addChild(playControlBg, playControlIcon);
-
-    const nextControl = new Container();
-    const nextControlBg = new Graphics();
-    const nextControlIcon = new Text("›", {
-      fontFamily: "Arial",
-      fontSize: 24,
-      fontWeight: "700",
-      fill: 0xffffff,
-    });
-    nextControl.addChild(nextControlBg, nextControlIcon);
-
-    content.addChild(
-      background,
-      accent,
-      bars,
-      title,
-      track,
-      status,
-      playControl,
-      nextControl,
-    );
+    content.addChild(background, accent, bars, title, track, status);
     super(bounds, content, options);
 
     this.background = background;
@@ -74,12 +45,6 @@ export default class AudioPlayerWidget extends DraggableWidget {
     this.titleText = title;
     this.trackText = track;
     this.statusText = status;
-    this.playControl = playControl;
-    this.playControlBg = playControlBg;
-    this.playControlIcon = playControlIcon;
-    this.nextControl = nextControl;
-    this.nextControlBg = nextControlBg;
-    this.nextControlIcon = nextControlIcon;
     this.type = "AudioPlayerWidget";
     this.widgetType = "AudioPlayerWidget";
     this._width = options.width ?? 460;
@@ -90,8 +55,7 @@ export default class AudioPlayerWidget extends DraggableWidget {
     this._borderColor = options.borderColor ?? 0xffffff;
     this._borderAlpha = options.borderAlpha ?? 0;
     this._borderWidth = options.borderWidth ?? 0;
-    this._mixerColor =
-      options.mixerColor ?? options.audioData?.mixerColor ?? 0x20a7d0;
+    this._mixerColor = options.mixerColor ?? options.audioData?.mixerColor ?? 0x20a7d0;
     this._playerNumber = options.playerNumber ?? 1;
     this._panelId = options.panelId ?? null;
     this._baseUrl = options.baseUrl || "https://admin.i-panel.pro:8787";
@@ -105,8 +69,6 @@ export default class AudioPlayerWidget extends DraggableWidget {
     this.animationTime = 0;
     this.loadTimer = null;
     this.resumeHandler = null;
-
-    this.setupPreviewControls();
 
     this.redraw();
     this.startAnimation();
@@ -142,25 +104,14 @@ export default class AudioPlayerWidget extends DraggableWidget {
       .fill({ color: this._mixerColor, alpha: 1 });
     const pad = Math.max(12, Math.min(this._width, this._height) * 0.1);
     const mixerWidth = Math.max(58, Math.min(124, this._width * 0.28));
-    const controlsSize = Math.max(28, Math.min(42, this._height * 0.3));
-    const controlsGap = Math.max(6, controlsSize * 0.18);
-    const controlsX = Math.max(30, pad + 12);
-    const leftX = this.isSelected
-      ? controlsX + controlsSize + controlsGap + 10
-      : pad + 20;
+    const leftX = pad + 20;
     const textWidth = Math.max(48, this._width - leftX - mixerWidth - pad);
     const titleSize = Math.max(8, Math.min(13, this._height * 0.09));
-    const trackSize = Math.max(
-      11,
-      Math.min(28, this._height * 0.18, this._width * 0.055),
-    );
+    const trackSize = Math.max(11, Math.min(28, this._height * 0.18, this._width * 0.055));
     const statusSize = Math.max(8, Math.min(12, this._height * 0.08));
     const titleY = Math.max(10, pad * 0.75);
     const trackY = Math.max(titleY + titleSize + 8, this._height * 0.36);
-    const statusY = Math.min(
-      this._height - pad - statusSize,
-      trackY + trackSize + 12,
-    );
+    const statusY = Math.min(this._height - pad - statusSize, trackY + trackSize + 12);
 
     this.titleText.style.fontSize = titleSize;
     this.trackText.style.fontSize = trackSize;
@@ -174,88 +125,7 @@ export default class AudioPlayerWidget extends DraggableWidget {
     this.titleText.position.set(leftX, titleY);
     this.trackText.position.set(leftX, trackY);
     this.statusText.position.set(leftX, statusY);
-    this.playControl.visible = this.isSelected;
-    this.nextControl.visible = this.isSelected;
-    this.layoutPreviewControls(
-      controlsX,
-      this._height / 2,
-      controlsSize,
-      controlsGap,
-    );
     this.drawBars();
-  }
-
-  setupPreviewControls() {
-    const stopEvent = (event) => event.stopPropagation?.();
-    [this.playControl, this.nextControl].forEach((control) => {
-      control.eventMode = "static";
-      control.cursor = "pointer";
-      control.on("pointerdown", stopEvent);
-      control.on("pointerup", stopEvent);
-    });
-    this.playControl.on("pointertap", (event) => {
-      stopEvent(event);
-      this.togglePlayback();
-    });
-    this.nextControl.on("pointertap", (event) => {
-      stopEvent(event);
-      this.nextTrack();
-    });
-    this.updatePreviewControls();
-  }
-
-  layoutPreviewControls(x, centerY, size, gap) {
-    const drawButton = (control, background, icon, y) => {
-      background
-        .clear()
-        .circle(size / 2, size / 2, size / 2)
-        .fill({ color: 0xffffff, alpha: 0.14 })
-        .stroke({ color: this._mixerColor, alpha: 0.78, width: 1 });
-      icon.style.fontSize =
-        control === this.nextControl ? size * 0.72 : size * 0.48;
-      icon.anchor.set(0.5);
-      icon.position.set(size / 2, size / 2 - 1);
-      control.position.set(x, y);
-      control.hitArea = new Rectangle(0, 0, size, size);
-    };
-
-    const totalHeight = size * 2 + gap;
-    const startY = centerY - totalHeight / 2;
-    drawButton(
-      this.playControl,
-      this.playControlBg,
-      this.playControlIcon,
-      startY,
-    );
-    drawButton(
-      this.nextControl,
-      this.nextControlBg,
-      this.nextControlIcon,
-      startY + size + gap,
-    );
-  }
-
-  updatePreviewControls() {
-    if (this.playControlIcon) {
-      this.playControlIcon.text = this.isPlaying ? "Ⅱ" : "▶";
-    }
-    if (this.nextControl) {
-      this.nextControl.alpha = this.playlist.length > 1 ? 1 : 0.42;
-    }
-  }
-
-  formatTime(seconds) {
-    if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
-    const minutes = Math.floor(seconds / 60);
-    const rest = Math.floor(seconds % 60);
-    return `${minutes}:${String(rest).padStart(2, "0")}`;
-  }
-
-  updatePlaybackStatus() {
-    if (!this.audioElement) return;
-    const current = this.formatTime(this.audioElement.currentTime);
-    const duration = this.formatTime(this.audioElement.duration);
-    this.statusText.text = `${current} / ${duration}${this.isPlaying ? "" : " · пауза"}`;
   }
 
   drawBars() {
@@ -274,13 +144,7 @@ export default class AudioPlayerWidget extends DraggableWidget {
         ? Math.max(8, maxBarHeight * (0.26 + ((wave + 1) / 2) * 0.74))
         : Math.max(7, maxBarHeight * (0.18 + (i % 3) * 0.08));
       this.bars
-        .roundRect(
-          startX + i * barGap,
-          baseline - height,
-          barWidth,
-          height,
-          barWidth / 2,
-        )
+        .roundRect(startX + i * barGap, baseline - height, barWidth, height, barWidth / 2)
         .fill({ color: this._mixerColor, alpha: active ? 1 : 0.62 });
     }
   }
@@ -398,14 +262,12 @@ export default class AudioPlayerWidget extends DraggableWidget {
 
   select() {
     super.select();
-    this.redraw();
     this.notifySelectionChanged();
     return this;
   }
 
   deselect() {
     super.deselect();
-    this.redraw();
     this.notifySelectionChanged();
     return this;
   }
@@ -458,15 +320,7 @@ export default class AudioPlayerWidget extends DraggableWidget {
   setMediaFiles(files = [], options = {}) {
     this.playlist = files
       .filter((file) => {
-        const path = String(file?.url || file?.name || "")
-          .split(/[?#]/)[0]
-          .toLowerCase();
-        const isAudio =
-          file?.type === "audio" ||
-          [".mp3", ".wav", ".ogg", ".m4a", ".aac", ".flac"].some((extension) =>
-            path.endsWith(extension),
-          );
-        if (!isAudio || !file?.url) return false;
+        if (file.type !== "audio") return false;
         if (options.ignorePlayerNumber) return true;
         const playerNumber = Number(file.player_number);
         return (
@@ -475,18 +329,12 @@ export default class AudioPlayerWidget extends DraggableWidget {
         );
       })
       .sort((a, b) => (a.position || 0) - (b.position || 0));
-    if (
-      !this.playlist.length &&
-      !this._presetId &&
-      !options.ignorePlayerNumber
-    ) {
+    if (!this.playlist.length && !this._presetId && !options.ignorePlayerNumber) {
       const fallbackPreset = AUDIO_PLAYLIST_PRESETS.find((item) => item.id)?.id;
       if (fallbackPreset) {
         this._presetId = fallbackPreset;
         this.loadPresetFiles(fallbackPreset)
-          .then((presetFiles) =>
-            this.setMediaFiles(presetFiles, { ignorePlayerNumber: true }),
-          )
+          .then((presetFiles) => this.setMediaFiles(presetFiles, { ignorePlayerNumber: true }))
           .catch(() => {
             this.stopAudio();
             this.trackText.text = "Аудиоплеер";
@@ -499,7 +347,7 @@ export default class AudioPlayerWidget extends DraggableWidget {
     if (!this.playlist.length) {
       this.stopAudio();
       this.trackText.text = "Аудиоплеер";
-      this.statusText.text = "Нет прикрепленных аудиофайлов";
+      this.statusText.text = "";
       return;
     }
     this.currentIndex = 0;
@@ -529,33 +377,21 @@ export default class AudioPlayerWidget extends DraggableWidget {
     this.audioElement.loop = this.playlist.length === 1;
     this.audioElement.addEventListener("playing", () => {
       this.isPlaying = true;
-      this.updatePreviewControls();
-      this.updatePlaybackStatus();
+      this.statusText.text = "";
       if (this.resumeHandler) {
         document.removeEventListener("pointerdown", this.resumeHandler);
         this.resumeHandler = null;
       }
     });
     this.audioElement.addEventListener("error", () => {
-      this.statusText.text = "Не удалось открыть аудиофайл";
-      this.isPlaying = false;
-      this.updatePreviewControls();
-    });
-    this.audioElement.addEventListener("timeupdate", () => {
-      this.updatePlaybackStatus();
-    });
-    this.audioElement.addEventListener("pause", () => {
-      this.isPlaying = false;
-      this.updatePreviewControls();
-      this.updatePlaybackStatus();
+      this.statusText.text = "";
     });
     this.audioElement.addEventListener("ended", () => {
       this.currentIndex = (this.currentIndex + 1) % this.playlist.length;
       this.playCurrent();
     });
     this.audioElement.play().catch(() => {
-      this.statusText.text = "Нажмите ▶ для предпрослушивания";
-      this.updatePreviewControls();
+      this.statusText.text = "";
       if (!this.resumeHandler) {
         this.resumeHandler = () => {
           this.audioElement?.play().catch(() => {});
@@ -572,35 +408,6 @@ export default class AudioPlayerWidget extends DraggableWidget {
       this.audioElement = null;
     }
     this.isPlaying = false;
-    this.updatePreviewControls();
-  }
-
-  play() {
-    if (!this.audioElement) {
-      if (this.playlist.length) this.playCurrent();
-      return;
-    }
-    this.audioElement.play().catch(() => {
-      this.statusText.text = "Браузер заблокировал воспроизведение";
-    });
-  }
-
-  pause() {
-    this.audioElement?.pause();
-  }
-
-  togglePlayback() {
-    if (this.isPlaying && this.audioElement && !this.audioElement.paused) {
-      this.pause();
-    } else {
-      this.play();
-    }
-  }
-
-  nextTrack() {
-    if (this.playlist.length < 2) return;
-    this.currentIndex = (this.currentIndex + 1) % this.playlist.length;
-    this.playCurrent();
   }
 
   pauseForNightMode() {
