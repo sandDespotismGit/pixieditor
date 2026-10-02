@@ -104,6 +104,7 @@ export default class VideoWidget extends DraggableWidget {
     this._apiUrl = `${this._baseUrl}/api/new_file`;
     this._playlistLoop = true;
     this._muted = options.muted ?? true;
+    this._previewMuted = true;
     this._currentIndex = 0;
     this._playlist = [];
     this._imageDisplayTime = options.imageDisplayTime ?? 5;
@@ -490,7 +491,7 @@ export default class VideoWidget extends DraggableWidget {
       this.playPreviewIcon.text = this.isPlaying ? "Ⅱ" : "▶";
     }
     if (this.soundPreviewIcon) {
-      this.soundPreviewIcon.text = this._muted ? "×" : "♪";
+      this.soundPreviewIcon.text = this._previewMuted ? "×" : "♪";
     }
   }
 
@@ -1173,11 +1174,11 @@ export default class VideoWidget extends DraggableWidget {
 
       this.videoElement = document.createElement("video");
 
-      this.videoElement.muted = this._muted;
+      this.videoElement.muted = this._previewMuted;
       this.videoElement.playsInline = true;
       this.videoElement.setAttribute("playsinline", "");
       this.videoElement.setAttribute("webkit-playsinline", "");
-      if (this._muted) this.videoElement.setAttribute("muted", "muted");
+      if (this._previewMuted) this.videoElement.setAttribute("muted", "muted");
       this.videoElement.crossOrigin = "anonymous";
       this.videoElement.preload = "auto";
       this.videoElement.loop = false;
@@ -1663,7 +1664,7 @@ export default class VideoWidget extends DraggableWidget {
       return;
     }
 
-    this.videoElement.muted = this._muted;
+    this.videoElement.muted = this._previewMuted;
 
     const playPromise = this.videoElement.play();
 
@@ -1683,7 +1684,7 @@ export default class VideoWidget extends DraggableWidget {
         .catch((error) => {
           if (!this._isDestroyed) {
             if (error.name === "NotAllowedError") {
-              this._muted = true;
+              this._previewMuted = true;
               this.videoElement.muted = true;
               this.videoElement.setAttribute("muted", "muted");
               this._updatePreviewControls();
@@ -2158,6 +2159,12 @@ export default class VideoWidget extends DraggableWidget {
   // === ПУБЛИЧНЫЕ МЕТОДЫ ===
 
   play() {
+    this._previewMuted = false;
+    if (this.videoElement) {
+      this.videoElement.muted = false;
+      this.videoElement.removeAttribute("muted");
+    }
+    this._updatePreviewControls();
     this._tryPlayVideo();
   }
 
@@ -2179,10 +2186,10 @@ export default class VideoWidget extends DraggableWidget {
   }
 
   toggleMuted() {
-    this._muted = !this._muted;
+    this._previewMuted = !this._previewMuted;
     if (this.videoElement) {
-      this.videoElement.muted = this._muted;
-      if (this._muted) {
+      this.videoElement.muted = this._previewMuted;
+      if (this._previewMuted) {
         this.videoElement.setAttribute("muted", "muted");
       } else {
         this.videoElement.removeAttribute("muted");

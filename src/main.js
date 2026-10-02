@@ -9629,6 +9629,11 @@ async function loadEditorFonts() {
       section.innerHTML = `
         <div style="font-size:12px;font-weight:600;color:var(--accent-primary);margin-bottom:12px;text-transform:uppercase;">Аудиоплеер</div>
         <div style="display:grid;gap:10px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
+            <button class="btn-modern audio-preview-play" type="button">▶ Слушать</button>
+            <button class="btn-modern audio-preview-pause" type="button">Ⅱ Пауза</button>
+            <button class="btn-modern audio-preview-next" type="button">› Далее</button>
+          </div>
           <div style="padding:12px;border-radius:10px;background:linear-gradient(135deg,rgba(32,167,208,.18),rgba(123,97,255,.16));border:1px solid rgba(32,167,208,.35);">
             <label style="display:block;color:var(--text-primary);font-size:11px;margin-bottom:6px;font-weight:700;text-transform:uppercase;">Номер проигрывателя</label>
             <input class="form-input audio-player-number" type="number" min="1" max="99" value="${actualWidget.getPlayerNumber?.() || actualWidget._playerNumber || 1}" style="width:100%;">
@@ -9652,6 +9657,15 @@ async function loadEditorFonts() {
           </div>
         </div>
       `;
+      section
+        .querySelector(".audio-preview-play")
+        .addEventListener("click", () => actualWidget.play?.());
+      section
+        .querySelector(".audio-preview-pause")
+        .addEventListener("click", () => actualWidget.pause?.());
+      section
+        .querySelector(".audio-preview-next")
+        .addEventListener("click", () => actualWidget.nextTrack?.());
       section
         .querySelector(".audio-player-number")
         .addEventListener("change", (event) => {
@@ -11186,7 +11200,7 @@ async function loadEditorFonts() {
         window.videoControls.play = playHandler;
 
         videoButtons.appendChild(
-          createVideoButton("▶️ Воспроизвести", playHandler, true),
+          createVideoButton("▶ Со звуком", playHandler, true),
         );
       }
 
